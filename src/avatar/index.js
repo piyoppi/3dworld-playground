@@ -1,5 +1,4 @@
 import * as THREE from 'three'
-import { VRButton } from 'three/examples/jsm/webxr/VRButton.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
 function loadGlb(url) {
@@ -7,6 +6,55 @@ function loadGlb(url) {
 
   return new Promise((resolve, reject) => {
     loader.load(url, gltf => resolve(gltf), undefined, e => reject(e))
+  })
+}
+
+function getObject3D(obj, evaluator) {
+  return [
+    ...obj.children.filter(child => evaluator(child)),
+    ...obj.children.map(child => getObject3D(child, evaluator)).flat(),
+  ]
+}
+
+const getMeshes = obj => getObject3D(obj, obj => obj.isMesh)
+const getBones = obj => getObject3D(obj, obj => obj.isBone)
+const makeBoudingMesh = obj => new THREE.BoundingBoxHelper( obj, 0xffffffff )
+
+const makeBoneMesh = (obj, scene) => {
+  const geometry = new THREE.WireframeGeometry(new THREE.SphereGeometry(
+    0.03,
+    5,
+    5
+  ))
+  const mesh = new THREE.LineSegments(geometry)
+  mesh.material.depthTest = false
+  mesh.material.color.set(0xFF00FF00)
+
+  const mat = transformMatrixFrom3dObj(obj, scene)
+
+  // 以下のようにしてシーン座標系にすることもできる
+  //const mat = obj.matrixWorld.clone().premultiply(scene.matrix.clone().invert())
+
+  mesh.applyMatrix4(mat)
+
+  return mesh
+}
+
+const transformMatrixFrom3dObj = (ref, root, mat = ref.matrix.clone()) => {
+  if (root.uuid === ref.parent.uuid) return mat
+  const calcmat = mat.premultiply(ref.parent.matrix.clone())
+  return transformMatrixFrom3dObj(ref.parent, root, calcmat.clone())
+}
+
+const makeWireframeLines = obj => {
+  const wireframes = getMeshes(obj).map(mesh => new THREE.WireframeGeometry(mesh.geometry))
+  return wireframes.map(wireframe => {
+    const line = new THREE.LineSegments(wireframe)
+    line.material.depthTest = false
+    line.material.opacity = 0.25
+    line.material.transparent = true
+
+    return line
   })
 }
 
@@ -22,28 +70,23 @@ async function run() {
   const renderer = new THREE.WebGLRenderer( { antialias: true } )
   renderer.setSize( window.innerWidth, window.innerHeight )
 
-  const getMeshes = (obj) => {
-    return [
-      ...obj.children.filter(child => child.isMesh),
-      ...obj.children.map(child => getMeshes(child)).flat(),
-    ]
-  }
-
-  const makeBoudingMesh = (obj) => {
-    return new THREE.BoundingBoxHelper( obj, 0xffffffff );
-  }
-
   const gltf = await loadGlb('../../assets/avatar.glb')
 
   scene.add( gltf.scene )
+  makeWireframeLines(gltf.scene).forEach(line => gltf.scene.add(line))
+
   gltf.scene.position.z = 0
   gltf.scene.position.y = -1
 
   const meshes = getMeshes(gltf.scene)
+  const bones = getBones(gltf.scene)
+
   meshes.forEach(mesh => mesh.geometry.boundingSphere.radius = 1)
-  meshes.map(mesh => makeBoudingMesh(mesh)).forEach(mesh => {
-    gltf.scene.add(mesh)
-  })
+  meshes.map(mesh => makeBoudingMesh(mesh)).forEach(mesh => gltf.scene.add(mesh))
+
+  setTimeout(() => {
+    bones.map(bone => makeBoneMesh(bone, gltf.scene)).forEach(mesh => gltf.scene.add(mesh))
+  }, 0)
 
   const upperArmL = gltf.scene.getObjectByName('UpperArmL')
 
@@ -51,7 +94,6 @@ async function run() {
     renderer.render( scene, camera )
   })
   document.body.appendChild( renderer.domElement )
-  document.body.appendChild( VRButton.createButton( renderer ) )
 
   //
   // UI
