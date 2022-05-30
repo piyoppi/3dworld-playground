@@ -1,6 +1,9 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
+let isClicked = false
+const mouseClickPosition = new THREE.Vector2(0, 0)
+
 function loadGlb(url) {
   const loader = new GLTFLoader()
 
@@ -21,14 +24,14 @@ const getBones = obj => getObject3D(obj, obj => obj.isBone)
 const makeBoudingMesh = obj => new THREE.BoundingBoxHelper( obj, 0xffffffff )
 
 const makeBoneMesh = (obj, scene) => {
-  const geometry = new THREE.WireframeGeometry(new THREE.SphereGeometry(
+  const geometry = new THREE.SphereGeometry(
     0.03,
     5,
     5
-  ))
-  const mesh = new THREE.LineSegments(geometry)
+  )
+  const material = new THREE.MeshLambertMaterial({color: Math.random() * 0xffffff}) 
+  const mesh = new THREE.Mesh(geometry, material)
   mesh.material.depthTest = false
-  mesh.material.color.set(0xFF00FF00)
 
   const mat = transformMatrixFrom3dObj(obj, scene)
 
@@ -67,13 +70,10 @@ async function run() {
   light.lookAt(0, 0, 0)
   scene.add(light)
 
-  const renderer = new THREE.WebGLRenderer( { antialias: true } )
-  renderer.setSize( window.innerWidth, window.innerHeight )
-
   const gltf = await loadGlb('../../assets/avatar.glb')
 
   scene.add( gltf.scene )
-  makeWireframeLines(gltf.scene).forEach(line => gltf.scene.add(line))
+  //makeWireframeLines(gltf.scene).forEach(line => gltf.scene.add(line))
 
   gltf.scene.position.z = 0
   gltf.scene.position.y = -1
@@ -84,35 +84,39 @@ async function run() {
   meshes.forEach(mesh => mesh.geometry.boundingSphere.radius = 1)
   meshes.map(mesh => makeBoudingMesh(mesh)).forEach(mesh => gltf.scene.add(mesh))
 
+  let boneMeshes = []
   setTimeout(() => {
-    bones.map(bone => makeBoneMesh(bone, gltf.scene)).forEach(mesh => gltf.scene.add(mesh))
+    boneMeshes = bones.map(bone => makeBoneMesh(bone, gltf.scene))
+    boneMeshes.forEach(mesh => gltf.scene.add(mesh))
   }, 0)
 
-  const upperArmL = gltf.scene.getObjectByName('UpperArmL')
+  const raycaster = new THREE.Raycaster()
+
+  //
+  // Setup renderer
+  // -----------------------------------------------------------
+  const renderer = new THREE.WebGLRenderer( { antialias: true } )
+  renderer.setSize( window.innerWidth, window.innerHeight )
+  renderer.setPixelRatio( window.devicePixelRatio );
 
   renderer.setAnimationLoop(time => {
+    if (isClicked) {
+      raycaster.setFromCamera(mouseClickPosition, camera)
+      isClicked = false
+
+      const intersects = raycaster.intersectObjects(boneMeshes)
+      intersects.forEach(intersect => intersect.object.material.color.set(0xFF0000))
+    }
+
     renderer.render( scene, camera )
   })
   document.body.appendChild( renderer.domElement )
 
-  //
-  // UI
-  // -----------------------------------------------------------
-  const form = document.getElementById('InputForm')
-  const sliderX = document.getElementById('UpperArmL_RotateX')
-  const sliderY = document.getElementById('UpperArmL_RotateY')
-  const sliderZ = document.getElementById('UpperArmL_RotateZ')
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight
+    camera.updateProjectionMatrix()
 
-  form.addEventListener('mousedown', e => e.stopPropagation())
-
-  sliderX.addEventListener('input', e => {
-    upperArmL.rotation.x = e.target.value / 100.0
-  })
-  sliderY.addEventListener('input', e => {
-    upperArmL.rotation.y = e.target.value / 100.0
-  })
-  sliderZ.addEventListener('input', e => {
-    upperArmL.rotation.z = e.target.value / 100.0
+    renderer.setSize(window.innerWidth, window.innerHeight)
   })
 
   //
@@ -128,10 +132,18 @@ async function run() {
     camera.position.y = dist * Math.sin(rot[0])
     camera.position.z = dist * Math.cos(rot[0]) * Math.sin(rot[1])
     camera.lookAt(0, 0, 0)
+    camera.updateMatrixWorld()
   }
 
   // initialize camera position
   setCameraPosition()
+
+  window.addEventListener('click', e => {
+    mouseClickPosition.x = (e.clientX / window.innerWidth) * 2 - 1
+    mouseClickPosition.y = -(e.clientY / window.innerHeight) * 2 + 1
+    isClicked = true
+    console.log(mouseClickPosition)
+  })
 
   window.addEventListener('mousedown', e => {
     previousMousePointer = [e.screenX, e.screenY]
