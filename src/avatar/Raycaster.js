@@ -22,7 +22,7 @@ export class Raycaster {
   getObjects(cursorX, cursorY) {
     this.#cursor.x = cursorX
     this.#cursor.y = cursorY
-    this.#raycaster.setFromCamera(this.#cursor, this.#camera)
+    this.#raycaster.setFromCamera(this.#cursor, this.#camera.raw)
     return this.#raycaster.intersectObjects(this.#targets)
   }
 }

@@ -20,6 +20,15 @@ export class Mat4 {
     ]
   }
 
+  static getIdentityMatrix() {
+    return [
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1,
+    ]
+  }
+
   static mulAll(matrixes) {
     let currentMat = matrixes[0]
     for(let i = 1; i < matrixes.length; i++ ) {

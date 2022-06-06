@@ -21,10 +21,6 @@ export class LookAtCameraHandler {
     return this.#distance
   }
 
-  set distance(value) {
-    this.#distance = value
-  }
-
   get changed() {
     return this.#changed
   }
@@ -33,6 +29,12 @@ export class LookAtCameraHandler {
     this.#target[0] = x
     this.#target[1] = y
     this.#target[2] = z
+
+    this.#changed = true
+  }
+
+  addDistance(val) {
+    this.#distance += val
 
     this.#changed = true
   }
