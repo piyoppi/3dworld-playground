@@ -5,6 +5,13 @@ export const getObject3D = (obj, evaluator) => {
   ]
 }
 
+export const flatTree = (tree, evaluator) => {
+  return [
+    ...obj.children.filter(child => evaluator(child)),
+    ...obj.children.map(child => getObject3D(child, evaluator)).flat(),
+  ]
+}
+
 const findRootItem = (obj, evaluator) => {
   if (evaluator(obj)) return [obj]
 

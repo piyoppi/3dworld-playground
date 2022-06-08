@@ -2,20 +2,13 @@ import { updateFromMatrix } from './ThreeMatrixHelper.js'
 
 export class Item {
   #renderingObject
-  #coordinate
 
   constructor() {
     this.#renderingObject = null
   }
 
-  get coordinate() {
-    return this.#coordinate
-  }
-
   set renderingObject(renderingObj) {
     this.#renderingObject = renderingObj
-
-    this.#coordinate = new ThreeCoordinate(this.#renderingObject.raw)
   }
 
   get renderingObject() {
@@ -41,21 +34,26 @@ export class Coordinate {
   get matrix() {}
   get parent() {}
   setParent(coordinate) {}
+  setChild(coordinate) {}
 }
+
+import * as THREE from 'three'
 
 export class ThreeCoordinate extends Coordinate {
   #threeObject
+  #items
   #parent
   #children
 
-  constructor(threeObject) {
+  constructor() {
     super()
     this.#children = []
-    this.#threeObject = threeObject
+    this.#items = []
+    this.#threeObject = new THREE.Object3D()
   }
 
   get matrix() {
-    return this.#threeObject.matrix
+    return this.#threeObject.matrix.toArray()
   }
 
   set matrix(array) {
@@ -70,12 +68,22 @@ export class ThreeCoordinate extends Coordinate {
     return this.#children
   }
 
-  get threeObject() {
+  get raw() {
     return this.#threeObject
   }
 
+  addItem(item) {
+    if (this.#items.length === 0 && item.renderingObject.raw) {
+      this.#threeObject = item.renderingObject.raw
+    } else {
+      this.#threeObject.add(item.renderingObject.raw)
+    }
+
+    this.#items.push(item)
+  }
+
   setChild(coordinate) {
-    this.#threeObject.add(coordinate.threeObject)
+    this.#threeObject.add(coordinate.raw)
     coordinate.setParent(this)
     this.#children.push(coordinate)
   }
@@ -92,6 +100,7 @@ export class ThreeCoordinate extends Coordinate {
   set rz(val) { this.#threeObject.rotation.z = val }
   set scale(val) { this.#threeObject.scale = val }
 
+  get items() { return this.#items }
   get x() { return this.#threeObject.position.x }
   get y() { return this.#threeObject.position.y }
   get z() { return this.#threeObject.position.z }

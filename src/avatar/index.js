@@ -10,14 +10,12 @@ import { Renderer } from './Renderer.js'
 import { Camera } from './Camera.js'
 import { Scene } from './Scene.js'
 import { RenderingObject } from './RenderingObject.js'
-import { Item } from './Item.js'
+import { ThreeCoordinate, Item } from './Item.js'
 
 const camera = new Camera(100, window.innerWidth / window.innerHeight, 0.001, 10)
 const lookAtCameraHandler = new LookAtCameraHandler()
 const mouseHandler = new MouseHandler(window.innerWidth, window.innerHeight)
-const scene = new Scene()
-
-const renderer = new Renderer(scene, camera)
+const renderer = new Renderer(new Scene(), camera)
 renderer.initialize(window.innerWidth, window.innerHeight)
 
 const raycaster = new Raycaster()
@@ -29,18 +27,25 @@ async function run() {
   const light = new THREE.AmbientLight( 0x404040, 4 )
 
   light.lookAt(0, 0, 0)
-  const lightRenderingObject = new RenderingObject(light)
-  scene.add(lightRenderingObject)
+  const lightItem = new Item()
+  lightItem.renderingObject = new RenderingObject(light)
+  const lightCoordinate = new ThreeCoordinate()
+  lightCoordinate.addItem(lightItem)
+  renderer.scene.add(lightCoordinate)
 
   const gltf = await loadGlb('../../assets/avatar.glb')
+  const avatarCoordinate = new ThreeCoordinate()
   const avatar = new Item()
   avatar.renderingObject = new RenderingObject(gltf.scene)
-  avatar.coordinate.z = 0
-  avatar.coordinate.y = -1
-  renderer.scene.add(avatar.renderingObject)
+  avatarCoordinate.addItem(avatar)
+  avatarCoordinate.z = 0
+  avatarCoordinate.y = -1
+  renderer.scene.add(avatarCoordinate)
 
   setTimeout(() => {
     const bones = extractItemsFromThreeBones(avatar)
+    avatarCoordinate.setChild(bones[0])
+    raycaster.setTargets()
   }, 0)
 
   //

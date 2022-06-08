@@ -7,8 +7,8 @@ export class Scene {
     this.#scene = new THREE.Scene()
   }
 
-  add(renderingObject) {
-    this.#scene.add(renderingObject.raw)
+  add(coordinate) {
+    this.#scene.add(coordinate.raw)
   }
 
   get raw() {

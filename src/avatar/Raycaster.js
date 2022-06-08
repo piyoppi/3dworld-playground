@@ -4,9 +4,10 @@ export class Raycaster {
   #raycaster
   #camera
   #targets
+  #rawTargets
   #cursor
 
-  constructor(targets) {
+  constructor() {
     this.#raycaster = new THREE.Raycaster()
     this.#cursor = new THREE.Vector2(0, 0)
   }
@@ -17,6 +18,7 @@ export class Raycaster {
 
   setTargets(targets) {
     this.#targets = targets
+    this.#rawTargets = targets.map(target => target.raw)
   }
 
   getObjects(cursorX, cursorY) {
