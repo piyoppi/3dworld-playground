@@ -10,7 +10,8 @@ import { Renderer } from './Renderer.js'
 import { Camera } from './Camera.js'
 import { Scene } from './Scene.js'
 import { RenderingObject } from './RenderingObject.js'
-import { ThreeCoordinate, Item } from './Item.js'
+import { ThreeCoordinate, Item, flatChildItem } from './Item.js'
+import { makeItem } from './ItemFactory.js'
 
 const camera = new Camera(100, window.innerWidth / window.innerHeight, 0.001, 10)
 const lookAtCameraHandler = new LookAtCameraHandler()
@@ -34,18 +35,15 @@ async function run() {
   renderer.scene.add(lightCoordinate)
 
   const gltf = await loadGlb('../../assets/avatar.glb')
-  const avatarCoordinate = new ThreeCoordinate()
-  const avatar = new Item()
-  avatar.renderingObject = new RenderingObject(gltf.scene)
-  avatarCoordinate.addItem(avatar)
-  avatarCoordinate.z = 0
-  avatarCoordinate.y = -1
-  renderer.scene.add(avatarCoordinate)
+  const avatar = makeItem(new RenderingObject(gltf.scene))
+  avatar.parentCoordinate.z = 0
+  avatar.parentCoordinate.y = -1
+  renderer.scene.add(avatar.parentCoordinate)
 
   setTimeout(() => {
     const bones = extractItemsFromThreeBones(avatar)
-    avatarCoordinate.setChild(bones[0])
-    raycaster.setTargets()
+    avatar.parentCoordinate.setChild(bones[0])
+    raycaster.setTargets(flatChildItem(bones[0]))
   }, 0)
 
   //
@@ -54,7 +52,7 @@ async function run() {
   renderer.setRenderingLoop(time => {
     if (mouseHandler.updated) {
       const pos = mouseHandler.getNormalizedPosition()
-      //raycaster.getObjects(pos[0], pos[1]).forEach(intersect => intersect.object.material.color.set(0xFF0000))
+      console.log(raycaster.getObjects(pos[0], pos[1]))
     }
 
     if (lookAtCameraHandler.changed) {

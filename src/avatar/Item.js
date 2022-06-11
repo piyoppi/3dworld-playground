@@ -2,6 +2,7 @@ import { updateFromMatrix } from './ThreeMatrixHelper.js'
 
 export class Item {
   #renderingObject
+  #parentCoordinate
 
   constructor() {
     this.#renderingObject = null
@@ -13,6 +14,14 @@ export class Item {
 
   get renderingObject() {
     return this.#renderingObject
+  }
+
+  set parentCoordinate(value) {
+    this.#parentCoordinate = value
+  }
+
+  get parentCoordinate() {
+    return this.#parentCoordinate
   }
 }
 
@@ -79,6 +88,7 @@ export class ThreeCoordinate extends Coordinate {
       this.#threeObject.add(item.renderingObject.raw)
     }
 
+    item.parentCoordinate = this
     this.#items.push(item)
   }
 
@@ -109,3 +119,11 @@ export class ThreeCoordinate extends Coordinate {
   get rz() { return this.#threeObject.rotatation.z }
   get scale() { return this.#threeObject.scale }
 }
+
+export const flatChildItem = (coordinate) => {
+  return [
+    ...coordinate.items,
+    ...coordinate.children.map(childCoordinate => flatChildItem(childCoordinate)).flat()
+  ]
+}
+
