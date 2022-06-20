@@ -1,23 +1,22 @@
-import * as THREE from 'three'
+import { Raycaster as ThreeRaycaster, Vector2 } from 'three'
+import { ThreeCamera } from './ThreeCamera.js'
+import { Item } from '../Item.js'
 
-export class Raycaster {
+export class ThreeRaycasterAdapter implements Raycaster {
   #raycaster
-  #camera
+  #camera: ThreeCamera
   #targets
   #rawTargets
   #rawTargetMap
   #cursor
 
-  constructor() {
-    this.#raycaster = new THREE.Raycaster()
-    this.#cursor = new THREE.Vector2(0, 0)
-  }
-
-  setCamera(camera) {
+  constructor(camera: ThreeCamera) {
+    this.#raycaster = new ThreeRaycaster()
+    this.#cursor = new Vector2(0, 0)
     this.#camera = camera
   }
 
-  setTargets(targets) {
+  setTargets(targets: Array<Item>) {
     this.#targets = targets
     this.#rawTargets = targets.map(target => target.renderingObject.raw)
 
@@ -25,7 +24,7 @@ export class Raycaster {
     targets.map(target => this.#rawTargetMap.set(target.renderingObject.raw.uuid, target))
   }
 
-  getObjects(cursorX, cursorY) {
+  getObjects(cursorX: number, cursorY: number) {
     this.#cursor.x = cursorX
     this.#cursor.y = cursorY
     this.#raycaster.setFromCamera(this.#cursor, this.#camera.raw)

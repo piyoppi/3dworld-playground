@@ -3,7 +3,7 @@ export class MouseHandler {
   #renderingAreaSize
   #updated
 
-  constructor(boundingWidth, boundingHeight) {
+  constructor(boundingWidth: number, boundingHeight: number) {
     this.#position = [0, 0]   
     this.#renderingAreaSize = [boundingWidth, boundingHeight]
     this.#updated = false
@@ -13,7 +13,7 @@ export class MouseHandler {
     return this.#updated
   }
 
-  setPosition(x, y) {
+  setPosition(x: number, y: number) {
     this.#position[0] = x
     this.#position[1] = y
     this.#updated = true

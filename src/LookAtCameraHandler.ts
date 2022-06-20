@@ -1,12 +1,12 @@
-import { Mat4 } from './Matrix.js'
+import { Mat4, MatrixArray4, VectorArray3  } from './Matrix.js'
 
 export class LookAtCameraHandler {
   #initialMousePosition
   #isStart
   #distance
   #rotation
-  #target
-  #changed
+  #target: VectorArray3
+  #changed: boolean
 
   constructor() {
     this.#initialMousePosition = [0, 0]
@@ -25,7 +25,7 @@ export class LookAtCameraHandler {
     return this.#changed
   }
 
-  setTarget(x, y, z) {
+  setTarget(x: number, y: number, z: number) {
     this.#target[0] = x
     this.#target[1] = y
     this.#target[2] = z
@@ -33,13 +33,13 @@ export class LookAtCameraHandler {
     this.#changed = true
   }
 
-  addDistance(val) {
+  addDistance(val: number) {
     this.#distance += val
 
     this.#changed = true
   }
 
-  getCameraPosition() {
+  getCameraPosition(): VectorArray3 {
     return [
       this.#target[0] + this.#distance * Math.cos(this.#rotation[0]) * Math.cos(this.#rotation[1]),
       this.#target[1] + this.#distance * Math.sin(this.#rotation[0]),
@@ -52,14 +52,14 @@ export class LookAtCameraHandler {
     return Mat4.lookAt(this.#target, this.getCameraPosition())
   }
 
-  start(cursorX, cursorY) {
+  start(cursorX: number, cursorY: number) {
     this.#initialMousePosition[0] = cursorX
     this.#initialMousePosition[1] = cursorY
 
     this.#isStart = true
   }
 
-  move(cursorX, cursorY) {
+  move(cursorX: number, cursorY: number) {
     if (!this.#isStart) return
 
     const dx = (this.#initialMousePosition[0] - cursorX) * 0.01

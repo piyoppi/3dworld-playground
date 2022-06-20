@@ -1,5 +1,8 @@
+export type MatrixArray4 = [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number]
+export type VectorArray3 = [number, number, number]
+
 export class Mat4 {
-  static mul(a, b) {
+  static mul(a: MatrixArray4, b: MatrixArray4): MatrixArray4 {
     return [
        a[0] * b[ 0] + a[4] * b[ 1] + a[ 8] * b[ 2] + a[12] * b[ 3],
        a[1] * b[ 0] + a[5] * b[ 1] + a[ 9] * b[ 2] + a[13] * b[ 3],
@@ -20,7 +23,7 @@ export class Mat4 {
     ]
   }
 
-  static getIdentityMatrix() {
+  static getIdentityMatrix(): MatrixArray4 {
     return [
       1, 0, 0, 0,
       0, 1, 0, 0,
@@ -29,7 +32,7 @@ export class Mat4 {
     ]
   }
 
-  static mulAll(matrixes) {
+  static mulAll(matrixes: Array<MatrixArray4>): MatrixArray4 {
     let currentMat = matrixes[0]
     for(let i = 1; i < matrixes.length; i++ ) {
       currentMat = Mat4.mul(matrixes[i], currentMat)
@@ -37,7 +40,7 @@ export class Mat4 {
     return currentMat
   }
 
-  static rotateX(rad) {
+  static rotateX(rad: number): MatrixArray4 {
     const cos = Math.cos(rad)
     const sin = Math.sin(rad)
 
@@ -49,7 +52,7 @@ export class Mat4 {
     ]
   }
 
-  static rotateY(rad) {
+  static rotateY(rad: number): MatrixArray4 {
     const cos = Math.cos(rad)
     const sin = Math.sin(rad)
 
@@ -61,7 +64,7 @@ export class Mat4 {
     ]
   }
 
-  static rotateZ(rad) {
+  static rotateZ(rad: number): MatrixArray4 {
     const cos = Math.cos(rad)
     const sin = Math.sin(rad)
 
@@ -73,7 +76,7 @@ export class Mat4 {
     ]
   }
 
-  static translate(x, y, z) {
+  static translate(x: number, y: number, z: number): MatrixArray4 {
     return [
       1.0, 0.0, 0.0, 0.0,
       0.0, 1.0, 0.0, 0.0,
@@ -82,7 +85,7 @@ export class Mat4 {
     ]
   }
 
-  static scale(x, y, z) {
+  static scale(x: number, y: number, z: number): MatrixArray4 {
     return [
         x, 0.0, 0.0, 0.0,
       0.0,   y, 0.0, 0.0,
@@ -91,7 +94,7 @@ export class Mat4 {
     ]
   }
 
-  static inverse(mat) {
+  static inverse(mat: MatrixArray4): MatrixArray4 {
     const a11 = mat[0]
     const a12 = mat[1]
     const a13 = mat[2]
@@ -155,7 +158,7 @@ export class Mat4 {
     ]
   }
 
-  static lookAt(targetPosition, cameraPosition) {
+  static lookAt(targetPosition: VectorArray3, cameraPosition: VectorArray3): MatrixArray4 {
     const cameraZAxis = Vec3.normalize([
       cameraPosition[0] - targetPosition[0],
       cameraPosition[1] - targetPosition[1],
@@ -164,17 +167,15 @@ export class Mat4 {
     const cameraXAxis = Vec3.normalize(Vec3.cross([0, 1, 0], cameraZAxis))
     const cameraYAxis = Vec3.normalize(Vec3.cross(cameraZAxis, cameraXAxis))
 
-    const lookAtMat = [
+    return [
       ...cameraXAxis, 0,
       ...cameraYAxis, 0,
       ...cameraZAxis, 0,
       ...cameraPosition, 1
     ]
-
-    return lookAtMat
   }
 
-  static perspective(fov, aspect, near, far) {
+  static perspective(fov: number, aspect: number, near: number, far: number) {
     const f = Math.tan(Math.PI * 0.5 - 0.5 * fov)
     const rangeInv = 1.0 / (near - far)
 
@@ -186,7 +187,7 @@ export class Mat4 {
     ]
   }
 
-  static perspective2(top, bottom, left, right, near, far) {
+  static perspective2(top: number, bottom: number, left: number, right: number, near: number, far: number) {
     return [
       (2 * near) / (right - left), 0, 0, 0,
       0, (2 * near) / (top - bottom), 0, 0,
@@ -197,27 +198,16 @@ export class Mat4 {
 }
 
 export class Vec3 {
-  static normalize(vec) {
+  static normalize(vec: VectorArray3): VectorArray3 {
     const len = Math.sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2])
     return len > 0.0001 ? [vec[0] / len, vec[1] / len, vec[2] / len] : [0, 0, 0]
   }
 
-  static cross(a, b) {
+  static cross(a: VectorArray3, b: VectorArray3): VectorArray3 {
     return [
       a[1] * b[2] - b[1] * a[2],
       a[2] * b[0] - b[2] * a[0],
       a[0] * b[1] - b[0] * a[1]
-    ]
-  }
-}
-
-export class Mat1 {
-  static mul4(a, b) {
-    return [
-      a[ 0] * b[0] + a[ 1] * b[1] + a[ 2] * b[2] + a[ 3] * b[3],
-      a[ 4] * b[0] + a[ 5] * b[1] + a[ 6] * b[2] + a[ 7] * b[3],
-      a[ 8] * b[0] + a[ 9] * b[1] + a[10] * b[2] + a[11] * b[3],
-      a[12] * b[0] + a[13] * b[1] + a[14] * b[2] + a[15] * b[3],
     ]
   }
 }
