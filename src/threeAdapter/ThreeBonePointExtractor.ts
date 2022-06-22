@@ -1,33 +1,37 @@
 import { getBonesTree, ObjectTree } from './ThreeObjectSelectorHelper.js'
-import { RenderingObject } from './RenderingObject.js'
-import { Item } from './Item.js'
-import { ThreeCoordinate } from './ThreeCoordinate.js'
-import { BoxGeometry, MeshNormalMaterial, Mesh, Object3D } from 'three'
+import { Item } from '../Item.js'
+import { BoxGeometry, MeshNormalMaterial, Mesh, Object3D, Group } from 'three'
+import { Coordinate } from '../Coordinate.js'
+import { ThreeRenderingObject } from './ThreeRenderer.js'
 
-export const extractItemsFromThreeBones = (item: Item) => {
-  const treeRoots = getBonesTree(item.renderingObject?.raw)
+export const extractItemsFromThreeBones = (group: Group, rootItem: Item) => {
+  const treeRoots = getBonesTree(group)
 
   const bones = treeRoots.map(tree => makeItemsFromTree(tree)).flat()
+
+  bones.filter(bone => !bone.item.parentCoordinate.parent).forEach(bone => {
+    rootItem.parentCoordinate.addChild(bone.item.parentCoordinate)
+  })
 
   return bones
 }
 
-const makeItemsFromTree = (tree: ObjectTree<Object3D>) => {
-  const coordinate = new ThreeCoordinate()
+const makeItemsFromTree = (tree: ObjectTree<Object3D>, parentCoordinate: Coordinate | null = null): Array<{item: Item, renderingObject: ThreeRenderingObject}> => {
+  const coordinate = new Coordinate
   const item = new Item()
+  coordinate.addItem(item)
+  if (parentCoordinate) coordinate.parent = parentCoordinate
 
   const geometry = new BoxGeometry(0.02, 0.02, 0.02)
   const material = new MeshNormalMaterial()
   material.depthTest = false
-  item.renderingObject = new RenderingObject(new Mesh(geometry, material))
+  const renderingObject = {item: {geometry, material}}
 
-  coordinate.addItem(item)
   coordinate.matrix = tree.target.matrix.toArray()
 
-  const childCoordinates = tree.children.map(child => makeItemsFromTree(child)).flat()
-  childCoordinates.forEach(childCoordinate => {
-    coordinate.setChild(childCoordinate)
-  })
+  const children = tree.children.map(child => makeItemsFromTree(child, coordinate)).flat()
 
-  return coordinate
+  return [
+    {item, renderingObject}, ...children
+  ]
 }

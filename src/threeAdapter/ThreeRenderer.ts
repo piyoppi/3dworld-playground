@@ -1,4 +1,4 @@
-import { WebGLRenderer, Scene, BufferGeometry, Material, Mesh, AmbientLight, Object3D, Group } from 'three'
+import { WebGLRenderer, Scene, BufferGeometry, Material, Mesh, AmbientLight, Group } from 'three'
 import { Renderer } from '../Renderer.js'
 import { ThreeCamera } from './ThreeCamera.js'
 import { Item } from '../Item.js'
@@ -11,18 +11,22 @@ type ThreePrimitiveRenderingObject = {
 }
 
 export type ThreeRenderingObject = {
-  item: ThreePrimitiveRenderingObject | Scene | Group
+  item: ThreePrimitiveRenderingObject | Scene | Group 
 }
 
 export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
   #renderer: WebGLRenderer
   #scene: Scene
   #camera: ThreeCamera
+  #mapCoordinateIdToRenderingItem: Map<string, Mesh | Scene | Group>
+  #pendingItems: Array<{mesh: Mesh | Scene | Group, item: Item}>
 
   constructor(scene: Scene, camera: ThreeCamera) {
     this.#renderer = new WebGLRenderer({ antialias: true })
     this.#scene = scene
     this.#camera = camera
+    this.#mapCoordinateIdToRenderingItem = new Map()
+    this.#pendingItems = []
   }
 
   get camera() {
@@ -35,14 +39,30 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
   }
 
   addItem(item: Item, renderingObject: ThreeRenderingObject) {
-    if (renderingObject.item instanceof Scene || renderingObject.item instanceof Group) {
-      this.#scene.add(renderingObject.item)
-      syncCoordinate(item.parentCoordinate, renderingObject.item)
-    } else if (renderingObject.item.geometry && renderingObject.item.material) {
-      const mesh = new Mesh(renderingObject.item.geometry, renderingObject.item.material)
+    const mesh = (renderingObject.item instanceof Scene || renderingObject.item instanceof Group) ?  renderingObject.item : new Mesh(renderingObject.item.geometry, renderingObject.item.material)
+
+    if (item.parentCoordinate.parent) {
+      const parentMesh = this.#mapCoordinateIdToRenderingItem.get(item.parentCoordinate.parent.uuid)
+
+      if (!parentMesh) {
+        this.#pendingItems.push({item, mesh})
+      } else {
+        parentMesh.add(mesh)
+      }
+    } else {
       this.#scene.add(mesh)
-      syncCoordinate(item.parentCoordinate, mesh)
     }
+
+    this.#pendingItems.forEach(props => {
+      const parentMesh = this.#mapCoordinateIdToRenderingItem.get(item.parentCoordinate?.parent.uuid)
+      if (!parentMesh) return
+
+      parentMesh.add(props.mesh)
+    })
+
+    this.#mapCoordinateIdToRenderingItem.set(item.parentCoordinate.uuid, mesh)
+
+    syncCoordinate(item.parentCoordinate, mesh)
   }
 
   addLight(coordinate: Coordinate) {

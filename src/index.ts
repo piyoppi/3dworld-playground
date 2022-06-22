@@ -1,7 +1,7 @@
 import { LookAtCameraHandler } from './LookAtCameraHandler.js'
 //import { updateFromMatrix } from './ThreeMatrixHelper.js'
 import { loadGlb } from './threeAdapter/ThreeLoaderHelper.js'
-//import { extractItemsFromThreeBones } from './ThreeBonePointExtractor.js'
+import { extractItemsFromThreeBones } from './threeAdapter/ThreeBonePointExtractor.js'
 //import { Raycaster } from './Raycaster.js'
 import { MouseHandler } from './MouseHandler.js'
 //import { Item, flatChildItem } from './Item'
@@ -30,11 +30,11 @@ async function run() {
   const avatar = makeItem()
   avatar.parentCoordinate.z = 0
   avatar.parentCoordinate.y = -1
-  renderer.addItem(avatar, avatarRenderingObject)
+  renderer.addItem(avatar, {item: avatarRenderingObject})
 
   setTimeout(() => {
-  //  const bones = extractItemsFromThreeBones(avatar)
-  //  avatar.parentCoordinate.setChild(bones[0])
+    const bones = extractItemsFromThreeBones(avatarRenderingObject, avatar)
+    bones.forEach(bone => renderer.addItem(bone.item, bone.renderingObject))
   //  raycaster.setTargets(flatChildItem(bones[0]))
   }, 0)
 

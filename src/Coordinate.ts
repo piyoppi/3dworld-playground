@@ -1,5 +1,6 @@
 import { Item } from './Item.js'
 import { Mat4, MatrixArray4, VectorArray3 } from './Matrix.js'
+import { v4 as uuidv4 } from 'uuid'
 
 export class Coordinate {
   #items: Array<Item>
@@ -9,9 +10,11 @@ export class Coordinate {
   #rotation: VectorArray3
   #matrix:  MatrixArray4
   #updatedCallback: () => void
+  #uuid: string
 
   constructor() {
     this.#parent = null
+    this.#uuid = uuidv4()
     this.#children = []
     this.#items = []
     this.#position = [0, 0, 0]
@@ -29,8 +32,16 @@ export class Coordinate {
     this.#updatedCallback()
   }
 
-  get parent() {
+  get uuid() {
+    return this.#uuid
+  }
+
+  get parent(): Coordinate | null {
     return this.#parent
+  }
+
+  set parent(value: Coordinate | null) {
+    this.#parent = value
   }
 
   get children() {
@@ -44,6 +55,11 @@ export class Coordinate {
   addItem(item: Item) {
     this.#items.push(item)
     item.parentCoordinate = this
+  }
+
+  addChild(child: Coordinate) {
+    this.#children.push(child)
+    child.parent = this
   }
 
   static create(items: Array<Item>): Coordinate {
