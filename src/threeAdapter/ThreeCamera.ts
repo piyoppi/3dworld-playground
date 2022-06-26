@@ -30,4 +30,12 @@ export class ThreeCamera implements Camera {
     this.#camera.aspect = aspect
     this.#camera.updateProjectionMatrix()
   }
+
+  get projectionMatrix() {
+    return this.#camera.projectionMatrix.toArray()
+  }
+
+  get projectionMatrixInverse() {
+    return this.#camera.projectionMatrixInverse.toArray()
+  }
 }

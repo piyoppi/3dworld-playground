@@ -1,15 +1,13 @@
 import { LookAtCameraHandler } from './LookAtCameraHandler.js'
-//import { updateFromMatrix } from './ThreeMatrixHelper.js'
 import { loadGlb } from './threeAdapter/ThreeLoaderHelper.js'
 import { extractItemsFromThreeBones } from './threeAdapter/ThreeBonePointExtractor.js'
-//import { Raycaster } from './Raycaster.js'
 import { MouseHandler } from './MouseHandler.js'
-//import { Item, flatChildItem } from './Item'
 import { makeItem } from './ItemFactory.js'
 import { ThreeFactory as Factory } from './threeAdapter/ThreeFactory.js'
 import { Coordinate } from './Coordinate.js'
-
-import { BoxGeometry, MeshNormalMaterial, Mesh } from 'three'
+import { Raycaster } from './Raycaster.js'
+import { Mat4 } from './Matrix.js'
+import { makeMarker } from './VectorMarker.js'
 
 const lookAtCameraHandler = new LookAtCameraHandler()
 const mouseHandler = new MouseHandler(window.innerWidth, window.innerHeight)
@@ -17,8 +15,7 @@ const factory = new Factory()
 const renderer = factory.makeRenderer({fov: 100, aspect: window.innerWidth / window.innerHeight, near: 0.001, far: 10})
 renderer.initialize(window.innerWidth, window.innerHeight)
 
-// const raycaster = new Raycaster()
-// raycaster.setCamera(camera)
+const raycaster = new Raycaster(renderer.camera)
 
 async function run() {
   const lightCoordinate = new Coordinate()
@@ -35,17 +32,24 @@ async function run() {
   setTimeout(() => {
     const bones = extractItemsFromThreeBones(avatarRenderingObject, avatar)
     bones.forEach(bone => renderer.addItem(bone.item, bone.renderingObject))
-  //  raycaster.setTargets(flatChildItem(bones[0]))
+    bones.forEach(bone => raycaster.addTarget(bone.item))
   }, 0)
 
   //
   // Setup renderer
   // -----------------------------------------------------------
   renderer.setRenderingLoop(() => {
-    //if (mouseHandler.updated) {
-    //  const pos = mouseHandler.getNormalizedPosition()
-    //  console.log(raycaster.getObjects(pos[0], pos[1]))
-    //}
+    if (mouseHandler.updated) {
+      const pos = mouseHandler.getNormalizedPosition()
+
+      // debug
+      const ray = raycaster.getRay(pos[0], pos[1])
+      const markerItem = makeMarker(ray, renderer.camera.coordinate)
+      renderer.addItem(
+        markerItem,
+        factory.makeVectorMarkerRenderingObject(ray, markerItem)
+      )
+    }
 
     if (lookAtCameraHandler.changed) {
       renderer.camera.coordinate.matrix = lookAtCameraHandler.getLookAtMatrix()

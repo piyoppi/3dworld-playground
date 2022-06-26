@@ -1,9 +1,12 @@
-import { WebGLRenderer, Scene, BufferGeometry, Material, Mesh, AmbientLight, Group } from 'three'
+import { WebGLRenderer, Scene, BufferGeometry, Material, Mesh, AmbientLight, Group, GridHelper } from 'three'
 import { Renderer } from '../Renderer.js'
 import { ThreeCamera } from './ThreeCamera.js'
 import { Item } from '../Item.js'
+import { Camera } from '../Camera.js'
 import { Coordinate } from '../Coordinate.js'
 import { syncCoordinate } from './ThreeSyncCoordinate.js'
+
+import { CylinderGeometry, MeshBasicMaterial } from 'three'
 
 type ThreePrimitiveRenderingObject = {
   geometry: BufferGeometry,
@@ -27,6 +30,7 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
     this.#camera = camera
     this.#mapCoordinateIdToRenderingItem = new Map()
     this.#pendingItems = []
+    this.debug()
   }
 
   get camera() {
@@ -54,7 +58,8 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
     }
 
     this.#pendingItems.forEach(props => {
-      const parentMesh = this.#mapCoordinateIdToRenderingItem.get(item.parentCoordinate?.parent.uuid)
+      if (!item.parentCoordinate.parent) return
+      const parentMesh = this.#mapCoordinateIdToRenderingItem.get(item.parentCoordinate.parent.uuid)
       if (!parentMesh) return
 
       parentMesh.add(props.mesh)
@@ -63,6 +68,19 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
     this.#mapCoordinateIdToRenderingItem.set(item.parentCoordinate.uuid, mesh)
 
     syncCoordinate(item.parentCoordinate, mesh)
+  }
+
+  debug() {
+    const size = 10
+    const divisions = 10
+
+    const gridHelper = new GridHelper(size, divisions)
+    this.#scene.add(gridHelper)
+
+    const geometry = new CylinderGeometry(0.01, 0.01, 1, 8)
+    const material = new MeshBasicMaterial({color: 0xff0000})
+    material.depthTest = false
+    this.#scene.add(new Mesh(geometry, material))
   }
 
   addLight(coordinate: Coordinate) {

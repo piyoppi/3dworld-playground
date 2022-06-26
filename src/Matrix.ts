@@ -1,5 +1,9 @@
+/**
+ * [a11, a21, a31, a41, ... , a14, a24, a34, a44]
+ */
 export type MatrixArray4 = [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number]
 export type VectorArray3 = [number, number, number]
+export type VectorArray4 = [number, number, number, number]
 
 export class Mat4 {
   static mul(a: MatrixArray4, b: MatrixArray4): MatrixArray4 {
@@ -20,6 +24,24 @@ export class Mat4 {
        a[1] * b[12] + a[5] * b[13] + a[ 9] * b[14] + a[13] * b[15],
        a[2] * b[12] + a[6] * b[13] + a[10] * b[14] + a[14] * b[15],
        a[3] * b[12] + a[7] * b[13] + a[11] * b[14] + a[15] * b[15]
+    ]
+  }
+
+  static mulVec4(a: MatrixArray4, b: VectorArray4): VectorArray4 {
+    return [
+      a[0]  * b[0] + a[1]  * b[1] + a[2]  * b[2] + a[3]  * b[3],
+      a[4]  * b[0] + a[5]  * b[1] + a[6]  * b[2] + a[7]  * b[3],
+      a[8]  * b[0] + a[9]  * b[1] + a[10] * b[2] + a[11] * b[3],
+      a[11] * b[0] + a[12] * b[1] + a[13] * b[2] + a[14] * b[3],
+    ]
+  }
+
+  static mulVec3(a: MatrixArray4, b: VectorArray3): VectorArray4 {
+    return [
+      a[0]  * b[0] + a[1]  * b[1] + a[2]  * b[2] + a[3],
+      a[4]  * b[0] + a[5]  * b[1] + a[6]  * b[2] + a[7],
+      a[8]  * b[0] + a[9]  * b[1] + a[10] * b[2] + a[11],
+      a[11] * b[0] + a[12] * b[1] + a[13] * b[2] + a[14],
     ]
   }
 
@@ -159,19 +181,37 @@ export class Mat4 {
   }
 
   static lookAt(targetPosition: VectorArray3, cameraPosition: VectorArray3): MatrixArray4 {
-    const cameraZAxis = Vec3.normalize([
-      cameraPosition[0] - targetPosition[0],
-      cameraPosition[1] - targetPosition[1],
-      cameraPosition[2] - targetPosition[2]
-    ])
-    const cameraXAxis = Vec3.normalize(Vec3.cross([0, 1, 0], cameraZAxis))
-    const cameraYAxis = Vec3.normalize(Vec3.cross(cameraZAxis, cameraXAxis))
+    return Mat4.transformZAxis(
+      Vec3.normalize([
+        cameraPosition[0] - targetPosition[0],
+        cameraPosition[1] - targetPosition[1],
+        cameraPosition[2] - targetPosition[2]
+      ]),
+      cameraPosition
+    )
+  }
+
+  static transformZAxis(direction: VectorArray3, position: VectorArray3 = [0, 0, 0]): MatrixArray4 {
+    const xAxis = Vec3.normalize(Vec3.cross([0, 1, 0], direction))
+    const yAxis = Vec3.normalize(Vec3.cross(direction, xAxis))
 
     return [
-      ...cameraXAxis, 0,
-      ...cameraYAxis, 0,
-      ...cameraZAxis, 0,
-      ...cameraPosition, 1
+      ...xAxis, 0,
+      ...yAxis, 0,
+      ...direction, 0,
+      ...position, 1
+    ]
+  }
+
+  static transformYAxis(direction: VectorArray3, position: VectorArray3 = [0, 0, 0]): MatrixArray4 {
+    const xAxis = Vec3.normalize(Vec3.cross([0, 0, 1], direction))
+    const zAxis = Vec3.normalize(Vec3.cross(xAxis, direction))
+
+    return [
+      ...xAxis, 0,
+      ...direction, 0,
+      ...zAxis, 0,
+      ...position, 1
     ]
   }
 
@@ -209,5 +249,16 @@ export class Vec3 {
       a[2] * b[0] - b[2] * a[0],
       a[0] * b[1] - b[0] * a[1]
     ]
+  }
+
+  static norm(vec: VectorArray3): number {
+    return Math.sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2])
+  }
+}
+
+export class Vec4 {
+  static normalize(vec: VectorArray4): VectorArray4 {
+    const len = Math.sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2] + vec[3] * vec[3])
+    return len > 0.0001 ? [vec[0] / len, vec[1] / len, vec[2] / len, vec[3] / len] : [0, 0, 0, 0]
   }
 }
