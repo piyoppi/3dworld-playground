@@ -8,7 +8,7 @@ export function makeMarker(vector: VectorArray3, coordinate: Coordinate): Item {
   const item = makeItem()
 
   item.parentCoordinate.matrix = Mat4.mulAll([
-    Mat4.rotateX(Math.PI / 2),
+    Mat4.rotateX(Math.PI / 2), // vector の向きはY軸方向と一致するものとする
     coordinate.matrix,
   ])
 

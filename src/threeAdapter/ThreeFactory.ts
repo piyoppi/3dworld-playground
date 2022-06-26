@@ -1,6 +1,6 @@
 import { ThreeRenderer, ThreeRenderingObject } from './ThreeRenderer.js'
 import { ThreeCamera } from './ThreeCamera.js'
-import { CylinderGeometry, MeshBasicMaterial, Scene } from 'three'
+import { CylinderGeometry, TetrahedronGeometry, MeshBasicMaterial, Mesh, Scene, Group } from 'three'
 import { CameraSetupParameter, ObjectFactory } from '../ObjectFactory.js'
 import { Vec3, VectorArray3 } from '../Matrix.js'
 import { Item } from '../Item.js'
@@ -15,16 +15,25 @@ export class ThreeFactory implements ObjectFactory<ThreeRenderingObject> {
 
   makeVectorMarkerRenderingObject(vector: VectorArray3, baseItem: Item): ThreeRenderingObject {
     const norm = Vec3.norm(vector)
-    const geometry = new CylinderGeometry(0.01, 0.01, norm, 8)
+    const cylinder = new CylinderGeometry(0.01, 0.01, norm, 8)
+    const direction = new TetrahedronGeometry(0.1, 0)
     const material = new MeshBasicMaterial({color: 0xffff00})
+    const directionMaterial = new MeshBasicMaterial({color: 0x0000ff})
 
-    material.depthTest = false
+    const cylinderMesh = new Mesh(cylinder, material)
+    const directionMesh = new Mesh(direction, directionMaterial)
+
+    directionMesh.position.y = norm / 2
+    directionMesh.rotateY(Math.PI / 4)
+    directionMesh.rotateX(Math.PI / 4)
+    directionMesh.rotateZ(Math.PI / 4)
+
+    const group = new Group()
+    group.add(cylinderMesh)
+    group.add(directionMesh)
 
     return {
-      item: {
-        geometry,
-        material
-      }
+      item: group
     }
   }
 }
