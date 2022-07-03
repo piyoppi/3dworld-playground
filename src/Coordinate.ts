@@ -6,7 +6,6 @@ export class Coordinate {
   #items: Array<Item>
   #parent: Coordinate | null
   #children: Array<Coordinate>
-  #position: VectorArray3
   #rotation: VectorArray3
   #matrix:  MatrixArray4
   #updatedCallback: () => void
@@ -17,7 +16,6 @@ export class Coordinate {
     this.#uuid = uuidv4()
     this.#children = []
     this.#items = []
-    this.#position = [0, 0, 0]
     this.#rotation = [0, 0, 0]
     this.#matrix = Mat4.getIdentityMatrix()
     this.#updatedCallback = () => {}
@@ -77,31 +75,28 @@ export class Coordinate {
   }
 
   lookAt(targetPoint: VectorArray3) {
-    this.matrix = Mat4.lookAt(targetPoint, this.#position)  
+    this.matrix = Mat4.lookAt(targetPoint, this.position)  
   }
 
-  position() {
-    return this.#position
+  get position(): VectorArray3 {
+    return [this.matrix[12], this.matrix[13], this.matrix[14]]
   }
 
   set x(val) {
-    this.#position[0] = val 
     this.matrix[12] = val
     this.#updatedCallback()
   }
   set y(val) {
-    this.#position[1] = val 
     this.matrix[13] = val
     this.#updatedCallback()
   }
   set z(val) {
-    this.#position[2] = val 
     this.matrix[14] = val
     this.#updatedCallback()
   }
 
   get items() { return this.#items }
-  get x() { return this.#position[0] }
-  get y() { return this.#position[1] }
-  get z() { return this.#position[2] }
+  get x() { return this.position[0] }
+  get y() { return this.position[1] }
+  get z() { return this.position[2] }
 }

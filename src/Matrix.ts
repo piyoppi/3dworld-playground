@@ -29,19 +29,21 @@ export class Mat4 {
 
   static mulVec4(a: MatrixArray4, b: VectorArray4): VectorArray4 {
     return [
-      a[0]  * b[0] + a[1]  * b[1] + a[2]  * b[2] + a[3]  * b[3],
-      a[4]  * b[0] + a[5]  * b[1] + a[6]  * b[2] + a[7]  * b[3],
-      a[8]  * b[0] + a[9]  * b[1] + a[10] * b[2] + a[11] * b[3],
-      a[11] * b[0] + a[12] * b[1] + a[13] * b[2] + a[14] * b[3],
+      a[0] * b[0] + a[4] * b[1] + a[8]  * b[2] + a[12] * b[3],
+      a[1] * b[0] + a[5] * b[1] + a[9]  * b[2] + a[13] * b[3],
+      a[2] * b[0] + a[6] * b[1] + a[10] * b[2] + a[14] * b[3],
+      a[3] * b[0] + a[7] * b[1] + a[11] * b[2] + a[15] * b[3],
     ]
   }
 
-  static mulVec3(a: MatrixArray4, b: VectorArray3): VectorArray4 {
+  static mulGlVec3(a: MatrixArray4, b: VectorArray3): VectorArray3 {
+    const vec = Mat4.mulVec4(a, [...b, 1])
+    const w =  vec[3]
+
     return [
-      a[0]  * b[0] + a[1]  * b[1] + a[2]  * b[2] + a[3],
-      a[4]  * b[0] + a[5]  * b[1] + a[6]  * b[2] + a[7],
-      a[8]  * b[0] + a[9]  * b[1] + a[10] * b[2] + a[11],
-      a[11] * b[0] + a[12] * b[1] + a[13] * b[2] + a[14],
+      vec[0] / w,
+      vec[1] / w,
+      vec[2] / w
     ]
   }
 
@@ -253,6 +255,14 @@ export class Vec3 {
 
   static norm(vec: VectorArray3): number {
     return Math.sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2])
+  }
+
+  static subtract(a: VectorArray3, b: VectorArray3): VectorArray3 {
+    return [
+        a[0] - b[0],
+        a[1] - b[1],
+        a[2] - b[2]
+    ]
   }
 }
 

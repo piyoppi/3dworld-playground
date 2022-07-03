@@ -13,20 +13,18 @@ export class ThreeFactory implements ObjectFactory<ThreeRenderingObject> {
     return new ThreeRenderer(new Scene(), threeCamera)
   }
 
-  makeVectorMarkerRenderingObject(vector: VectorArray3, baseItem: Item): ThreeRenderingObject {
-    const norm = Vec3.norm(vector)
-    const cylinder = new CylinderGeometry(0.01, 0.01, norm, 8)
-    const direction = new TetrahedronGeometry(0.1, 0)
+  makeVectorMarkerRenderingObject(norm: number, baseItem: Item): ThreeRenderingObject {
+    const cylinder = new CylinderGeometry(0.001, 0.001, norm, 8)
+    const direction = new TetrahedronGeometry(0.03, 0)
     const material = new MeshBasicMaterial({color: 0xffff00})
+    material.depthTest = false
     const directionMaterial = new MeshBasicMaterial({color: 0x0000ff})
 
     const cylinderMesh = new Mesh(cylinder, material)
     const directionMesh = new Mesh(direction, directionMaterial)
 
-    directionMesh.position.y = norm / 2
-    directionMesh.rotateY(Math.PI / 4)
-    directionMesh.rotateX(Math.PI / 4)
-    directionMesh.rotateZ(Math.PI / 4)
+    cylinderMesh.position.y = norm / 2
+    directionMesh.position.y = norm
 
     const group = new Group()
     group.add(cylinderMesh)

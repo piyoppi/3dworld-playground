@@ -1,6 +1,7 @@
+import { Vector3 } from 'three';
 import { Camera } from './Camera.js';
 import { Item } from './Item.js'
-import { Mat4, VectorArray3, Vec4, VectorArray4 } from './Matrix.js';
+import { Mat4, VectorArray3, Vec4, VectorArray4, Vec3 } from './Matrix.js';
 
 export class Raycaster {
   #camera: Camera
@@ -15,15 +16,21 @@ export class Raycaster {
     this.#targetItems.push(item)
   }
 
-  getRay(normalizedX: number, normalizedY: number): VectorArray3 {
-    const vec: VectorArray3 = [normalizedX, normalizedY, 0]
-    const transform = Mat4.mulAll([
-      this.#camera.coordinate.matrixInverse,
-      this.#camera.projectionMatrixInverse,
-    ])
-    const vector = Vec4.normalize(Mat4.mulVec3(transform, vec))
+  getRay(normalizedX: number, normalizedY: number) {
+    const vec = [normalizedX, normalizedY] as const
 
-    return vector.slice(0, 3) as VectorArray3
+    let vector = Mat4.mulGlVec3(this.#camera.projectionMatrixInverse, [...vec, 0.9])
+    vector = Mat4.mulGlVec3(this.#camera.coordinate.matrix, vector)
+
+    let vector2 = Mat4.mulGlVec3(this.#camera.projectionMatrixInverse, [...vec, 1])
+    vector2 = Mat4.mulGlVec3(this.#camera.coordinate.matrix, vector2)
+
+    const ray = Vec3.subtract(vector2, vector)
+
+    return {
+      position: vector,
+      direction: Vec3.normalize(ray)
+    }
   }
 
   check(x: number, y: number) {

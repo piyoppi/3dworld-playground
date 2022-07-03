@@ -8,6 +8,8 @@ import { Coordinate } from './Coordinate.js'
 import { Raycaster } from './Raycaster.js'
 import { Mat4 } from './Matrix.js'
 import { makeMarker } from './VectorMarker.js'
+import { Item } from './Item.js'
+import { BoxGeometry, MeshBasicMaterial } from 'three'
 
 const lookAtCameraHandler = new LookAtCameraHandler()
 const mouseHandler = new MouseHandler(window.innerWidth, window.innerHeight)
@@ -33,7 +35,7 @@ async function run() {
     const bones = extractItemsFromThreeBones(avatarRenderingObject, avatar)
     bones.forEach(bone => renderer.addItem(bone.item, bone.renderingObject))
     bones.forEach(bone => raycaster.addTarget(bone.item))
-  }, 0)
+  }, 50)
 
   //
   // Setup renderer
@@ -44,10 +46,10 @@ async function run() {
 
       // debug
       const ray = raycaster.getRay(pos[0], pos[1])
-      const markerItem = makeMarker(ray, renderer.camera.coordinate)
+      const markerItem = makeMarker(ray.position, ray.direction)
       renderer.addItem(
         markerItem,
-        factory.makeVectorMarkerRenderingObject(ray, markerItem)
+        factory.makeVectorMarkerRenderingObject(5, markerItem)
       )
     }
 
