@@ -34,20 +34,6 @@ async function run() {
   avatar.parentCoordinate.y = -1
   renderer.addItem(avatar, {item: avatarRenderingObject})
 
-  //debug
-  const item = new Item()
-  const renderingItem = {
-    item: {
-      geometry: new BoxGeometry(0.1, 0.1, 0.1),
-      material: new MeshBasicMaterial({color: 0x0000FF})
-    }
-  }
-  renderingItem.item.material.depthTest = false
-  item.addColider(new BoxColider(0.1, 0.1, 0.1, item.parentCoordinate))
-  renderer.addItem(item, renderingItem)
-  raycaster.addTarget(item)
-  // ---
-
   setTimeout(() => {
     const bones = extractItemsFromThreeBones(avatarRenderingObject, avatar)
     bones.forEach(bone => renderer.addItem(bone.item, bone.renderingObject))
