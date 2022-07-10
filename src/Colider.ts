@@ -58,7 +58,6 @@ export class BoxColider implements Colider {
       return [t1, t2]
     })
 
-    console.log(tRange)
     const xyRange = [
       Math.max(Math.min(tRange[0][0], tRange[1][1]), Math.min(tRange[0][1], tRange[1][0])),
       Math.min(tRange[0][1], tRange[1][1])
@@ -73,7 +72,7 @@ export class BoxColider implements Colider {
 
     if (xyzRange[0] === xyzRange[1]) return false
 
-    //if (Math.max(xyzRange[0], xyzRange[1]) < 0) return false
+    if (Math.max(xyzRange[0], xyzRange[1]) < 0) return false
 
     return true
   }

@@ -23,8 +23,8 @@ export class ThreeFactory implements ObjectFactory<ThreeRenderingObject> {
     const cylinderMesh = new Mesh(cylinder, material)
     const directionMesh = new Mesh(direction, directionMaterial)
 
-    cylinderMesh.position.y = -norm / 2
-    directionMesh.position.y = -norm
+    cylinderMesh.position.y = norm / 2
+    directionMesh.position.y = norm
 
     const group = new Group()
     group.add(cylinderMesh)
