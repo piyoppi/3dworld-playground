@@ -36,6 +36,14 @@ export class Mat4 {
     ]
   }
 
+  static mulVec3(a: MatrixArray4, b: VectorArray3): VectorArray3 {
+    return [
+      a[0] * b[0] + a[4] * b[1] + a[8]  * b[2] + a[12],
+      a[1] * b[0] + a[5] * b[1] + a[9]  * b[2] + a[13],
+      a[2] * b[0] + a[6] * b[1] + a[10] * b[2] + a[14]
+    ]
+  }
+
   static mulGlVec3(a: MatrixArray4, b: VectorArray3): VectorArray3 {
     const vec = Mat4.mulVec4(a, [...b, 1])
     const w =  vec[3]
@@ -253,6 +261,11 @@ export class Vec3 {
     ]
   }
 
+  static dotprod(a: VectorArray3, b: VectorArray3) {
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+      
+  }
+
   static norm(vec: VectorArray3): number {
     return Math.sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2])
   }
@@ -262,6 +275,14 @@ export class Vec3 {
         a[0] - b[0],
         a[1] - b[1],
         a[2] - b[2]
+    ]
+  }
+
+  static add(a: VectorArray3, b: VectorArray3): VectorArray3 {
+    return [
+        a[0] + b[0],
+        a[1] + b[1],
+        a[2] + b[2]
     ]
   }
 }

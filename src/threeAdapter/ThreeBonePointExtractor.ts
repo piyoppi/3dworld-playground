@@ -1,6 +1,6 @@
 import { getBonesTree, ObjectTree } from './ThreeObjectSelectorHelper.js'
 import { Item } from '../Item.js'
-import { BoxGeometry, MeshNormalMaterial, Mesh, Object3D, Group } from 'three'
+import { BoxGeometry, MeshBasicMaterial, Mesh, Object3D, Group } from 'three'
 import { Coordinate } from '../Coordinate.js'
 import { ThreeRenderingObject } from './ThreeRenderer.js'
 
@@ -23,7 +23,7 @@ const makeItemsFromTree = (tree: ObjectTree<Object3D>, parentCoordinate: Coordin
   if (parentCoordinate) coordinate.parent = parentCoordinate
 
   const geometry = new BoxGeometry(0.02, 0.02, 0.02)
-  const material = new MeshNormalMaterial()
+  const material = new MeshBasicMaterial({color: 0x00FF00})
   material.depthTest = false
   const renderingObject = {item: {geometry, material}}
 

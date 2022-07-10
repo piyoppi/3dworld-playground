@@ -1,10 +1,10 @@
-import { WebGLRenderer, Scene, BufferGeometry, Material, Mesh, AmbientLight, Group, GridHelper } from 'three'
+import { WebGLRenderer, Scene, BufferGeometry, Material, Mesh, AmbientLight, Group, GridHelper, Color } from 'three'
 import { Renderer } from '../Renderer.js'
 import { ThreeCamera } from './ThreeCamera.js'
 import { Item } from '../Item.js'
-import { Camera } from '../Camera.js'
 import { Coordinate } from '../Coordinate.js'
 import { syncCoordinate } from './ThreeSyncCoordinate.js'
+import { RGBColor, convertRgbToHex } from '../helpers/color.js'
 
 import { CylinderGeometry, MeshBasicMaterial } from 'three'
 
@@ -22,6 +22,7 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
   #scene: Scene
   #camera: ThreeCamera
   #mapCoordinateIdToRenderingItem: Map<string, Mesh | Scene | Group>
+  #mapItemIdToRenderingItem: Map<string, Mesh | Scene | Group>
   #pendingItems: Array<{mesh: Mesh | Scene | Group, item: Item}>
 
   constructor(scene: Scene, camera: ThreeCamera) {
@@ -29,6 +30,7 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
     this.#scene = scene
     this.#camera = camera
     this.#mapCoordinateIdToRenderingItem = new Map()
+    this.#mapItemIdToRenderingItem = new Map()
     this.#pendingItems = []
     this.debug()
   }
@@ -66,11 +68,22 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
     })
 
     this.#mapCoordinateIdToRenderingItem.set(item.parentCoordinate.uuid, mesh)
+    this.#mapItemIdToRenderingItem.set(item.uuid, mesh)
 
     syncCoordinate(item.parentCoordinate, mesh)
   }
 
-  debug() {
+  setColor(item: Item, color: RGBColor) {
+    const renderingItem = this.#mapItemIdToRenderingItem.get(item.uuid)
+    if (!renderingItem) return
+    if (!(renderingItem instanceof Mesh)) return
+
+    if (renderingItem.material instanceof MeshBasicMaterial) {
+      renderingItem.material.color = new Color(convertRgbToHex(color))  
+    }
+  }
+
+  private debug() {
     const size = 10
     const divisions = 10
 

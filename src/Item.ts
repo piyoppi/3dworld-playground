@@ -1,18 +1,29 @@
+import { Ray } from './Ray.js'
 import { BallColider } from "./Colider.js"
 import { Coordinate } from "./Coordinate.js"
-import { VectorArray3 } from "./Matrix.js"
+import { v4 as uuidv4 } from 'uuid'
 
 export class Item {
   #parentCoordinate: Coordinate
   #coliders: Array<BallColider>
+  #uuid: string
 
   constructor() {
+    this.#uuid = uuidv4()
     this.#parentCoordinate = Coordinate.create([this])
     this.#coliders = []
   }
 
-  checkColidedToRay(vec: VectorArray3): boolean {
-    return this.#coliders.some(colider => colider.checkRay(vec, this.parentCoordinate))
+  get uuid() {
+    return this.#uuid
+  }
+
+  checkColidedToRay(ray: Ray): boolean {
+    return this.#coliders.some(colider => colider.checkRay(ray))
+  }
+
+  addColider(colider: BallColider) {
+    this.#coliders.push(colider)
   }
 
   set parentCoordinate(value) {

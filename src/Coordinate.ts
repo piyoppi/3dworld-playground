@@ -6,7 +6,6 @@ export class Coordinate {
   #items: Array<Item>
   #parent: Coordinate | null
   #children: Array<Coordinate>
-  #rotation: VectorArray3
   #matrix:  MatrixArray4
   #updatedCallback: () => void
   #uuid: string
@@ -16,7 +15,6 @@ export class Coordinate {
     this.#uuid = uuidv4()
     this.#children = []
     this.#items = []
-    this.#rotation = [0, 0, 0]
     this.#matrix = Mat4.getIdentityMatrix()
     this.#updatedCallback = () => {}
   }
@@ -50,11 +48,27 @@ export class Coordinate {
     return this.#children
   }
 
+  getWorldMatrix(mat: MatrixArray4 = Mat4.getIdentityMatrix()) {
+    let transform = Mat4.mul(this.matrix, mat)
+
+    if (this.#parent) {
+      transform = this.#parent.getWorldMatrix(transform)
+    }
+
+    return transform
+  }
+
+  getGlobalPosition(position: VectorArray3 = [0, 0, 0]): VectorArray3 {
+    return Mat4.mulGlVec3(this.getWorldMatrix(), position)
+  }
+
   setUpdateCallback(func: () => void) {
     this.#updatedCallback = func
   }
 
   addItem(item: Item) {
+    if (this.#items.find(has => has.uuid === item.uuid)) return
+
     this.#items.push(item)
     if (!item.parentCoordinate || item.parentCoordinate.uuid !== this.uuid) {
       item.parentCoordinate = this
@@ -96,7 +110,7 @@ export class Coordinate {
   }
 
   get items() { return this.#items }
-  get x() { return this.position[0] }
-  get y() { return this.position[1] }
-  get z() { return this.position[2] }
+  get x() { return this.matrix[12] }
+  get y() { return this.matrix[13] }
+  get z() { return this.matrix[14] }
 }

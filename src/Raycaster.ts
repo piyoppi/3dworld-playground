@@ -2,6 +2,7 @@ import { Vector3 } from 'three';
 import { Camera } from './Camera.js';
 import { Item } from './Item.js'
 import { Mat4, VectorArray3, Vec4, VectorArray4, Vec3 } from './Matrix.js';
+import { Ray } from './Ray.js'
 
 export class Raycaster {
   #camera: Camera
@@ -16,7 +17,7 @@ export class Raycaster {
     this.#targetItems.push(item)
   }
 
-  getRay(normalizedX: number, normalizedY: number) {
+  getRay(normalizedX: number, normalizedY: number): Ray {
     const vec = [normalizedX, normalizedY] as const
 
     let vector = Mat4.mulGlVec3(this.#camera.projectionMatrixInverse, [...vec, 0.9])
@@ -33,9 +34,9 @@ export class Raycaster {
     }
   }
 
-  check(x: number, y: number) {
-    //this.#targetItems.forEach(item => {
-    //  item.checkColidedToRay(vec)
-    //})
+  check(normalizedX: number, normalizedY: number) {
+    const ray = this.getRay(normalizedX, normalizedY)
+
+    return this.#targetItems.filter(item => item.checkColidedToRay(ray))
   }
 }

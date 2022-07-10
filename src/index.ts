@@ -6,16 +6,19 @@ import { makeItem } from './ItemFactory.js'
 import { ThreeFactory as Factory } from './threeAdapter/ThreeFactory.js'
 import { Coordinate } from './Coordinate.js'
 import { Raycaster } from './Raycaster.js'
-import { Mat4 } from './Matrix.js'
 import { makeMarker } from './VectorMarker.js'
 import { Item } from './Item.js'
 import { BoxGeometry, MeshBasicMaterial } from 'three'
+import { BallColider } from './Colider.js'
+import { setRenderer } from './Debugger.js'
 
 const lookAtCameraHandler = new LookAtCameraHandler()
 const mouseHandler = new MouseHandler(window.innerWidth, window.innerHeight)
 const factory = new Factory()
 const renderer = factory.makeRenderer({fov: 100, aspect: window.innerWidth / window.innerHeight, near: 0.001, far: 10})
 renderer.initialize(window.innerWidth, window.innerHeight)
+
+setRenderer(renderer)
 
 const raycaster = new Raycaster(renderer.camera)
 
@@ -34,6 +37,10 @@ async function run() {
   setTimeout(() => {
     const bones = extractItemsFromThreeBones(avatarRenderingObject, avatar)
     bones.forEach(bone => renderer.addItem(bone.item, bone.renderingObject))
+    bones.forEach(bone => {
+      const colider = new BallColider(0.03, bone.item.parentCoordinate)  
+      bone.item.addColider(colider)
+    })
     bones.forEach(bone => raycaster.addTarget(bone.item))
   }, 50)
 
@@ -45,12 +52,17 @@ async function run() {
       const pos = mouseHandler.getNormalizedPosition()
 
       // debug
-      const ray = raycaster.getRay(pos[0], pos[1])
-      const markerItem = makeMarker(ray.position, ray.direction)
-      renderer.addItem(
-        markerItem,
-        factory.makeVectorMarkerRenderingObject(5, markerItem)
-      )
+      //const ray = raycaster.getRay(pos[0], pos[1])
+      //const markerItem = makeMarker(ray.position, ray.direction)
+      //renderer.addItem(
+      //  markerItem,
+      //  factory.makeVectorMarkerRenderingObject(5, markerItem)
+      //)
+
+      // raycast
+      const items = raycaster.check(pos[0], pos[1])
+      console.log(items)
+      items.forEach(item => renderer.setColor(item, {r: 255, g: 0, b: 0}))
     }
 
     if (lookAtCameraHandler.changed) {
