@@ -26,7 +26,7 @@ export class Raycaster {
     let vector2 = Mat4.mulGlVec3(this.#camera.projectionMatrixInverse, [...vec, 1])
     vector2 = Mat4.mulGlVec3(this.#camera.coordinate.matrix, vector2)
 
-    const ray = Vec3.subtract(vector2, vector)
+    const ray = Vec3.subtract(vector, vector2)
 
     return {
       position: vector,

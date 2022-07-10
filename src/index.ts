@@ -9,7 +9,7 @@ import { Raycaster } from './Raycaster.js'
 import { makeMarker } from './VectorMarker.js'
 import { Item } from './Item.js'
 import { BoxGeometry, MeshBasicMaterial } from 'three'
-import { BallColider } from './Colider.js'
+import { BallColider, BoxColider } from './Colider.js'
 import { setRenderer } from './Debugger.js'
 
 const lookAtCameraHandler = new LookAtCameraHandler()
@@ -34,11 +34,26 @@ async function run() {
   avatar.parentCoordinate.y = -1
   renderer.addItem(avatar, {item: avatarRenderingObject})
 
+  //debug
+  const item = new Item()
+  const renderingItem = {
+    item: {
+      geometry: new BoxGeometry(0.1, 0.1, 0.1),
+      material: new MeshBasicMaterial({color: 0x0000FF})
+    }
+  }
+  renderingItem.item.material.depthTest = false
+  item.addColider(new BoxColider(0.1, 0.1, 0.1, item.parentCoordinate))
+  renderer.addItem(item, renderingItem)
+  raycaster.addTarget(item)
+  // ---
+
   setTimeout(() => {
     const bones = extractItemsFromThreeBones(avatarRenderingObject, avatar)
     bones.forEach(bone => renderer.addItem(bone.item, bone.renderingObject))
     bones.forEach(bone => {
-      const colider = new BallColider(0.03, bone.item.parentCoordinate)  
+      //const colider = new BallColider(0.03, bone.item.parentCoordinate)  
+      const colider = new BoxColider(0.03, 0.03, 0.03, bone.item.parentCoordinate)  
       bone.item.addColider(colider)
     })
     bones.forEach(bone => raycaster.addTarget(bone.item))

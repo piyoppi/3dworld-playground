@@ -48,18 +48,28 @@ export class Coordinate {
     return this.#children
   }
 
-  getWorldMatrix(mat: MatrixArray4 = Mat4.getIdentityMatrix()) {
+  getTransformMatrixToWorld(mat: MatrixArray4 = Mat4.getIdentityMatrix()) {
     let transform = Mat4.mul(this.matrix, mat)
 
     if (this.#parent) {
-      transform = this.#parent.getWorldMatrix(transform)
+      transform = this.#parent.getTransformMatrixToWorld(transform)
+    }
+
+    return transform
+  }
+
+  getTransformMatrixFromWorldToCoordinate(mat: MatrixArray4 = Mat4.getIdentityMatrix()) {
+    let transform = Mat4.mul(mat, Mat4.inverse(this.matrix))
+
+    if (this.#parent) {
+      transform = this.#parent.getTransformMatrixFromWorldToCoordinate(transform)
     }
 
     return transform
   }
 
   getGlobalPosition(position: VectorArray3 = [0, 0, 0]): VectorArray3 {
-    return Mat4.mulGlVec3(this.getWorldMatrix(), position)
+    return Mat4.mulGlVec3(this.getTransformMatrixToWorld(), position)
   }
 
   setUpdateCallback(func: () => void) {

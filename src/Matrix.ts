@@ -2,6 +2,7 @@
  * [a11, a21, a31, a41, ... , a14, a24, a34, a44]
  */
 export type MatrixArray4 = [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number]
+export type MatrixArray3 = [number, number, number, number, number, number, number, number, number]
 export type VectorArray3 = [number, number, number]
 export type VectorArray4 = [number, number, number, number]
 
@@ -190,6 +191,23 @@ export class Mat4 {
     ]
   }
 
+  static transpose(a: MatrixArray4): MatrixArray4 {
+    return [
+      a[0], a[4], a[8],  a[12],
+      a[1], a[5], a[9],  a[13],
+      a[2], a[6], a[11], a[14],
+      a[3], a[7], a[12], a[15],
+    ]
+  }
+
+  static removeTranslate(a: MatrixArray4): MatrixArray3 {
+    return [
+      a[0], a[1], a[2],
+      a[4], a[5], a[6],
+      a[8], a[9], a[10]
+    ]
+  }
+
   static lookAt(targetPosition: VectorArray3, cameraPosition: VectorArray3): MatrixArray4 {
     return Mat4.transformZAxis(
       Vec3.normalize([
@@ -243,6 +261,56 @@ export class Mat4 {
       0, (2 * near) / (top - bottom), 0, 0,
       (right + left) / (right - left), (top + bottom) / (top - bottom), -(far + near) / (far - near), -1,
       0, 0, -(2 * far * near) / (far - near), 0
+    ]
+  }
+}
+
+export class Mat3 {
+  static inverse(m: MatrixArray3): MatrixArray3 {
+    const a11 = m[0]
+    const a12 = m[3]
+    const a13 = m[6]
+    const a21 = m[1]
+    const a22 = m[4]
+    const a23 = m[7]
+    const a31 = m[2]
+    const a32 = m[5]
+    const a33 = m[8]
+
+    const det =
+        a11 * a22 * a33
+      + a12 * a23 * a31
+      + a13 * a21 * a32
+      - a13 * a22 * a31
+      - a12 * a21 * a33
+      - a11 * a23 * a32
+
+    return [
+        (a22 * a33 - a23 * a32) / det,
+      - (a21 * a33 - a23 * a31) / det,
+        (a21 * a32 - a22 * a31) / det,
+      - (a12 * a33 - a13 * a32) / det,
+        (a11 * a33 - a13 * a31) / det,
+      - (a11 * a32 - a12 * a31) / det,
+        (a12 * a23 - a13 * a22) / det,
+      - (a11 * a23 - a13 * a21) / det,
+        (a11 * a22 - a12 * a21) / det
+    ]
+  }
+
+  static transpose(m: MatrixArray3): MatrixArray3 {
+    return [
+      m[0], m[3], m[6],
+      m[1], m[4], m[7],
+      m[2], m[5], m[8]
+    ]
+  }
+
+  static mulVec3(a: MatrixArray3, b: VectorArray3): VectorArray3 {
+    return [
+      a[0] * b[0] + a[3] * b[1] + a[6] * b[2],
+      a[1] * b[0] + a[4] * b[1] + a[7] * b[2],
+      a[2] * b[0] + a[5] * b[1] + a[8] * b[2]
     ]
   }
 }

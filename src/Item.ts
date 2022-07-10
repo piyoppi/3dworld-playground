@@ -1,11 +1,11 @@
 import { Ray } from './Ray.js'
-import { BallColider } from "./Colider.js"
+import { Colider } from "./Colider.js"
 import { Coordinate } from "./Coordinate.js"
 import { v4 as uuidv4 } from 'uuid'
 
 export class Item {
   #parentCoordinate: Coordinate
-  #coliders: Array<BallColider>
+  #coliders: Array<Colider>
   #uuid: string
 
   constructor() {
@@ -22,7 +22,7 @@ export class Item {
     return this.#coliders.some(colider => colider.checkRay(ray))
   }
 
-  addColider(colider: BallColider) {
+  addColider(colider: Colider) {
     this.#coliders.push(colider)
   }
 
