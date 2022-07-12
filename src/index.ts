@@ -53,12 +53,13 @@ async function run() {
       const pos = mouseHandler.getNormalizedPosition()
 
       // debug
-      //const ray = raycaster.getRay(pos[0], pos[1])
-      //const markerItem = makeMarker(ray.position, ray.direction)
-      //renderer.addItem(
-      //  markerItem,
-      //  factory.makeVectorMarkerRenderingObject(5, markerItem)
-      //)
+      const ray = raycaster.getRay(pos[0], pos[1])
+      const markerItem = makeMarker(ray.position, ray.direction)
+      const primitiveRenderingObjectBuilder = factory.makeRenderingObjectBuilder()
+      renderer.addItem(
+        markerItem,
+        primitiveRenderingObjectBuilder.makeVectorRenderingObject(5, markerItem)
+      )
 
       // raycast
       const items = raycaster.check(pos[0], pos[1])
