@@ -6,7 +6,7 @@ import { Item } from '../Item.js'
 export class ThreeRenderingObjectBuilder implements RenderingObjectBuilder<ThreeRenderingObject> {
   makeVectorRenderingObject(norm: number) {
     const cylinder = new CylinderGeometry(0.001, 0.001, norm, 8)
-    const direction = new TetrahedronGeometry(0.03, 0)
+    const direction = new TetrahedronGeometry(0.015, 0)
     const material = new MeshBasicMaterial({color: 0xffff00})
     const directionMaterial = new MeshBasicMaterial({color: 0x0000ff})
     material.depthTest = false
@@ -17,6 +17,9 @@ export class ThreeRenderingObjectBuilder implements RenderingObjectBuilder<Three
 
     cylinderMesh.position.y = norm / 2
     directionMesh.position.y = norm
+
+    directionMesh.rotateZ(Math.PI / 4)
+    directionMesh.rotateY(Math.PI / 4)
 
     const group = new Group()
     group.add(cylinderMesh)
