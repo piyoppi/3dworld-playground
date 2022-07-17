@@ -16,14 +16,14 @@ export class AxisMarker<T> {
     this.#xAxis.parentCoordinate.rotateZ(Math.PI / 2)
     this.#zAxis.parentCoordinate.rotateX(Math.PI / 2)
 
-    this.#parentCoordinate = new Coordinate() 
-    this.#parentCoordinate.addChild(this.#xAxis.parentCoordinate)
-    this.#parentCoordinate.addChild(this.#yAxis.parentCoordinate)
-    this.#parentCoordinate.addChild(this.#zAxis.parentCoordinate)
+    this.setParentCoordinate(new Coordinate())
   }
 
   setParentCoordinate(coordinate: Coordinate) {
     this.#parentCoordinate = coordinate
+    this.#parentCoordinate.addChild(this.#xAxis.parentCoordinate)
+    this.#parentCoordinate.addChild(this.#yAxis.parentCoordinate)
+    this.#parentCoordinate.addChild(this.#zAxis.parentCoordinate)
   }
 
   attachRenderingObject(builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {

@@ -36,6 +36,8 @@ async function run() {
   avatar.parentCoordinate.y = -1
   renderer.addItem(avatar, {item: avatarRenderingObject})
 
+  const marker = new AxisMarker<ThreeRenderingObject>()
+
   setTimeout(() => {
     const bones = extractItemsFromThreeBones(avatarRenderingObject, avatar)
     bones.forEach(bone => renderer.addItem(bone.item, bone.renderingObject))
@@ -45,14 +47,15 @@ async function run() {
       bone.item.addColider(colider)
     })
     bones.forEach(bone => raycaster.addTarget(bone.item))
+
+    const primitiveRenderingObjectBuilder = factory.makeRenderingObjectBuilder()
+    marker.setParentCoordinate(bones[2].item.parentCoordinate)
+    marker.attachRenderingObject(primitiveRenderingObjectBuilder, renderer)
   }, 50)
 
   //
   // Setup renderer
   // -----------------------------------------------------------
-  const marker = new AxisMarker<ThreeRenderingObject>()
-  const primitiveRenderingObjectBuilder = factory.makeRenderingObjectBuilder()
-  marker.attachRenderingObject(primitiveRenderingObjectBuilder, renderer)
 
   renderer.setRenderingLoop(() => {
     if (mouseHandler.updated) {
