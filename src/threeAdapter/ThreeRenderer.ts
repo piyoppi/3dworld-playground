@@ -45,12 +45,22 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
   }
 
   addItem(item: Item, renderingObject: ThreeRenderingObject) {
-    const mesh = (renderingObject.item instanceof Scene || renderingObject.item instanceof Group) ?  renderingObject.item : new Mesh(renderingObject.item.geometry, renderingObject.item.material)
+    const mesh = (renderingObject.item instanceof Scene || renderingObject.item instanceof Group) ? renderingObject.item : new Mesh(renderingObject.item.geometry, renderingObject.item.material)
 
     if (item.parentCoordinate.parent) {
       const parentMesh = this.#mapCoordinateIdToRenderingItem.get(item.parentCoordinate.parent.uuid)
 
-      if (!parentMesh) {
+      if (item.parentCoordinate.parent.items.length === 0) {
+        if (parentMesh && parentMesh instanceof Group) {
+          parentMesh.add(mesh)
+        } else {
+          const group = new Group()
+          group.add(mesh)
+          this.#scene.add(group)
+          this.#mapCoordinateIdToRenderingItem.set(item.parentCoordinate.parent.uuid, group)
+          syncCoordinate(item.parentCoordinate.parent, group)
+        }
+      } else if (!parentMesh) {
         this.#pendingItems.push({item, mesh})
       } else {
         parentMesh.add(mesh)
@@ -89,11 +99,6 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
 
     const gridHelper = new GridHelper(size, divisions)
     this.#scene.add(gridHelper)
-
-    const geometry = new CylinderGeometry(0.01, 0.01, 1, 8)
-    const material = new MeshBasicMaterial({color: 0xff0000})
-    material.depthTest = false
-    this.#scene.add(new Mesh(geometry, material))
   }
 
   addLight(coordinate: Coordinate) {

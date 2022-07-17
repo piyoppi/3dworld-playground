@@ -11,6 +11,8 @@ import { Item } from './Item.js'
 import { BoxGeometry, MeshBasicMaterial } from 'three'
 import { BallColider, BoxColider } from './Colider.js'
 import { setRenderer } from './Debugger.js'
+import { AxisMarker } from './AxisMarker.js'
+import { ThreeRenderingObject } from './threeAdapter/ThreeRenderer.js'
 
 const lookAtCameraHandler = new LookAtCameraHandler()
 const mouseHandler = new MouseHandler(window.innerWidth, window.innerHeight)
@@ -48,23 +50,29 @@ async function run() {
   //
   // Setup renderer
   // -----------------------------------------------------------
+  const marker = new AxisMarker<ThreeRenderingObject>()
+  const primitiveRenderingObjectBuilder = factory.makeRenderingObjectBuilder()
+  marker.attachRenderingObject(primitiveRenderingObjectBuilder, renderer)
+
   renderer.setRenderingLoop(() => {
     if (mouseHandler.updated) {
       const pos = mouseHandler.getNormalizedPosition()
 
       // debug
-      const ray = raycaster.getRay(pos[0], pos[1])
-      const markerItem = makeMarker(ray.position, ray.direction)
-      const primitiveRenderingObjectBuilder = factory.makeRenderingObjectBuilder()
-      renderer.addItem(
-        markerItem,
-        primitiveRenderingObjectBuilder.makeVectorRenderingObject(5, markerItem)
-      )
+      // const ray = raycaster.getRay(pos[0], pos[1])
+      // const markerItem = makeMarker(ray.position, ray.direction)
+      // renderer.addItem(
+      //   markerItem,
+      //   primitiveRenderingObjectBuilder.makeVectorRenderingObject(5)
+      // )
 
       // raycast
       const items = raycaster.check(pos[0], pos[1])
-      console.log(items)
       items.forEach(item => renderer.setColor(item, {r: 255, g: 0, b: 0}))
+
+      if (items.length > 0) {
+        marker.setParentCoordinate(items[0].parentCoordinate)
+      }
     }
 
     if (lookAtCameraHandler.changed) {

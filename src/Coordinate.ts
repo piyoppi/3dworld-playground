@@ -102,6 +102,18 @@ export class Coordinate {
     this.matrix = Mat4.lookAt(targetPoint, this.position)  
   }
 
+  rotateX(rad: number) {
+    this.matrix = Mat4.mul(this.matrix, Mat4.rotateX(rad))
+  }
+
+  rotateY(rad: number) {
+    this.matrix = Mat4.mul(this.matrix, Mat4.rotateY(rad))
+  }
+
+  rotateZ(rad: number) {
+    this.matrix = Mat4.mul(this.matrix, Mat4.rotateZ(rad))
+  }
+
   get position(): VectorArray3 {
     return [this.matrix[12], this.matrix[13], this.matrix[14]]
   }
