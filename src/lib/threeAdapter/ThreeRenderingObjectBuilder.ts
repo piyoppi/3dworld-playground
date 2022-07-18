@@ -14,7 +14,7 @@ import { RGBColor, convertRgbToHex } from '../helpers/color.js'
 
 export class ThreeRenderingObjectBuilder implements RenderingObjectBuilder<ThreeRenderingObject> {
   makeVector(norm: number, shaftColor: RGBColor) {
-    const cylinder = new CylinderGeometry(0.001, 0.001, norm, 8)
+    const cylinder = new CylinderGeometry(0.005, 0.005, norm, 8)
     const direction = new TetrahedronGeometry(0.015, 0)
     const material = new MeshBasicMaterial({color: 0xffff00})
     const directionMaterial = new MeshBasicMaterial({color: 0x0000ff})
@@ -27,8 +27,8 @@ export class ThreeRenderingObjectBuilder implements RenderingObjectBuilder<Three
     const cylinderMesh = new Mesh(cylinder, material)
     const directionMesh = new Mesh(direction, directionMaterial)
 
-    cylinderMesh.position.y = norm / 2
-    directionMesh.position.y = norm
+    cylinderMesh.position.y = 0
+    directionMesh.position.y = norm / 2
 
     directionMesh.rotateZ(Math.PI / 4)
     directionMesh.rotateY(Math.PI / 4)

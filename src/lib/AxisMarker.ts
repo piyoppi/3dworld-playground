@@ -1,3 +1,4 @@
+import { BoxColider } from "./Colider.js"
 import { Coordinate } from "./Coordinate.js"
 import { Item } from "./Item.js"
 import { Renderer } from "./Renderer.js"
@@ -7,17 +8,47 @@ export class AxisMarker<T> {
   #xAxis: Item
   #yAxis: Item
   #zAxis: Item
+  #norm: number
   #parentCoordinate: Coordinate
 
   constructor() {
     this.#xAxis = new Item()
     this.#yAxis = new Item()
     this.#zAxis = new Item()
-    this.#xAxis.parentCoordinate.rotateZ(Math.PI / 2)
+    this.#xAxis.parentCoordinate.rotateZ(-Math.PI / 2)
     this.#zAxis.parentCoordinate.rotateX(Math.PI / 2)
+    this.#norm = 0.1
+
+    this.#xAxis.parentCoordinate.x = this.#norm / 2
+    this.#yAxis.parentCoordinate.y = this.#norm / 2
+    this.#zAxis.parentCoordinate.z = this.#norm / 2
 
     this.#parentCoordinate = new Coordinate()
     this.setParentCoordinate(new Coordinate())
+  }
+
+  get xItem() {
+    return this.#xAxis
+  }
+
+  get yItem() {
+    return this.#yAxis
+  }
+
+  get zItem() {
+    return this.#zAxis
+  }
+
+  setColider(radius: number) {
+    const xColider = new BoxColider(radius, this.#norm, radius, this.#xAxis.parentCoordinate)
+    const yColider = new BoxColider(radius, this.#norm, radius, this.#yAxis.parentCoordinate)
+    const zColider = new BoxColider(radius, this.#norm, radius, this.#zAxis.parentCoordinate)
+
+    this.#xAxis.addColider(xColider)
+    this.#yAxis.addColider(yColider)
+    this.#zAxis.addColider(zColider)
+
+    return [this.#xAxis, this.#yAxis, this.#zAxis]
   }
 
   setParentCoordinate(coordinate: Coordinate | null = null) {
@@ -35,9 +66,9 @@ export class AxisMarker<T> {
   }
 
   attachRenderingObject(builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
-    const xAxisRenderingObject = builder.makeVector(0.1, {r: 255, g: 0, b: 0})
-    const yAxisRenderingObject = builder.makeVector(0.1, {r: 0, g: 255, b: 0})
-    const zAxisRenderingObject = builder.makeVector(0.1, {r: 0, g: 0, b: 255})
+    const xAxisRenderingObject = builder.makeVector(this.#norm, {r: 255, g: 0, b: 0})
+    const yAxisRenderingObject = builder.makeVector(this.#norm, {r: 0, g: 255, b: 0})
+    const zAxisRenderingObject = builder.makeVector(this.#norm, {r: 0, g: 0, b: 255})
 
     renderer.addItem(this.#xAxis, xAxisRenderingObject)
     renderer.addItem(this.#yAxis, yAxisRenderingObject)

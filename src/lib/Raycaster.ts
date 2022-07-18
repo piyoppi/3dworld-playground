@@ -1,7 +1,6 @@
-import { Vector3 } from 'three';
 import { Camera } from './Camera.js';
 import { Item } from './Item.js'
-import { Mat4, VectorArray3, Vec4, VectorArray4, Vec3 } from './Matrix.js';
+import { Mat4, Vec3 } from './Matrix.js';
 import { Ray } from './Ray.js'
 
 export class Raycaster {

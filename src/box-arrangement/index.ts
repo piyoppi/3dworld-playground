@@ -28,11 +28,12 @@ renderer.addLight(lightCoordinate)
 const box = new Item()
 const boxRenderingObject = primitiveRenderingObjectBuilder.makeBox(0.1, 0.1, 0.1, {r: 255, g: 0, b: 255})
 box.addColider(new BoxColider(0.1, 0.1, 0.1, box.parentCoordinate))
-raycaster.addTarget(box)
+//raycaster.addTarget(box)
 renderer.addItem(box, boxRenderingObject)
 
 const marker = new AxisMarker<ThreeRenderingObject>()
 marker.attachRenderingObject(primitiveRenderingObjectBuilder, renderer)
+marker.setColider(0.005).forEach(item => raycaster.addTarget(item))
 
 renderer.setRenderingLoop(() => {
   if (mouseHandler.updated) {
@@ -40,8 +41,17 @@ renderer.setRenderingLoop(() => {
 
     // raycast
     const items = raycaster.check(pos[0], pos[1])
+    console.log(items)
     if (items.length > 0) {
-      marker.setParentCoordinate(items[0].parentCoordinate)
+      if (items[0] === marker.xItem) {
+        console.log('xAxis')
+      }
+      if (items[0] === marker.yItem) {
+        console.log('yAxis')
+      }
+      if (items[0] === marker.zItem) {
+        console.log('zAxis')
+      }
     }
   }
 
