@@ -20,7 +20,7 @@ const makeItemsFromTree = (tree: ObjectTree<Object3D>, parentCoordinate: Coordin
   const coordinate = new Coordinate
   const item = new Item()
   coordinate.addItem(item)
-  if (parentCoordinate) coordinate.parent = parentCoordinate
+  if (parentCoordinate) parentCoordinate.addChild(coordinate)
 
   const geometry = new BoxGeometry(0.02, 0.02, 0.02)
   const material = new MeshBasicMaterial({color: 0x00FF00})

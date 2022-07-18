@@ -2,21 +2,27 @@ import { Item } from './Item.js'
 import { Mat4, MatrixArray4, VectorArray3 } from './Matrix.js'
 import { v4 as uuidv4 } from 'uuid'
 
+export class InvalidParentCoordinateError extends Error {}
+
 export class Coordinate {
   #items: Array<Item>
-  #parent: Coordinate | null
+  protected _parent: Coordinate | null
   #children: Array<Coordinate>
   #matrix:  MatrixArray4
   #updatedCallback: () => void
+  #setChildCallback: (parent: Coordinate, child: Coordinate) => void
+  #removeChildCallback: (parent: Coordinate, child: Coordinate) => void
   #uuid: string
 
   constructor() {
-    this.#parent = null
+    this._parent = null
     this.#uuid = uuidv4()
     this.#children = []
     this.#items = []
     this.#matrix = Mat4.getIdentityMatrix()
     this.#updatedCallback = () => {}
+    this.#setChildCallback = (parent, child) => {}
+    this.#removeChildCallback = (parent, child) => {}
   }
 
   get matrix() {
@@ -37,11 +43,7 @@ export class Coordinate {
   }
 
   get parent(): Coordinate | null {
-    return this.#parent
-  }
-
-  set parent(value: Coordinate | null) {
-    this.#parent = value
+    return this._parent
   }
 
   get children() {
@@ -51,8 +53,8 @@ export class Coordinate {
   getTransformMatrixToWorld(mat: MatrixArray4 = Mat4.getIdentityMatrix()) {
     let transform = Mat4.mul(this.matrix, mat)
 
-    if (this.#parent) {
-      transform = this.#parent.getTransformMatrixToWorld(transform)
+    if (this._parent) {
+      transform = this._parent.getTransformMatrixToWorld(transform)
     }
 
     return transform
@@ -61,8 +63,8 @@ export class Coordinate {
   getTransformMatrixFromWorldToCoordinate(mat: MatrixArray4 = Mat4.getIdentityMatrix()) {
     let transform = Mat4.mul(mat, Mat4.inverse(this.matrix))
 
-    if (this.#parent) {
-      transform = this.#parent.getTransformMatrixFromWorldToCoordinate(transform)
+    if (this._parent) {
+      transform = this._parent.getTransformMatrixFromWorldToCoordinate(transform)
     }
 
     return transform
@@ -76,6 +78,14 @@ export class Coordinate {
     this.#updatedCallback = func
   }
 
+  setSetChildCallback(func: (parent: Coordinate, child: Coordinate) => void) {
+    this.#setChildCallback = func
+  }
+
+  setRemoveChildCallback(func: (parent: Coordinate, child: Coordinate) => void) {
+    this.#removeChildCallback = func
+  }
+
   addItem(item: Item) {
     if (this.#items.find(has => has.uuid === item.uuid)) return
 
@@ -86,8 +96,24 @@ export class Coordinate {
   }
 
   addChild(child: Coordinate) {
+    if (child.parent) {
+      throw new InvalidParentCoordinateError()
+    }
+
     this.#children.push(child)
-    child.parent = this
+    child._parent = this
+
+    this.#setChildCallback(this, child)
+  }
+
+  removeChild(child: Coordinate) {
+    const index = this.#children.findIndex(coord => coord.uuid === child.uuid)
+    if (index < 0) return
+
+    this.#children.splice(index, 1)
+    child._parent = null
+
+    this.#removeChildCallback(this, child)
   }
 
   static create(items: Array<Item>): Coordinate {

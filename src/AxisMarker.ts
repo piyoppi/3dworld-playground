@@ -16,11 +16,19 @@ export class AxisMarker<T> {
     this.#xAxis.parentCoordinate.rotateZ(Math.PI / 2)
     this.#zAxis.parentCoordinate.rotateX(Math.PI / 2)
 
+    this.#parentCoordinate = new Coordinate()
     this.setParentCoordinate(new Coordinate())
   }
 
-  setParentCoordinate(coordinate: Coordinate) {
-    this.#parentCoordinate = coordinate
+  setParentCoordinate(coordinate: Coordinate | null = null) {
+    this.#parentCoordinate.removeChild(this.#xAxis.parentCoordinate)
+    this.#parentCoordinate.removeChild(this.#yAxis.parentCoordinate)
+    this.#parentCoordinate.removeChild(this.#zAxis.parentCoordinate)
+
+    if (coordinate) {
+      this.#parentCoordinate = coordinate
+    }
+
     this.#parentCoordinate.addChild(this.#xAxis.parentCoordinate)
     this.#parentCoordinate.addChild(this.#yAxis.parentCoordinate)
     this.#parentCoordinate.addChild(this.#zAxis.parentCoordinate)
@@ -31,9 +39,6 @@ export class AxisMarker<T> {
     const yAxisRenderingObject = builder.makeVectorRenderingObject(0.1)
     const zAxisRenderingObject = builder.makeVectorRenderingObject(0.1)
 
-    console.log(this.#xAxis)
-    console.log(this.#yAxis)
-    console.log(this.#zAxis)
     renderer.addItem(this.#xAxis, xAxisRenderingObject)
     renderer.addItem(this.#yAxis, yAxisRenderingObject)
     renderer.addItem(this.#zAxis, zAxisRenderingObject)
