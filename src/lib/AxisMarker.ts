@@ -35,9 +35,9 @@ export class AxisMarker<T> {
   }
 
   attachRenderingObject(builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
-    const xAxisRenderingObject = builder.makeVectorRenderingObject(0.1, {r: 255, g: 0, b: 0})
-    const yAxisRenderingObject = builder.makeVectorRenderingObject(0.1, {r: 0, g: 255, b: 0})
-    const zAxisRenderingObject = builder.makeVectorRenderingObject(0.1, {r: 0, g: 0, b: 255})
+    const xAxisRenderingObject = builder.makeVector(0.1, {r: 255, g: 0, b: 0})
+    const yAxisRenderingObject = builder.makeVector(0.1, {r: 0, g: 255, b: 0})
+    const zAxisRenderingObject = builder.makeVector(0.1, {r: 0, g: 0, b: 255})
 
     renderer.addItem(this.#xAxis, xAxisRenderingObject)
     renderer.addItem(this.#yAxis, yAxisRenderingObject)
