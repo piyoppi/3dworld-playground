@@ -8,6 +8,8 @@ import { setRenderer } from '../lib/Debugger.js'
 import { AxisMarker } from '../lib/AxisMarker.js'
 import { ThreeRenderingObject } from '../lib/threeAdapter/ThreeRenderer.js'
 import { Item } from '../lib/Item.js'
+import { AxisMarkerHandler } from '../lib/AxisMarkerHandler.js'
+import { MouseDraggable } from '../lib/MouseDragHandler.js'
 
 const lookAtCameraHandler = new LookAtCameraHandler()
 const mouseHandler = new MouseHandler(window.innerWidth, window.innerHeight)
@@ -33,7 +35,16 @@ renderer.addItem(box, boxRenderingObject)
 
 const marker = new AxisMarker<ThreeRenderingObject>()
 marker.attachRenderingObject(primitiveRenderingObjectBuilder, renderer)
-marker.setColider(0.005).forEach(item => raycaster.addTarget(item))
+marker.setColider(0.005)
+marker.axes.forEach(item => raycaster.addTarget(item))
+
+const mouseDraggables : Array<MouseDraggable> = [
+  new AxisMarkerHandler(marker.xItem, [1, 0, 0], 1),
+  new AxisMarkerHandler(marker.yItem, [0, 1, 0], 1),
+  new AxisMarkerHandler(marker.zItem, [0, 0, 1], 1),
+  lookAtCameraHandler
+]
+
 
 renderer.setRenderingLoop(() => {
   if (mouseHandler.updated) {
@@ -41,30 +52,57 @@ renderer.setRenderingLoop(() => {
 
     // raycast
     const items = raycaster.check(pos[0], pos[1])
-    console.log(items)
+    let axisSelected = false
     if (items.length > 0) {
       if (items[0] === marker.xItem) {
         console.log('xAxis')
-      }
-      if (items[0] === marker.yItem) {
+        axisSelected = true
+      } else if (items[0] === marker.yItem) {
         console.log('yAxis')
-      }
-      if (items[0] === marker.zItem) {
+        axisSelected = true
+      } else if (items[0] === marker.zItem) {
         console.log('zAxis')
+        axisSelected = true
       }
     }
+
+    lookAtCameraHandler.isLocked = axisSelected
   }
 
   if (lookAtCameraHandler.changed) {
     renderer.camera.coordinate.matrix = lookAtCameraHandler.getLookAtMatrix()
   }
+
   renderer.render()
 })
 renderer.mount()
 
 window.addEventListener('resize', () => renderer.resize(window.innerWidth, window.innerHeight))
-window.addEventListener('click', e => mouseHandler.setPosition(e.clientX, e.clientY))
-window.addEventListener('mousedown', e => lookAtCameraHandler.start(e.screenX, e.screenY))
-window.addEventListener('mousemove', e => lookAtCameraHandler.move(e.screenX, e.screenY))
-window.addEventListener('wheel', e => lookAtCameraHandler.addDistance(e.deltaY * 0.001))
-window.addEventListener('mouseup', () => lookAtCameraHandler.end())
+window.addEventListener('mousedown', e => {
+  lookAtCameraHandler.start(e.screenX, e.screenY)
+
+  if (raycaster.colidedItems[0] === marker.xItem) {
+    mouseDraggables[0].start(e.screenX, e.screenY)
+  }
+
+  if (raycaster.colidedItems[0] === marker.yItem) {
+    mouseDraggables[1].start(e.screenX, e.screenY)
+  }
+
+  if (raycaster.colidedItems[0] === marker.zItem) {
+    mouseDraggables[2].start(e.screenX, e.screenY)
+  }
+
+  mouseHandler.setPosition(e.clientX, e.clientY)
+})
+window.addEventListener('mousemove', e => {
+  mouseDraggables.forEach(handler => handler.move(e.screenX, e.screenY))
+  mouseHandler.setPosition(e.clientX, e.clientY)
+})
+window.addEventListener('wheel', e => {
+  lookAtCameraHandler.addDistance(e.deltaY * 0.001)
+  mouseHandler.setPosition(e.clientX, e.clientY)
+})
+window.addEventListener('mouseup', () => {
+  mouseDraggables.forEach(handler => handler.end())
+})

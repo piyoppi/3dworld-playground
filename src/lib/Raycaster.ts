@@ -6,10 +6,16 @@ import { Ray } from './Ray.js'
 export class Raycaster {
   #camera: Camera
   #targetItems: Array<Item>
+  #colidedItems: Array<Item>
 
   constructor(camera: Camera) {
     this.#camera = camera
     this.#targetItems = []
+    this.#colidedItems = []
+  }
+
+  get colidedItems() {
+    return this.#colidedItems
   }
 
   addTarget(item: Item) {
@@ -36,6 +42,8 @@ export class Raycaster {
   check(normalizedX: number, normalizedY: number) {
     const ray = this.getRay(normalizedX, normalizedY)
 
-    return this.#targetItems.filter(item => item.checkColidedToRay(ray))
+    this.#colidedItems = this.#targetItems.filter(item => item.checkColidedToRay(ray))
+
+    return this.#colidedItems
   }
 }

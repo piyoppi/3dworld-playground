@@ -5,73 +5,60 @@ import { Renderer } from "./Renderer.js"
 import { RenderingObjectBuilder } from './RenderingObjectBuilder.js'
 
 export class AxisMarker<T> {
-  #xAxis: Item
-  #yAxis: Item
-  #zAxis: Item
+  #axes
   #norm: number
   #parentCoordinate: Coordinate
 
   constructor() {
-    this.#xAxis = new Item()
-    this.#yAxis = new Item()
-    this.#zAxis = new Item()
-    this.#xAxis.parentCoordinate.rotateZ(-Math.PI / 2)
-    this.#zAxis.parentCoordinate.rotateX(Math.PI / 2)
+    this.#axes = [new Item(), new Item(), new Item()]
+    this.#axes[0].parentCoordinate.rotateZ(-Math.PI / 2)
+    this.#axes[2].parentCoordinate.rotateX(Math.PI / 2)
     this.#norm = 0.1
 
-    this.#xAxis.parentCoordinate.x = this.#norm / 2
-    this.#yAxis.parentCoordinate.y = this.#norm / 2
-    this.#zAxis.parentCoordinate.z = this.#norm / 2
+    this.#axes[0].parentCoordinate.x = this.#norm / 2
+    this.#axes[1].parentCoordinate.y = this.#norm / 2
+    this.#axes[2].parentCoordinate.z = this.#norm / 2
 
     this.#parentCoordinate = new Coordinate()
     this.setParentCoordinate(new Coordinate())
   }
 
   get xItem() {
-    return this.#xAxis
+    return this.#axes[0]
   }
 
   get yItem() {
-    return this.#yAxis
+    return this.#axes[1]
   }
 
   get zItem() {
-    return this.#zAxis
+    return this.#axes[2]
+  }
+
+  get axes() {
+    return this.#axes
   }
 
   setColider(radius: number) {
-    const xColider = new BoxColider(radius, this.#norm, radius, this.#xAxis.parentCoordinate)
-    const yColider = new BoxColider(radius, this.#norm, radius, this.#yAxis.parentCoordinate)
-    const zColider = new BoxColider(radius, this.#norm, radius, this.#zAxis.parentCoordinate)
-
-    this.#xAxis.addColider(xColider)
-    this.#yAxis.addColider(yColider)
-    this.#zAxis.addColider(zColider)
-
-    return [this.#xAxis, this.#yAxis, this.#zAxis]
+    return this.#axes.map(axis => new BoxColider(radius, this.#norm, radius, axis.parentCoordinate))
+      .forEach((colider, index) => this.#axes[index].addColider(colider))
   }
 
   setParentCoordinate(coordinate: Coordinate | null = null) {
-    this.#parentCoordinate.removeChild(this.#xAxis.parentCoordinate)
-    this.#parentCoordinate.removeChild(this.#yAxis.parentCoordinate)
-    this.#parentCoordinate.removeChild(this.#zAxis.parentCoordinate)
+    this.#axes.forEach(axis => this.#parentCoordinate.removeChild(axis.parentCoordinate))
 
     if (coordinate) {
       this.#parentCoordinate = coordinate
     }
 
-    this.#parentCoordinate.addChild(this.#xAxis.parentCoordinate)
-    this.#parentCoordinate.addChild(this.#yAxis.parentCoordinate)
-    this.#parentCoordinate.addChild(this.#zAxis.parentCoordinate)
+    this.#axes.forEach(axis => this.#parentCoordinate.addChild(axis.parentCoordinate))
   }
 
   attachRenderingObject(builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
-    const xAxisRenderingObject = builder.makeVector(this.#norm, {r: 255, g: 0, b: 0})
-    const yAxisRenderingObject = builder.makeVector(this.#norm, {r: 0, g: 255, b: 0})
-    const zAxisRenderingObject = builder.makeVector(this.#norm, {r: 0, g: 0, b: 255})
-
-    renderer.addItem(this.#xAxis, xAxisRenderingObject)
-    renderer.addItem(this.#yAxis, yAxisRenderingObject)
-    renderer.addItem(this.#zAxis, zAxisRenderingObject)
+    [
+      builder.makeVector(this.#norm, {r: 255, g: 0, b: 0}),
+      builder.makeVector(this.#norm, {r: 0, g: 255, b: 0}),
+      builder.makeVector(this.#norm, {r: 0, g: 0, b: 255})
+    ].forEach((renderingObject, index) => renderer.addItem(this.#axes[index], renderingObject))
   }
 }

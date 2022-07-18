@@ -1,20 +1,21 @@
 import { Mat4, MatrixArray4, VectorArray3  } from './Matrix.js'
+import { MouseDraggable, MouseDragHandler } from "./MouseDragHandler.js"
 
-export class LookAtCameraHandler {
-  #initialMousePosition
-  #isStart
+export class LookAtCameraHandler implements MouseDraggable {
+  #mouseDragHandler
   #distance
   #rotation
   #target: VectorArray3
   #changed: boolean
+  #isLocked: boolean
 
   constructor() {
-    this.#initialMousePosition = [0, 0]
-    this.#isStart = false
+    this.#mouseDragHandler = new MouseDragHandler()
     this.#distance = 1
     this.#rotation = [0, 0]
     this.#target = [0, 0, 0]
     this.#changed = false
+    this.#isLocked = false
   }
 
   get distance() {
@@ -23,6 +24,14 @@ export class LookAtCameraHandler {
 
   get changed() {
     return this.#changed
+  }
+
+  get isLocked() {
+    return this.#isLocked
+  }
+
+  set isLocked(value: boolean) {
+    this.#isLocked = value
   }
 
   setTarget(x: number, y: number, z: number) {
@@ -53,30 +62,27 @@ export class LookAtCameraHandler {
   }
 
   start(cursorX: number, cursorY: number) {
-    this.#initialMousePosition[0] = cursorX
-    this.#initialMousePosition[1] = cursorY
-
-    this.#isStart = true
+    this.#mouseDragHandler.start(cursorX, cursorY)
   }
 
   move(cursorX: number, cursorY: number) {
-    if (!this.#isStart) return
+    if (this.#isLocked && this.#mouseDragHandler.isStart) {
+      this.end()
 
-    const dx = (this.#initialMousePosition[0] - cursorX) * 0.01
-    const dy = (this.#initialMousePosition[1] - cursorY) * 0.01
+      return
+    }
+
+    const [dx, dy] = this.#mouseDragHandler.move(cursorX, cursorY)
+
+    if (dx === 0 && dy === 0) return
 
     this.#rotation[1] += dx
     this.#rotation[0] += dy
-
-    this.#initialMousePosition[0] = cursorX
-    this.#initialMousePosition[1] = cursorY
 
     this.#changed = true
   }
 
   end() {
-    this.#initialMousePosition[0] = 0
-    this.#initialMousePosition[1] = 0
-    this.#isStart = false
+    this.#mouseDragHandler.end()
   }
 }

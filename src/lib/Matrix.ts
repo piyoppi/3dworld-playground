@@ -331,7 +331,10 @@ export class Vec3 {
 
   static dotprod(a: VectorArray3, b: VectorArray3) {
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
-      
+  }
+
+  static mulScale(a: VectorArray3, scale: number) {
+    return [a[0] * scale, a[1] * scale, a[2] * scale]
   }
 
   static norm(vec: VectorArray3): number {
