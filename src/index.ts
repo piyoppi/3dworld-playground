@@ -7,9 +7,8 @@ import { ThreeFactory as Factory } from './threeAdapter/ThreeFactory.js'
 import { Coordinate } from './Coordinate.js'
 import { Raycaster } from './Raycaster.js'
 import { makeMarker } from './VectorMarker.js'
-import { Item } from './Item.js'
 import { BoxGeometry, MeshBasicMaterial } from 'three'
-import { BallColider, BoxColider } from './Colider.js'
+import { BoxColider } from './Colider.js'
 import { setRenderer } from './Debugger.js'
 import { AxisMarker } from './AxisMarker.js'
 import { ThreeRenderingObject } from './threeAdapter/ThreeRenderer.js'
@@ -42,7 +41,6 @@ async function run() {
     const bones = extractItemsFromThreeBones(avatarRenderingObject, avatar)
     bones.forEach(bone => renderer.addItem(bone.item, bone.renderingObject))
     bones.forEach(bone => {
-      //const colider = new BallColider(0.03, bone.item.parentCoordinate)  
       const colider = new BoxColider(0.03, 0.03, 0.03, bone.item.parentCoordinate)  
       bone.item.addColider(colider)
     })

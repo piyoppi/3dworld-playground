@@ -80,27 +80,30 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
     this.#mapCoordinateIdToRenderingItem.set(item.parentCoordinate.uuid, mesh)
     this.#mapItemIdToRenderingItem.set(item.uuid, mesh)
 
-    item.parentCoordinate.setSetChildCallback((parent, child) => {
-      const parentMesh = this.#mapCoordinateIdToRenderingItem.get(parent.uuid)
-      const childMesh = this.#mapCoordinateIdToRenderingItem.get(child.uuid)
-
-      if (!parentMesh || !childMesh) return
-
-      parentMesh.add(childMesh)
-      syncCoordinate(child, childMesh)
-    })
-
-    item.parentCoordinate.setRemoveChildCallback((parent, child) => {
-      const parentMesh = this.#mapCoordinateIdToRenderingItem.get(parent.uuid)
-      const childMesh = this.#mapCoordinateIdToRenderingItem.get(child.uuid)
-
-      if (!parentMesh || !childMesh) return
-
-      parentMesh.remove(childMesh)
-      syncCoordinate(child, childMesh)
-    })
+    item.parentCoordinate.setSetChildCallback((parent, child) => this.coordinateSetChildCallbackHandler(parent, child))
+    item.parentCoordinate.setRemoveChildCallback((parent, child) => this.coordinateRemoveChildCallbackHandler(parent, child))
 
     syncCoordinate(item.parentCoordinate, mesh)
+  }
+
+  private coordinateSetChildCallbackHandler(parent: Coordinate, child: Coordinate) {
+    const parentMesh = this.#mapCoordinateIdToRenderingItem.get(parent.uuid)
+    const childMesh = this.#mapCoordinateIdToRenderingItem.get(child.uuid)
+
+    if (!parentMesh || !childMesh) return
+
+    parentMesh.add(childMesh)
+    syncCoordinate(child, childMesh)
+  }
+
+  private coordinateRemoveChildCallbackHandler(parent: Coordinate, child: Coordinate) {
+    const parentMesh = this.#mapCoordinateIdToRenderingItem.get(parent.uuid)
+    const childMesh = this.#mapCoordinateIdToRenderingItem.get(child.uuid)
+
+    if (!parentMesh || !childMesh) return
+
+    parentMesh.remove(childMesh)
+    syncCoordinate(child, childMesh)
   }
 
   setColor(item: Item, color: RGBColor) {
