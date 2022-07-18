@@ -30,18 +30,18 @@ renderer.addLight(lightCoordinate)
 const box = new Item()
 const boxRenderingObject = primitiveRenderingObjectBuilder.makeBox(0.1, 0.1, 0.1, {r: 255, g: 0, b: 255})
 box.addColider(new BoxColider(0.1, 0.1, 0.1, box.parentCoordinate))
-//raycaster.addTarget(box)
 renderer.addItem(box, boxRenderingObject)
 
 const marker = new AxisMarker<ThreeRenderingObject>()
 marker.attachRenderingObject(primitiveRenderingObjectBuilder, renderer)
 marker.setColider(0.005)
+marker.setParentCoordinate(box.parentCoordinate)
 marker.axes.forEach(item => raycaster.addTarget(item))
 
 const mouseDraggables : Array<MouseDraggable> = [
-  new AxisMarkerHandler(marker.xItem, [1, 0, 0], 1),
-  new AxisMarkerHandler(marker.yItem, [0, 1, 0], 1),
-  new AxisMarkerHandler(marker.zItem, [0, 0, 1], 1),
+  new AxisMarkerHandler(marker.xItem, box, [1, 0, 0], 1),
+  new AxisMarkerHandler(marker.yItem, box, [0, 1, 0], 1),
+  new AxisMarkerHandler(marker.zItem, box, [0, 0, 1], 1),
   lookAtCameraHandler
 ]
 
