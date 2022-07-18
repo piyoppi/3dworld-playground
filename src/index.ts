@@ -71,7 +71,7 @@ async function run() {
 
       // raycast
       const items = raycaster.check(pos[0], pos[1])
-      items.forEach(item => renderer.setColor(item, {r: 255, g: 0, b: 0}))
+      items.forEach(item => renderer.setColor(item, {r: 255, g: 255, b: 0}))
 
       if (items.length > 0) {
         marker.setParentCoordinate(items[0].parentCoordinate)
