@@ -1,17 +1,17 @@
-import { LookAtCameraHandler } from './LookAtCameraHandler.js'
-import { loadGlb } from './threeAdapter/ThreeLoaderHelper.js'
-import { extractItemsFromThreeBones } from './threeAdapter/ThreeBonePointExtractor.js'
-import { MouseHandler } from './MouseHandler.js'
-import { makeItem } from './ItemFactory.js'
-import { ThreeFactory as Factory } from './threeAdapter/ThreeFactory.js'
-import { Coordinate } from './Coordinate.js'
-import { Raycaster } from './Raycaster.js'
-import { makeMarker } from './VectorMarker.js'
+import { LookAtCameraHandler } from '../lib/LookAtCameraHandler.js'
+import { loadGlb } from '../lib/threeAdapter/ThreeLoaderHelper.js'
+import { extractItemsFromThreeBones } from '../lib/threeAdapter/ThreeBonePointExtractor.js'
+import { MouseHandler } from '../lib/MouseHandler.js'
+import { makeItem } from '../lib/ItemFactory.js'
+import { ThreeFactory as Factory } from '../lib/threeAdapter/ThreeFactory.js'
+import { Coordinate } from '../lib/Coordinate.js'
+import { Raycaster } from '../lib/Raycaster.js'
+import { makeMarker } from '../lib/VectorMarker.js'
 import { BoxGeometry, MeshBasicMaterial } from 'three'
-import { BoxColider } from './Colider.js'
-import { setRenderer } from './Debugger.js'
-import { AxisMarker } from './AxisMarker.js'
-import { ThreeRenderingObject } from './threeAdapter/ThreeRenderer.js'
+import { BoxColider } from '../lib/Colider.js'
+import { setRenderer } from '../lib/Debugger.js'
+import { AxisMarker } from '../lib/AxisMarker.js'
+import { ThreeRenderingObject } from '../lib/threeAdapter/ThreeRenderer.js'
 
 const lookAtCameraHandler = new LookAtCameraHandler()
 const mouseHandler = new MouseHandler(window.innerWidth, window.innerHeight)
@@ -29,7 +29,7 @@ async function run() {
   lightCoordinate.lookAt([0, 0, 0])
   renderer.addLight(lightCoordinate)
 
-  const avatarRenderingObject = await loadGlb('../../assets/avatar.glb')
+  const avatarRenderingObject = await loadGlb('./assets/avatar.glb')
   const avatar = makeItem()
   avatar.parentCoordinate.z = 0
   avatar.parentCoordinate.y = -1
