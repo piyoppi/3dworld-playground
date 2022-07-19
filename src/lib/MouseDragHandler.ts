@@ -1,3 +1,5 @@
+import { VectorArray2 } from "./Matrix"
+
 export interface MouseDraggable {
   start: (cursorX: number, cursorY: number) => void
   move: (cursorX: number, cursorY: number) => void
@@ -26,7 +28,7 @@ export class MouseDragHandler {
     this.#isStart = true
   }
 
-  move(cursorX: number, cursorY: number) {
+  move(cursorX: number, cursorY: number): VectorArray2 {
     if (!this.#isStart) return [0, 0]
 
     const dx = (this.#initialMousePosition[0] - cursorX) * 0.01

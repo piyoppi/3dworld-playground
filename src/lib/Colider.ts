@@ -46,7 +46,7 @@ export class BoxColider implements Colider {
     const transformToTargetItem = this.#parentCoordinate.getTransformMatrixFromWorldToCoordinate()
     const transformedRay = {
       position: Mat4.mulGlVec3(transformToTargetItem, ray.position),
-      direction: Vec3.normalize(Mat3.mulVec3(Mat3.transpose(Mat3.inverse(Mat4.removeTranslate(transformToTargetItem))), ray.direction))
+      direction: Vec3.normalize(Mat3.mulVec3(Mat4.convertToDirectionalTransformMatrix(transformToTargetItem), ray.direction))
     }
 
     const tRange = this.#halfDimensions.map((dimension, i) => {
@@ -59,18 +59,18 @@ export class BoxColider implements Colider {
     })
 
     const xyRange = [
-      Math.max(Math.min(tRange[0][0], tRange[1][1]), Math.min(tRange[0][1], tRange[1][0])),
+      Math.max(tRange[0][0], tRange[1][0]),
       Math.min(tRange[0][1], tRange[1][1])
     ]
 
-    if (xyRange[0] === xyRange[1]) return false
+    if (xyRange[0] > xyRange[1]) return false
 
     const xyzRange = [
-      Math.max(Math.min(xyRange[0], tRange[2][1]), Math.min(xyRange[1], tRange[2][0])),
+      Math.max(xyRange[0], tRange[2][0]),
       Math.min(xyRange[1], tRange[2][1])
     ]
 
-    if (xyzRange[0] === xyzRange[1]) return false
+    if (xyzRange[0] > xyzRange[1]) return false
 
     if (Math.max(xyzRange[0], xyzRange[1]) < 0) return false
 

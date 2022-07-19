@@ -39,9 +39,9 @@ marker.setParentCoordinate(box.parentCoordinate)
 marker.axes.forEach(item => raycaster.addTarget(item))
 
 const mouseDraggables : Array<MouseDraggable> = [
-  new AxisMarkerHandler(marker.xItem, box, [1, 0, 0], 1),
-  new AxisMarkerHandler(marker.yItem, box, [0, 1, 0], 1),
-  new AxisMarkerHandler(marker.zItem, box, [0, 0, 1], 1),
+  new AxisMarkerHandler(marker.xItem, box, [1, 0, 0], 0.01, renderer.camera),
+  new AxisMarkerHandler(marker.yItem, box, [0, 1, 0], 0.01, renderer.camera),
+  new AxisMarkerHandler(marker.zItem, box, [0, 0, 1], 0.01, renderer.camera),
   lookAtCameraHandler
 ]
 
@@ -55,13 +55,10 @@ renderer.setRenderingLoop(() => {
     let axisSelected = false
     if (items.length > 0) {
       if (items[0] === marker.xItem) {
-        console.log('xAxis')
         axisSelected = true
       } else if (items[0] === marker.yItem) {
-        console.log('yAxis')
         axisSelected = true
       } else if (items[0] === marker.zItem) {
-        console.log('zAxis')
         axisSelected = true
       }
     }
