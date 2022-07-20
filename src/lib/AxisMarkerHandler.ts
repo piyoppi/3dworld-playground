@@ -1,6 +1,6 @@
 import { Camera } from "./Camera.js"
 import { Item } from "./Item.js"
-import { Mat3, Mat4, Vec2, Vec3, VectorArray2, VectorArray3 } from "./Matrix.js"
+import { Mat3, Mat4, Vec2, Vec3, MatrixArray3, VectorArray2, VectorArray3 } from "./Matrix.js"
 import { MouseDraggable, MouseDragHandler } from "./MouseDragHandler.js"
 
 export class AxisMarkerHandler implements MouseDraggable  {
@@ -10,6 +10,7 @@ export class AxisMarkerHandler implements MouseDraggable  {
   #direction: VectorArray3
   #scale: number
   #camera: Camera
+  #transformMatrix: MatrixArray3
 
   constructor(axisItem: Item, manipulateItem: Item, directionInLocal: VectorArray3, scale: number, camera: Camera) {
     this.#mouseDragHandler = new MouseDragHandler()
@@ -18,27 +19,21 @@ export class AxisMarkerHandler implements MouseDraggable  {
     this.#direction = directionInLocal
     this.#scale = scale
     this.#camera = camera
-
+    this.#transformMatrix = Mat3.getIdentityMatrix()
   }
 
   start(cursorX: number, cursorY: number) {
     if (this.#mouseDragHandler.isStart) return
 
     this.#mouseDragHandler.start(cursorX, cursorY)
+    this.calcTransformMatrix()
   }
 
   move(cursorX: number, cursorY: number) {
     if (!this.#mouseDragHandler.isStart) return
 
     const mouseDelta = this.#mouseDragHandler.move(cursorX, cursorY)
-
-    const transform = Mat4.mulAll([
-      this.#manipulateItem.parentCoordinate.getTransformMatrixToWorld(),
-      this.#camera.coordinate.getTransformMatrixFromWorldToCoordinate(),
-      this.#camera.projectionMatrix,
-    ])
-    const mouseDeltaInItemCoordinate = Vec3.normalize(Mat3.mulVec3(Mat4.convertToDirectionalTransformMatrix(transform), [-mouseDelta[0], mouseDelta[1], 0]))
-
+    const mouseDeltaInItemCoordinate = Vec3.normalize(Mat3.mulVec3(this.#transformMatrix, [-mouseDelta[0], mouseDelta[1], 0]))
     const len = Vec3.dotprod(mouseDeltaInItemCoordinate, this.#direction)
     const scale = len * this.#scale
     const addingVector = Vec3.mulScale(this.#direction, scale)
@@ -50,5 +45,15 @@ export class AxisMarkerHandler implements MouseDraggable  {
 
   end() {
     this.#mouseDragHandler.end()
+  }
+
+  private calcTransformMatrix() {
+    const transform = Mat4.mulAll([
+      this.#manipulateItem.parentCoordinate.getTransformMatrixToWorld(),
+      this.#camera.coordinate.getTransformMatrixFromWorldToCoordinate(),
+      this.#camera.projectionMatrix,
+    ])
+
+    this.#transformMatrix = Mat4.convertToDirectionalTransformMatrix(transform)
   }
 }

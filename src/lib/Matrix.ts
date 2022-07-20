@@ -303,6 +303,14 @@ export class Mat3 {
     ]
   }
 
+  static getIdentityMatrix(): MatrixArray3 {
+    return [
+      1, 0, 0,
+      0, 1, 0,
+      0, 0, 1
+    ]
+  }
+
   static transpose(m: MatrixArray3): MatrixArray3 {
     return [
       m[0], m[3], m[6],
