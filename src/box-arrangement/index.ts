@@ -103,3 +103,37 @@ window.addEventListener('wheel', e => {
 window.addEventListener('mouseup', () => {
   mouseDraggables.forEach(handler => handler.end())
 })
+window.addEventListener('keydown', e => {
+  switch(e.key) {
+    case '1':
+      lookAtCameraHandler.setXYRotation(Math.PI / 2.0)
+      lookAtCameraHandler.setYZRotation(0)
+      break
+
+    case '2':
+      lookAtCameraHandler.addYZRotation(-Math.PI / 12.0)
+      break
+
+    case '3':
+      lookAtCameraHandler.setXYRotation(0)
+      lookAtCameraHandler.setYZRotation(0)
+      break
+
+    case '4':
+      lookAtCameraHandler.addXYRotation(Math.PI / 12.0)
+      break
+
+    case '6':
+      lookAtCameraHandler.addXYRotation(-Math.PI / 12.0)
+      break
+
+    case '7':
+      lookAtCameraHandler.setXYRotation(Math.PI / 2.0)
+      lookAtCameraHandler.setYZRotation(Math.PI / 2.0)
+      break
+
+    case '8':
+      lookAtCameraHandler.addYZRotation(Math.PI / 12.0)
+      break
+  }
+})

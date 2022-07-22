@@ -31,8 +31,8 @@ export class MouseDragHandler {
   move(cursorX: number, cursorY: number): VectorArray2 {
     if (!this.#isStart) return [0, 0]
 
-    const dx = (this.#initialMousePosition[0] - cursorX) * 0.01
-    const dy = (this.#initialMousePosition[1] - cursorY) * 0.01
+    const dx = (cursorX - this.#initialMousePosition[0])
+    const dy = (this.#initialMousePosition[1] - cursorY)
 
     this.#initialMousePosition[0] = cursorX
     this.#initialMousePosition[1] = cursorY

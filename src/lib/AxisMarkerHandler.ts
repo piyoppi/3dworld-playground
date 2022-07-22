@@ -33,7 +33,7 @@ export class AxisMarkerHandler implements MouseDraggable  {
     if (!this.#mouseDragHandler.isStart) return
 
     const mouseDelta = this.#mouseDragHandler.move(cursorX, cursorY)
-    const mouseDeltaInItemCoordinate = Vec3.normalize(Mat3.mulVec3(this.#transformMatrix, [-mouseDelta[0], mouseDelta[1], 0]))
+    const mouseDeltaInItemCoordinate = Vec3.normalize(Mat3.mulVec3(this.#transformMatrix, [mouseDelta[0], mouseDelta[1], 0]))
     const len = Vec3.dotprod(mouseDeltaInItemCoordinate, this.#direction)
     const scale = len * this.#scale
     const addingVector = Vec3.mulScale(this.#direction, scale)
@@ -49,9 +49,8 @@ export class AxisMarkerHandler implements MouseDraggable  {
 
   private calcTransformMatrix() {
     const transform = Mat4.mulAll([
-      this.#manipulateItem.parentCoordinate.getTransformMatrixToWorld(),
-      this.#camera.coordinate.getTransformMatrixFromWorldToCoordinate(),
-      this.#camera.projectionMatrix,
+      this.#manipulateItem.parentCoordinate.getTransformMatrixFromWorldToCoordinate(),
+      this.#camera.coordinate.getTransformMatrixToWorld()
     ])
 
     this.#transformMatrix = Mat4.convertToDirectionalTransformMatrix(transform)

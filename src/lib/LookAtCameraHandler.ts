@@ -34,6 +34,34 @@ export class LookAtCameraHandler implements MouseDraggable {
     this.#isLocked = value
   }
 
+  get rotation() {
+    return this.#rotation
+  }
+
+  setXYRotation(value: number) {
+    this.#rotation[1] = value
+
+    this.#changed = true
+  }
+
+  setYZRotation(value: number) {
+    if (value > Math.PI / 2 - 0.001) {
+      value = Math.PI / 2 - 0.001
+    }
+
+    this.#rotation[0] = value
+
+    this.#changed = true
+  }
+
+  addXYRotation(value: number) {
+    this.setXYRotation(this.#rotation[1] + value)
+  }
+
+  addYZRotation(value: number) {
+    this.setYZRotation(this.#rotation[0] + value)
+  }
+
   setTarget(x: number, y: number, z: number) {
     this.#target[0] = x
     this.#target[1] = y
@@ -76,8 +104,8 @@ export class LookAtCameraHandler implements MouseDraggable {
 
     if (dx === 0 && dy === 0) return
 
-    this.#rotation[1] += dx
-    this.#rotation[0] += dy
+    this.#rotation[1] += dx * 0.01
+    this.#rotation[0] += dy * 0.01
 
     this.#changed = true
   }
