@@ -1,10 +1,9 @@
 import { Camera } from "./Camera.js"
 import { Item } from "./Item.js"
 import { Mat3, Mat4, Vec2, Vec3, MatrixArray3, VectorArray2, VectorArray3 } from "./Matrix.js"
-import { MouseDraggable, MouseDragHandler } from "./MouseDragHandler.js"
+import { MouseControllable, MouseDragHandler } from "./MouseDragHandler.js"
 
-export class AxisMarkerHandler implements MouseDraggable  {
-  #axisItem: Item
+export class AxisMarkerHandler implements MouseControllable {
   #manipulateItem: Item
   #mouseDragHandler
   #direction: VectorArray3
@@ -12,14 +11,17 @@ export class AxisMarkerHandler implements MouseDraggable  {
   #camera: Camera
   #transformMatrix: MatrixArray3
 
-  constructor(axisItem: Item, manipulateItem: Item, directionInLocal: VectorArray3, scale: number, camera: Camera) {
+  constructor(manipulateItem: Item, directionInLocal: VectorArray3, scale: number, camera: Camera) {
     this.#mouseDragHandler = new MouseDragHandler()
-    this.#axisItem = axisItem
     this.#manipulateItem = manipulateItem
     this.#direction = directionInLocal
     this.#scale = scale
     this.#camera = camera
     this.#transformMatrix = Mat3.getIdentityMatrix()
+  }
+
+  get isStart() {
+    return this.#mouseDragHandler.isStart
   }
 
   start(cursorX: number, cursorY: number) {

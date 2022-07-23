@@ -1,25 +1,37 @@
 import { Camera } from './Camera.js';
+import { Colider } from './Colider.js';
 import { Item } from './Item.js'
 import { Mat4, Vec3 } from './Matrix.js';
 import { Ray } from './Ray.js'
 
-export class Raycaster {
+type ColidedItem<T> = {
+  colider: Colider,
+  item: T
+}
+
+export class Raycaster<T> {
   #camera: Camera
-  #targetItems: Array<Item>
-  #colidedItems: Array<Item>
+  #targetItems: Array<ColidedItem<T>>
+  #colidedColiders: Array<Colider>
+  #colidedItems: Array<T>
 
   constructor(camera: Camera) {
     this.#camera = camera
     this.#targetItems = []
     this.#colidedItems = []
+    this.#colidedColiders = []
   }
 
   get colidedItems() {
     return this.#colidedItems
   }
 
-  addTarget(item: Item) {
-    this.#targetItems.push(item)
+  get colidedColiders() {
+    return this.#colidedColiders
+  }
+
+  addTarget(colider: Colider, item: T) {
+    this.#targetItems.push({colider, item})
   }
 
   getRay(normalizedX: number, normalizedY: number): Ray {
@@ -42,7 +54,11 @@ export class Raycaster {
   check(normalizedX: number, normalizedY: number) {
     const ray = this.getRay(normalizedX, normalizedY)
 
-    this.#colidedItems = this.#targetItems.filter(item => item.checkColidedToRay(ray))
+    const colided = this.#targetItems
+      .filter(colidedItem => colidedItem.colider.checkRay(ray))
+
+    this.#colidedColiders = colided.map(item => item.colider)
+    this.#colidedItems = colided.map(item => item.item)
 
     return this.#colidedItems
   }

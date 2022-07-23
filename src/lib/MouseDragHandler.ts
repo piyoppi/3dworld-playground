@@ -1,9 +1,10 @@
 import { VectorArray2 } from "./Matrix"
 
-export interface MouseDraggable {
+export interface MouseControllable {
   start: (cursorX: number, cursorY: number) => void
   move: (cursorX: number, cursorY: number) => void
   end: () => void
+  readonly isStart: boolean
 }
 
 export class MouseDragHandler {

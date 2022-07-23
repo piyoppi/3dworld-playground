@@ -1,7 +1,7 @@
-import { Mat4, MatrixArray4, VectorArray3  } from './Matrix.js'
-import { MouseDraggable, MouseDragHandler } from "./MouseDragHandler.js"
+import { Mat4, VectorArray3  } from './Matrix.js'
+import { MouseControllable, MouseDragHandler } from "./MouseDragHandler.js"
 
-export class LookAtCameraHandler implements MouseDraggable {
+export class LookAtCameraHandler implements MouseControllable {
   #mouseDragHandler
   #distance
   #rotation
@@ -36,6 +36,10 @@ export class LookAtCameraHandler implements MouseDraggable {
 
   get rotation() {
     return this.#rotation
+  }
+
+  get isStart() {
+    return this.#mouseDragHandler.isStart
   }
 
   setXYRotation(value: number) {

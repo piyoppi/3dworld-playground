@@ -1,6 +1,9 @@
 import { BoxColider } from "./Colider.js"
 import { Coordinate } from "./Coordinate.js"
 import { Item } from "./Item.js"
+import { MouseControllable } from "./MouseDragHandler.js"
+import { MouseInteractionHandler } from "./MouseInteractionHandler.js"
+import { Raycaster } from "./Raycaster.js"
 import { Renderer } from "./Renderer.js"
 import { RenderingObjectBuilder } from './RenderingObjectBuilder.js'
 
@@ -39,9 +42,13 @@ export class AxisMarker<T> {
     return this.#axes
   }
 
-  setColider(radius: number) {
-    return this.#axes.map(axis => new BoxColider(radius, this.#norm, radius, axis.parentCoordinate))
-      .forEach((colider, index) => this.#axes[index].addColider(colider))
+  setColider(raycaster: Raycaster<Item>, interactionHandler: MouseInteractionHandler<Item>, handlers: [MouseControllable, MouseControllable, MouseControllable], radius: number) {
+    const coliders = this.#axes.map(axis => new BoxColider(radius, this.#norm, radius, axis.parentCoordinate))
+
+    coliders.forEach((colider, index) => {
+      raycaster.addTarget(colider, this.#axes[index])
+      interactionHandler.add({colider, handled: handlers[index]})
+    })
   }
 
   setParentCoordinate(coordinate: Coordinate | null = null) {

@@ -11,6 +11,7 @@ import { BoxColider } from '../lib/Colider.js'
 import { setRenderer } from '../lib/Debugger.js'
 import { AxisMarker } from '../lib/AxisMarker.js'
 import { ThreeRenderingObject } from '../lib/threeAdapter/ThreeRenderer.js'
+import { Item } from '../lib/Item.js'
 
 const lookAtCameraHandler = new LookAtCameraHandler()
 const mouseHandler = new MouseHandler(window.innerWidth, window.innerHeight)
@@ -20,7 +21,7 @@ renderer.initialize(window.innerWidth, window.innerHeight)
 
 setRenderer(renderer)
 
-const raycaster = new Raycaster(renderer.camera)
+const raycaster = new Raycaster<Item>(renderer.camera)
 
 async function run() {
   const lightCoordinate = new Coordinate()
@@ -41,9 +42,8 @@ async function run() {
     bones.forEach(bone => renderer.addItem(bone.item, bone.renderingObject))
     bones.forEach(bone => {
       const colider = new BoxColider(0.03, 0.03, 0.03, bone.item.parentCoordinate)  
-      bone.item.addColider(colider)
+      raycaster.addTarget(colider, bone.item)
     })
-    bones.forEach(bone => raycaster.addTarget(bone.item))
 
     const primitiveRenderingObjectBuilder = factory.makeRenderingObjectBuilder()
     marker.setParentCoordinate(bones[2].item.parentCoordinate)

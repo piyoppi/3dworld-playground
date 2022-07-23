@@ -9,7 +9,7 @@ import { AxisMarker } from '../lib/AxisMarker.js'
 import { ThreeRenderingObject } from '../lib/threeAdapter/ThreeRenderer.js'
 import { Item } from '../lib/Item.js'
 import { AxisMarkerHandler } from '../lib/AxisMarkerHandler.js'
-import { MouseDraggable } from '../lib/MouseDragHandler.js'
+import { MouseInteractionHandler } from '../lib/MouseInteractionHandler.js'
 
 const lookAtCameraHandler = new LookAtCameraHandler()
 const mouseHandler = new MouseHandler(window.innerWidth, window.innerHeight)
@@ -20,7 +20,8 @@ renderer.initialize(window.innerWidth, window.innerHeight)
 
 setRenderer(renderer)
 
-const raycaster = new Raycaster(renderer.camera)
+const raycaster = new Raycaster<Item>(renderer.camera)
+const mouseInteractionHandler = new MouseInteractionHandler(raycaster)
 
 const lightCoordinate = new Coordinate()
 lightCoordinate.y = 1
@@ -29,41 +30,29 @@ renderer.addLight(lightCoordinate)
 
 const box = new Item()
 const boxRenderingObject = primitiveRenderingObjectBuilder.makeBox(0.1, 0.1, 0.1, {r: 255, g: 0, b: 255})
-box.addColider(new BoxColider(0.1, 0.1, 0.1, box.parentCoordinate))
 renderer.addItem(box, boxRenderingObject)
 
 const marker = new AxisMarker<ThreeRenderingObject>()
 marker.attachRenderingObject(primitiveRenderingObjectBuilder, renderer)
-marker.setColider(0.005)
 marker.setParentCoordinate(box.parentCoordinate)
-marker.axes.forEach(item => raycaster.addTarget(item))
-
-const mouseDraggables : Array<MouseDraggable> = [
-  new AxisMarkerHandler(marker.xItem, box, [1, 0, 0], 0.01, renderer.camera),
-  new AxisMarkerHandler(marker.yItem, box, [0, 1, 0], 0.01, renderer.camera),
-  new AxisMarkerHandler(marker.zItem, box, [0, 0, 1], 0.01, renderer.camera),
-  lookAtCameraHandler
-]
-
+marker.setColider(
+  raycaster,
+  mouseInteractionHandler,
+  [
+    new AxisMarkerHandler(box, [1, 0, 0], 0.01, renderer.camera),
+    new AxisMarkerHandler(box, [0, 1, 0], 0.01, renderer.camera),
+    new AxisMarkerHandler(box, [0, 0, 1], 0.01, renderer.camera),
+  ],
+  0.005
+)
 
 renderer.setRenderingLoop(() => {
   if (mouseHandler.updated) {
     const pos = mouseHandler.getNormalizedPosition()
 
-    // raycast
-    const items = raycaster.check(pos[0], pos[1])
-    let axisSelected = false
-    if (items.length > 0) {
-      if (items[0] === marker.xItem) {
-        axisSelected = true
-      } else if (items[0] === marker.yItem) {
-        axisSelected = true
-      } else if (items[0] === marker.zItem) {
-        axisSelected = true
-      }
-    }
+    raycaster.check(pos[0], pos[1])
 
-    lookAtCameraHandler.isLocked = axisSelected
+    lookAtCameraHandler.isLocked = mouseInteractionHandler.handling
   }
 
   if (lookAtCameraHandler.changed) {
@@ -74,34 +63,23 @@ renderer.setRenderingLoop(() => {
 })
 renderer.mount()
 
+mouseInteractionHandler.capture()
+
 window.addEventListener('resize', () => renderer.resize(window.innerWidth, window.innerHeight))
 window.addEventListener('mousedown', e => {
   lookAtCameraHandler.start(e.screenX, e.screenY)
-
-  if (raycaster.colidedItems[0] === marker.xItem) {
-    mouseDraggables[0].start(e.screenX, e.screenY)
-  }
-
-  if (raycaster.colidedItems[0] === marker.yItem) {
-    mouseDraggables[1].start(e.screenX, e.screenY)
-  }
-
-  if (raycaster.colidedItems[0] === marker.zItem) {
-    mouseDraggables[2].start(e.screenX, e.screenY)
-  }
-
   mouseHandler.setPosition(e.clientX, e.clientY)
 })
 window.addEventListener('mousemove', e => {
-  mouseDraggables.forEach(handler => handler.move(e.screenX, e.screenY))
   mouseHandler.setPosition(e.clientX, e.clientY)
+  lookAtCameraHandler.move(e.screenX, e.screenY)
 })
 window.addEventListener('wheel', e => {
   lookAtCameraHandler.addDistance(e.deltaY * 0.001)
   mouseHandler.setPosition(e.clientX, e.clientY)
 })
 window.addEventListener('mouseup', () => {
-  mouseDraggables.forEach(handler => handler.end())
+  lookAtCameraHandler.end()
 })
 window.addEventListener('keydown', e => {
   switch(e.key) {
