@@ -3,16 +3,22 @@ import { MouseHandler } from '../lib/MouseHandler.js'
 import { ThreeFactory as Factory } from '../lib/threeAdapter/ThreeFactory.js'
 import { Coordinate } from '../lib/Coordinate.js'
 import { Raycaster } from '../lib/Raycaster.js'
-import { BoxColider } from '../lib/Colider.js'
 import { setRenderer } from '../lib/Debugger.js'
 import { AxisMarker } from '../lib/AxisMarker.js'
 import { ThreeRenderingObject } from '../lib/threeAdapter/ThreeRenderer.js'
 import { Item } from '../lib/Item.js'
 import { AxisMarkerHandler } from '../lib/AxisMarkerHandler.js'
 import { MouseInteractionHandler } from '../lib/MouseInteractionHandler.js'
+import { CameraKeyboardHandler } from '../lib/CameraKeyboardHandler.js'
 
 const lookAtCameraHandler = new LookAtCameraHandler()
+const cameraKeyBoardHandler = new CameraKeyboardHandler()
+cameraKeyBoardHandler.setLookAtCameraHandler(lookAtCameraHandler)
+cameraKeyBoardHandler.capture()
+
 const mouseHandler = new MouseHandler(window.innerWidth, window.innerHeight)
+mouseHandler.capture()
+
 const factory = new Factory()
 const renderer = factory.makeRenderer({fov: 100, aspect: window.innerWidth / window.innerHeight, near: 0.001, far: 10})
 const primitiveRenderingObjectBuilder = factory.makeRenderingObjectBuilder()
@@ -22,6 +28,7 @@ setRenderer(renderer)
 
 const raycaster = new Raycaster<Item>(renderer.camera)
 const mouseInteractionHandler = new MouseInteractionHandler(raycaster)
+mouseInteractionHandler.capture()
 
 const lightCoordinate = new Coordinate()
 lightCoordinate.y = 1
@@ -63,55 +70,16 @@ renderer.setRenderingLoop(() => {
 })
 renderer.mount()
 
-mouseInteractionHandler.capture()
-
 window.addEventListener('resize', () => renderer.resize(window.innerWidth, window.innerHeight))
 window.addEventListener('mousedown', e => {
   lookAtCameraHandler.start(e.screenX, e.screenY)
-  mouseHandler.setPosition(e.clientX, e.clientY)
 })
 window.addEventListener('mousemove', e => {
-  mouseHandler.setPosition(e.clientX, e.clientY)
   lookAtCameraHandler.move(e.screenX, e.screenY)
 })
 window.addEventListener('wheel', e => {
   lookAtCameraHandler.addDistance(e.deltaY * 0.001)
-  mouseHandler.setPosition(e.clientX, e.clientY)
 })
 window.addEventListener('mouseup', () => {
   lookAtCameraHandler.end()
-})
-window.addEventListener('keydown', e => {
-  switch(e.key) {
-    case '1':
-      lookAtCameraHandler.setXYRotation(Math.PI / 2.0)
-      lookAtCameraHandler.setYZRotation(0)
-      break
-
-    case '2':
-      lookAtCameraHandler.addYZRotation(-Math.PI / 12.0)
-      break
-
-    case '3':
-      lookAtCameraHandler.setXYRotation(0)
-      lookAtCameraHandler.setYZRotation(0)
-      break
-
-    case '4':
-      lookAtCameraHandler.addXYRotation(Math.PI / 12.0)
-      break
-
-    case '6':
-      lookAtCameraHandler.addXYRotation(-Math.PI / 12.0)
-      break
-
-    case '7':
-      lookAtCameraHandler.setXYRotation(Math.PI / 2.0)
-      lookAtCameraHandler.setYZRotation(Math.PI / 2.0)
-      break
-
-    case '8':
-      lookAtCameraHandler.addYZRotation(Math.PI / 12.0)
-      break
-  }
 })

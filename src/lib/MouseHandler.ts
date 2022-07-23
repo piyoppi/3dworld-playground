@@ -31,4 +31,10 @@ export class MouseHandler {
       -(this.#position[1] / this.#renderingAreaSize[1]) * 2 + 1
     ]
   }
+
+  capture() {
+    window.addEventListener('mousedown', e => { this.setPosition(e.clientX, e.clientY) })
+    window.addEventListener('mousemove', e => { this.setPosition(e.clientX, e.clientY) })
+    window.addEventListener('wheel', e => { this.setPosition(e.clientX, e.clientY) })
+  }
 }
