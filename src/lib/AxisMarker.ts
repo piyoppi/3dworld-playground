@@ -43,12 +43,13 @@ export class AxisMarker<T> {
   }
 
   setColider(raycaster: Raycaster<Item>, interactionHandler: MouseInteractionHandler<Item>, handlers: [MouseControllable, MouseControllable, MouseControllable], radius: number) {
-    const coliders = this.#axes.map(axis => new BoxColider(radius, this.#norm, radius, axis.parentCoordinate))
+    this.#axes.forEach(axis => raycaster.removeTarget(axis))
 
-    coliders.forEach((colider, index) => {
-      raycaster.addTarget(colider, this.#axes[index])
-      interactionHandler.add({colider, handled: handlers[index]})
-    })
+    this.#axes.map(axis => new BoxColider(radius, this.#norm, radius, axis.parentCoordinate))
+      .forEach((colider, index) => {
+        raycaster.addTarget(colider, this.#axes[index])
+        interactionHandler.add({colider, handled: handlers[index]})
+      })
   }
 
   setParentCoordinate(coordinate: Coordinate | null = null) {

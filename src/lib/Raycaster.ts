@@ -34,6 +34,15 @@ export class Raycaster<T> {
     this.#targetItems.push({colider, item})
   }
 
+  removeTarget(item: T) {
+    this.#targetItems.map((targetItem, index) => targetItem.item === item ? index : -1)
+      .filter(index => index >= 0)
+      .sort((a, b) => b - a)
+      .forEach(index => {
+        this.#targetItems.splice(index, 1)
+      })
+  }
+
   getRay(normalizedX: number, normalizedY: number): Ray {
     const vec = [normalizedX, normalizedY] as const
 
