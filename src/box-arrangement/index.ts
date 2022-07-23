@@ -3,7 +3,6 @@ import { MouseHandler } from '../lib/MouseHandler.js'
 import { ThreeFactory as Factory } from '../lib/threeAdapter/ThreeFactory.js'
 import { Coordinate } from '../lib/Coordinate.js'
 import { Raycaster } from '../lib/Raycaster.js'
-import { setRenderer } from '../lib/Debugger.js'
 import { AxisMarker } from '../lib/AxisMarker.js'
 import { ThreeRenderingObject } from '../lib/threeAdapter/ThreeRenderer.js'
 import { Item } from '../lib/Item.js'
@@ -24,8 +23,6 @@ const factory = new Factory()
 const renderer = factory.makeRenderer({fov: 100, aspect: window.innerWidth / window.innerHeight, near: 0.001, far: 10})
 const primitiveRenderingObjectBuilder = factory.makeRenderingObjectBuilder()
 renderer.initialize(window.innerWidth, window.innerHeight)
-
-setRenderer(renderer)
 
 const raycaster = new Raycaster<Item>(renderer.camera)
 const axesRaycaster = new Raycaster<Item>(renderer.camera)
@@ -73,7 +70,7 @@ function captureMouseClicked() {
       ],
       0.03
     )
-    //lookAtCameraHandler.setTarget(box.parentCoordinate.x, box.parentCoordinate.y, box.parentCoordinate.z)
+    lookAtCameraHandler.setTarget(box.parentCoordinate.x, box.parentCoordinate.y, box.parentCoordinate.z)
   }
 
   lookAtCameraHandler.isLocked = mouseInteractionHandler.handling
