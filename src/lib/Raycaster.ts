@@ -64,7 +64,10 @@ export class Raycaster<T> {
     const ray = this.getRay(normalizedX, normalizedY)
 
     const colided = this.#targetItems
-      .filter(colidedItem => colidedItem.colider.checkRay(ray))
+      .map(colidedItem => ({colidedItem, distance: colidedItem.colider.checkRay(ray)}))
+      .filter(prop => prop.distance >= 0)
+      .sort((a, b) => a.distance - b.distance)
+      .map(prop => prop.colidedItem)
 
     this.#colidedColiders = colided.map(item => item.colider)
     this.#colidedItems = colided.map(item => item.item)

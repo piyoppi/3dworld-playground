@@ -4,7 +4,7 @@ import { Ray } from './Ray.js'
 import { showPoint } from './Debugger.js'
 
 export interface Colider {
-  checkRay(ray: Ray): boolean
+  checkRay(ray: Ray): number
 }
 
 export class BallColider implements Colider {
@@ -16,7 +16,7 @@ export class BallColider implements Colider {
     this.#parentCoordinate = parentCoordinate
   }
 
-  checkRay(ray: Ray): boolean {
+  checkRay(ray: Ray): number {
     const pos = this.#parentCoordinate.getGlobalPosition()
     const s = Vec3.subtract(ray.position, pos)
     const a = 1
@@ -25,7 +25,7 @@ export class BallColider implements Colider {
 
     const d = Math.pow(b, 2) - 4 * a * c
 
-    return (d >= 0)
+    return (d >= 0) ? Math.min((-b + d) / 2 * a, (-b - d) / 2 * a) : -1
   }
 }
 
@@ -42,7 +42,7 @@ export class BoxColider implements Colider {
     this.#parentCoordinate = parentCoordinate
   }
 
-  checkRay(ray: Ray): boolean {
+  checkRay(ray: Ray): number {
     const transformToTargetItem = this.#parentCoordinate.getTransformMatrixFromWorldToCoordinate()
     const transformedRay = {
       position: Mat4.mulGlVec3(transformToTargetItem, ray.position),
@@ -63,17 +63,17 @@ export class BoxColider implements Colider {
       Math.min(tRange[0][1], tRange[1][1])
     ]
 
-    if (xyRange[0] > xyRange[1]) return false
+    if (xyRange[0] > xyRange[1]) return -1
 
     const xyzRange = [
       Math.max(xyRange[0], tRange[2][0]),
       Math.min(xyRange[1], tRange[2][1])
     ]
 
-    if (xyzRange[0] > xyzRange[1]) return false
+    if (xyzRange[0] > xyzRange[1]) return -1
 
-    if (Math.max(xyzRange[0], xyzRange[1]) < 0) return false
+    if (Math.max(xyzRange[0], xyzRange[1]) < 0) return -1
 
-    return true
+    return Math.min(xyRange[0], xyzRange[1])
   }
 }
