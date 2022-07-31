@@ -1,20 +1,21 @@
-import { BoxColider } from "./Colider.js"
-import { Coordinate } from "./Coordinate.js"
-import { Item } from "./Item.js"
-import { MouseControllable } from "./MouseDragHandler.js"
-import { ControlHandle, MouseInteractionHandler } from "./MouseInteractionHandler.js"
-import { Raycaster } from "./Raycaster.js"
-import { Renderer } from "./Renderer.js"
-import { RenderingObjectBuilder } from './RenderingObjectBuilder.js'
-import { Colider } from './Colider.js'
-import { Marker } from "./Marker.js"
+import { BoxColider } from "../Colider.js"
+import { Coordinate } from "../Coordinate.js"
+import { Item } from "../Item.js"
+import { MouseControllable } from "../MouseDragHandler.js"
+import { ControlHandle, MouseInteractionHandler } from "../MouseInteractionHandler.js"
+import { Raycaster } from "../Raycaster.js"
+import { Renderer } from "../Renderer.js"
+import { RenderingObjectBuilder } from '../RenderingObjectBuilder.js'
+import { HandledColiders } from "./Marker.js"
+import { AxisMarkerHandler } from './handlers/AxisMarkerHandler.js'
+import { Camera } from '../Camera.js'
 
 export class AxisMarker<T> {
   #axes
   #norm: number
   #radius: number
   #parentCoordinate: Coordinate
-  #marker: Marker
+  #marker: HandledColiders
 
   constructor(norm: number, radius: number) {
     this.#axes = [new Item(), new Item(), new Item()]
@@ -29,7 +30,7 @@ export class AxisMarker<T> {
 
     this.#parentCoordinate = new Coordinate()
     this.setParentCoordinate(new Coordinate())
-    this.#marker = new Marker()
+    this.#marker = new HandledColiders()
   }
 
   get xItem() {
@@ -80,4 +81,17 @@ export class AxisMarker<T> {
       builder.makeVector(this.#norm, this.#radius, {r: 0, g: 0, b: 255})
     ].forEach((renderingObject, index) => renderer.addItem(this.#axes[index], renderingObject))
   }
+}
+
+export const attachAxisMarkerToItem = (marker: AxisMarker<never>, item: Item, raycaster: Raycaster, mouseHandler: MouseInteractionHandler, scale: number, camera: Camera) => {
+  marker.setParentCoordinate(item.parentCoordinate)
+  marker.setColider(
+    raycaster,
+    mouseHandler,
+    [
+      new AxisMarkerHandler(item, [1, 0, 0], scale, camera),
+      new AxisMarkerHandler(item, [0, 1, 0], scale, camera),
+      new AxisMarkerHandler(item, [0, 0, 1], scale, camera),
+    ]
+  )
 }

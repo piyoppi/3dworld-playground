@@ -24,6 +24,10 @@ export class Raycaster {
     return this.#colidedColiders
   }
 
+  get hasColided() {
+    return this.#colidedColiders.length > 0
+  }
+
   addTarget(colider: Colider) {
     this.#targetColiders.push(colider)
   }
@@ -83,6 +87,10 @@ export class ItemRaycaster<T> {
 
   get colidedItems() {
     return this.#colidedItems
+  }
+
+  get hasColided() {
+    return this.#raycaster.hasColided
   }
 
   addTarget(colider: Colider, item: T) {

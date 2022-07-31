@@ -1,24 +1,22 @@
-import { Camera } from "./Camera.js"
-import { Item } from "./Item.js"
-import { MouseControllable, MouseDragHandler } from "./MouseDragHandler.js"
-import { Mat3, Mat4, Vec3, MatrixArray3, VectorArray3 } from "./Matrix.js"
+import { Camera } from "../../Camera.js"
+import { Item } from "../../Item.js"
+import { Mat3, Mat4, Vec3, MatrixArray3, VectorArray3 } from "../../Matrix.js"
+import { MouseControllable, MouseDragHandler } from "../../MouseDragHandler.js"
 
-export class CenterMarkerHandler implements MouseControllable {
-  #mouseDragHandler
+export class AxisMarkerHandler implements MouseControllable {
   #manipulateItem: Item
-  #planeXAxis: VectorArray3
-  #planeYAxis: VectorArray3
+  #mouseDragHandler
+  #direction: VectorArray3
   #scale: number
   #camera: Camera
   #transformMatrix: MatrixArray3
 
-  constructor(manipulateItem: Item, planeXAxis: VectorArray3, planeYAxis: VectorArray3, scale: number, camera: Camera) {
+  constructor(manipulateItem: Item, directionInLocal: VectorArray3, scale: number, camera: Camera) {
     this.#mouseDragHandler = new MouseDragHandler()
     this.#manipulateItem = manipulateItem
-    this.#planeXAxis = planeXAxis
-    this.#planeYAxis = planeYAxis
-    this.#camera = camera
+    this.#direction = directionInLocal
     this.#scale = scale
+    this.#camera = camera
     this.#transformMatrix = Mat3.getIdentityMatrix()
   }
 
@@ -30,6 +28,7 @@ export class CenterMarkerHandler implements MouseControllable {
     if (this.#mouseDragHandler.isStart) return
 
     this.#mouseDragHandler.start(cursorX, cursorY)
+    this.calcTransformMatrix()
   }
 
   move(cursorX: number, cursorY: number) {
@@ -37,11 +36,9 @@ export class CenterMarkerHandler implements MouseControllable {
 
     const mouseDelta = this.#mouseDragHandler.move(cursorX, cursorY)
     const mouseDeltaInItemCoordinate = Vec3.normalize(Mat3.mulVec3(this.#transformMatrix, [mouseDelta[0], mouseDelta[1], 0]))
-    const addingVector = [
-      Vec3.dotprod(mouseDeltaInItemCoordinate, this.#planeXAxis) * this.#scale,
-      Vec3.dotprod(mouseDeltaInItemCoordinate, this.#planeYAxis) * this.#scale,
-      0
-    ]
+    const len = Vec3.dotprod(mouseDeltaInItemCoordinate, this.#direction)
+    const scale = len * this.#scale
+    const addingVector = Vec3.mulScale(this.#direction, scale)
 
     this.#manipulateItem.parentCoordinate.x += addingVector[0]
     this.#manipulateItem.parentCoordinate.y += addingVector[1]

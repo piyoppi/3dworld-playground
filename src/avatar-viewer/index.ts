@@ -9,7 +9,7 @@ import { Raycaster, ItemRaycaster } from '../lib/Raycaster.js'
 import { makeMarker } from '../lib/VectorMarker.js'
 import { BoxColider } from '../lib/Colider.js'
 import { setRenderer } from '../lib/Debugger.js'
-import { AxisMarker } from '../lib/AxisMarker.js'
+import { AxisMarker } from '../lib/markers/AxisMarker.js'
 import { ThreeRenderingObject } from '../lib/threeAdapter/ThreeRenderer.js'
 import { Item } from '../lib/Item.js'
 

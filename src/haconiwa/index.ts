@@ -3,16 +3,15 @@ import { MouseHandler } from '../lib/MouseHandler.js'
 import { ThreeFactory as Factory } from '../lib/threeAdapter/ThreeFactory.js'
 import { Coordinate } from '../lib/Coordinate.js'
 import { Raycaster, ItemRaycaster } from '../lib/Raycaster.js'
-import { AxisMarker } from '../lib/AxisMarker.js'
+import { attachAxisMarkerToItem, AxisMarker } from '../lib/markers/AxisMarker.js'
 import { ThreeRenderingObject } from '../lib/threeAdapter/ThreeRenderer.js'
 import { Item } from '../lib/Item.js'
-import { AxisMarkerHandler } from '../lib/AxisMarkerHandler.js'
 import { MouseInteractionHandler } from '../lib/MouseInteractionHandler.js'
 import { CameraKeyboardHandler } from '../lib/CameraKeyboardHandler.js'
 import { BoxColider } from '../lib/Colider.js'
 import { loadGlb } from '../lib/threeAdapter/ThreeLoaderHelper.js'
-import { CenterMarkerHandler } from '../lib/CenterMarkerHandler.js'
-import { CenterMarker } from '../lib/CenterMarker.js'
+import { CenterMarkerHandler } from '../lib/markers/handlers/CenterMarkerHandler.js'
+import { attachCenterMarkerToItem, CenterMarker } from '../lib/markers/CenterMarker.js'
 
 const lookAtCameraHandler = new LookAtCameraHandler()
 const cameraKeyBoardHandler = new CameraKeyboardHandler()
@@ -48,10 +47,9 @@ for (let i=-3; i<3; i++) {
   raycaster.addTarget(colider, road)
 }
 
-const centerMarker = new CenterMarker()
+const centerMarker = new CenterMarker(1)
 const marker = new AxisMarker<ThreeRenderingObject>(1, 0.05)
 marker.attachRenderingObject(primitiveRenderingObjectBuilder, renderer)
-
 
 function captureMouseClicked() {
   if (!mouseHandler.updated) return
@@ -61,20 +59,11 @@ function captureMouseClicked() {
   axesRaycaster.check(pos[0], pos[1])
   centerMarkerRaycaster.check(pos[0], pos[1])
 
-  if (axesRaycaster.colidedColiders.length === 0 && raycaster.colidedItems.length > 0) {
+  if (!axesRaycaster.hasColided && !centerMarkerRaycaster.hasColided && raycaster.colidedItems.length > 0) {
     const box = raycaster.colidedItems[0]
-    marker.setParentCoordinate(box.parentCoordinate)
-    marker.setColider(
-      axesRaycaster,
-      mouseInteractionHandler,
-      [
-        new AxisMarkerHandler(box, [1, 0, 0], 0.01, renderer.camera),
-        new AxisMarkerHandler(box, [0, 1, 0], 0.01, renderer.camera),
-        new AxisMarkerHandler(box, [0, 0, 1], 0.01, renderer.camera),
-      ]
-    )
+    attachAxisMarkerToItem(marker, box, axesRaycaster, mouseInteractionHandler, 0.1, renderer.camera)
 
-    const centerMarker = new CenterMarkerHandler(box, [1, 0, 0], [0, 1, 0], 0.01, renderer.camera)
+    attachCenterMarkerToItem(centerMarker, box, centerMarkerRaycaster, mouseInteractionHandler, 0.1, renderer.camera)
   }
 }
 
