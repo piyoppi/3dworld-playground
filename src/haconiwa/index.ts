@@ -1,0 +1,107 @@
+import { LookAtCameraHandler } from '../lib/LookAtCameraHandler.js'
+import { MouseHandler } from '../lib/MouseHandler.js'
+import { ThreeFactory as Factory } from '../lib/threeAdapter/ThreeFactory.js'
+import { Coordinate } from '../lib/Coordinate.js'
+import { Raycaster, ItemRaycaster } from '../lib/Raycaster.js'
+import { AxisMarker } from '../lib/AxisMarker.js'
+import { ThreeRenderingObject } from '../lib/threeAdapter/ThreeRenderer.js'
+import { Item } from '../lib/Item.js'
+import { AxisMarkerHandler } from '../lib/AxisMarkerHandler.js'
+import { MouseInteractionHandler } from '../lib/MouseInteractionHandler.js'
+import { CameraKeyboardHandler } from '../lib/CameraKeyboardHandler.js'
+import { BoxColider } from '../lib/Colider.js'
+import { loadGlb } from '../lib/threeAdapter/ThreeLoaderHelper.js'
+import { CenterMarkerHandler } from '../lib/CenterMarkerHandler.js'
+import { CenterMarker } from '../lib/CenterMarker.js'
+
+const lookAtCameraHandler = new LookAtCameraHandler()
+const cameraKeyBoardHandler = new CameraKeyboardHandler()
+cameraKeyBoardHandler.setLookAtCameraHandler(lookAtCameraHandler)
+cameraKeyBoardHandler.capture()
+
+const mouseHandler = new MouseHandler(window.innerWidth, window.innerHeight)
+mouseHandler.capture()
+
+const factory = new Factory()
+const renderer = factory.makeRenderer({fov: 100, aspect: window.innerWidth / window.innerHeight, near: 0.001, far: 100})
+const primitiveRenderingObjectBuilder = factory.makeRenderingObjectBuilder()
+renderer.initialize(window.innerWidth, window.innerHeight)
+
+const raycaster = new ItemRaycaster<Item>(new Raycaster(renderer.camera))
+const axesRaycaster = new Raycaster(renderer.camera)
+const centerMarkerRaycaster = new Raycaster(renderer.camera)
+const mouseInteractionHandler = new MouseInteractionHandler()
+mouseInteractionHandler.addRaycaster(axesRaycaster)
+mouseInteractionHandler.addRaycaster(centerMarkerRaycaster)
+
+const lightCoordinate = new Coordinate()
+lightCoordinate.y = 1
+lightCoordinate.lookAt([0, 0, 0])
+renderer.addLight(lightCoordinate)
+
+for (let i=-3; i<3; i++) {
+  const road = new Item()
+  const roadRenderingObj = await loadGlb('./assets/road.glb')
+  renderer.addItem(road, {item: roadRenderingObj})
+  road.parentCoordinate.z = i
+  const colider = new BoxColider(6, 1, 0.5, road.parentCoordinate)
+  raycaster.addTarget(colider, road)
+}
+
+const centerMarker = new CenterMarker()
+const marker = new AxisMarker<ThreeRenderingObject>(1, 0.05)
+marker.attachRenderingObject(primitiveRenderingObjectBuilder, renderer)
+
+
+function captureMouseClicked() {
+  if (!mouseHandler.updated) return
+  const pos = mouseHandler.getNormalizedPosition()
+
+  raycaster.check(pos[0], pos[1])
+  axesRaycaster.check(pos[0], pos[1])
+  centerMarkerRaycaster.check(pos[0], pos[1])
+
+  if (axesRaycaster.colidedColiders.length === 0 && raycaster.colidedItems.length > 0) {
+    const box = raycaster.colidedItems[0]
+    marker.setParentCoordinate(box.parentCoordinate)
+    marker.setColider(
+      axesRaycaster,
+      mouseInteractionHandler,
+      [
+        new AxisMarkerHandler(box, [1, 0, 0], 0.01, renderer.camera),
+        new AxisMarkerHandler(box, [0, 1, 0], 0.01, renderer.camera),
+        new AxisMarkerHandler(box, [0, 0, 1], 0.01, renderer.camera),
+      ]
+    )
+
+    const centerMarker = new CenterMarkerHandler(box, [1, 0, 0], [0, 1, 0], 0.01, renderer.camera)
+  }
+}
+
+renderer.setRenderingLoop(() => {
+  if (lookAtCameraHandler.changed) {
+    renderer.camera.coordinate.matrix = lookAtCameraHandler.getLookAtMatrix()
+  }
+
+  renderer.render()
+})
+renderer.mount()
+
+window.addEventListener('resize', () => renderer.resize(window.innerWidth, window.innerHeight))
+window.addEventListener('mousedown', e => {
+  lookAtCameraHandler.start(e.screenX, e.screenY)
+  captureMouseClicked()
+  mouseInteractionHandler.mousedown(e.screenX, e.screenY)
+})
+window.addEventListener('mousemove', e => {
+  mouseInteractionHandler.mousemove(e.screenX, e.screenY)
+  lookAtCameraHandler.isLocked = mouseInteractionHandler.handling
+  lookAtCameraHandler.move(e.screenX, e.screenY)
+})
+window.addEventListener('wheel', e => {
+  lookAtCameraHandler.addDistance(e.deltaY * 0.001)
+})
+window.addEventListener('mouseup', e => {
+  lookAtCameraHandler.end()
+  mouseInteractionHandler.mouseup(e.screenX, e.screenY)
+})
