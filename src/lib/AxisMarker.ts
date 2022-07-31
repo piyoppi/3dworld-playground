@@ -2,18 +2,23 @@ import { BoxColider } from "./Colider.js"
 import { Coordinate } from "./Coordinate.js"
 import { Item } from "./Item.js"
 import { MouseControllable } from "./MouseDragHandler.js"
-import { MouseInteractionHandler } from "./MouseInteractionHandler.js"
+import { ControlHandle, MouseInteractionHandler } from "./MouseInteractionHandler.js"
 import { Raycaster } from "./Raycaster.js"
 import { Renderer } from "./Renderer.js"
 import { RenderingObjectBuilder } from './RenderingObjectBuilder.js'
+import { Colider } from './Colider.js'
 
 export class AxisMarker<T> {
   #axes
+  #coliders: Array<Colider>
+  #handles: Array<ControlHandle>
   #norm: number
   #parentCoordinate: Coordinate
 
   constructor() {
     this.#axes = [new Item(), new Item(), new Item()]
+    this.#coliders = []
+    this.#handles = []
     this.#axes[0].parentCoordinate.rotateZ(-Math.PI / 2)
     this.#axes[2].parentCoordinate.rotateX(Math.PI / 2)
     this.#norm = 0.1
@@ -42,13 +47,21 @@ export class AxisMarker<T> {
     return this.#axes
   }
 
-  setColider(raycaster: Raycaster<Item>, interactionHandler: MouseInteractionHandler<Item>, handlers: [MouseControllable, MouseControllable, MouseControllable], radius: number) {
-    this.#axes.forEach(axis => raycaster.removeTarget(axis))
+  setColider(raycaster: Raycaster, interactionHandler: MouseInteractionHandler<Item>, handlers: [MouseControllable, MouseControllable, MouseControllable], radius: number) {
+    this.#coliders.forEach(colider => raycaster.removeTarget(colider))
+    this.#handles.forEach(controlHandle => interactionHandler.remove(controlHandle))
+
+    this.#coliders.length = 0
+    this.#handles.length = 0
 
     this.#axes.map(axis => new BoxColider(radius, this.#norm, radius, axis.parentCoordinate))
-      .forEach((colider, index) => {
-        raycaster.addTarget(colider, this.#axes[index])
-        interactionHandler.add({colider, handled: handlers[index]})
+      .map((colider, index) => {
+        raycaster.addTarget(colider)
+        const controlHandle = {colider, handled: handlers[index]}
+        interactionHandler.add(controlHandle)
+
+        this.#coliders.push(colider)
+        this.#handles.push(controlHandle)
       })
   }
 

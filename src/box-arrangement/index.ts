@@ -2,7 +2,7 @@ import { LookAtCameraHandler } from '../lib/LookAtCameraHandler.js'
 import { MouseHandler } from '../lib/MouseHandler.js'
 import { ThreeFactory as Factory } from '../lib/threeAdapter/ThreeFactory.js'
 import { Coordinate } from '../lib/Coordinate.js'
-import { Raycaster } from '../lib/Raycaster.js'
+import { Raycaster, ItemRaycaster } from '../lib/Raycaster.js'
 import { AxisMarker } from '../lib/AxisMarker.js'
 import { ThreeRenderingObject } from '../lib/threeAdapter/ThreeRenderer.js'
 import { Item } from '../lib/Item.js'
@@ -24,8 +24,8 @@ const renderer = factory.makeRenderer({fov: 100, aspect: window.innerWidth / win
 const primitiveRenderingObjectBuilder = factory.makeRenderingObjectBuilder()
 renderer.initialize(window.innerWidth, window.innerHeight)
 
-const raycaster = new Raycaster<Item>(renderer.camera)
-const axesRaycaster = new Raycaster<Item>(renderer.camera)
+const raycaster = new ItemRaycaster<Item>(new Raycaster(renderer.camera))
+const axesRaycaster = new Raycaster(renderer.camera)
 const mouseInteractionHandler = new MouseInteractionHandler(axesRaycaster)
 mouseInteractionHandler.capture()
 
@@ -57,7 +57,7 @@ function captureMouseClicked() {
   raycaster.check(pos[0], pos[1])
   axesRaycaster.check(pos[0], pos[1])
 
-  if (raycaster.colidedItems.length > 0) {
+  if (axesRaycaster.colidedColiders.length === 0 && raycaster.colidedItems.length > 0) {
     const box = raycaster.colidedItems[0]
     marker.setParentCoordinate(box.parentCoordinate)
     marker.setColider(
@@ -70,7 +70,7 @@ function captureMouseClicked() {
       ],
       0.03
     )
-    lookAtCameraHandler.setTarget(box.parentCoordinate.x, box.parentCoordinate.y, box.parentCoordinate.z)
+    //lookAtCameraHandler.setTarget(box.parentCoordinate.x, box.parentCoordinate.y, box.parentCoordinate.z)
   }
 
   lookAtCameraHandler.isLocked = mouseInteractionHandler.handling

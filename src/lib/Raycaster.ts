@@ -9,37 +9,31 @@ type ColidedItem<T> = {
   item: T
 }
 
-export class Raycaster<T> {
+export class Raycaster {
   #camera: Camera
-  #targetItems: Array<ColidedItem<T>>
   #colidedColiders: Array<Colider>
-  #colidedItems: Array<T>
+  #targetColiders: Array<Colider>
 
   constructor(camera: Camera) {
     this.#camera = camera
-    this.#targetItems = []
-    this.#colidedItems = []
+    this.#targetColiders = []
     this.#colidedColiders = []
-  }
-
-  get colidedItems() {
-    return this.#colidedItems
   }
 
   get colidedColiders() {
     return this.#colidedColiders
   }
 
-  addTarget(colider: Colider, item: T) {
-    this.#targetItems.push({colider, item})
+  addTarget(colider: Colider) {
+    this.#targetColiders.push(colider)
   }
 
-  removeTarget(item: T) {
-    this.#targetItems.map((targetItem, index) => targetItem.item === item ? index : -1)
+  removeTarget(colider: Colider) {
+    this.#targetColiders.map((targetColider, index) => targetColider === colider ? index : -1)
       .filter(index => index >= 0)
       .sort((a, b) => b - a)
       .forEach(index => {
-        this.#targetItems.splice(index, 1)
+        this.#targetColiders.splice(index, 1)
       })
   }
 
@@ -63,14 +57,55 @@ export class Raycaster<T> {
   check(normalizedX: number, normalizedY: number) {
     const ray = this.getRay(normalizedX, normalizedY)
 
-    const colided = this.#targetItems
-      .map(colidedItem => ({colidedItem, distance: colidedItem.colider.checkRay(ray)}))
+    const colided = this.#targetColiders
+      .map(colider => ({colider, distance: colider.checkRay(ray)}))
       .filter(prop => prop.distance >= 0)
       .sort((a, b) => a.distance - b.distance)
-      .map(prop => prop.colidedItem)
 
     this.#colidedColiders = colided.map(item => item.colider)
-    this.#colidedItems = colided.map(item => item.item)
+
+    return this.#colidedColiders
+  }
+}
+
+export class ItemRaycaster<T> {
+  #raycaster: Raycaster
+  #coliderToItemMap: Map<Colider, T>
+  #itemToColiderMap: Map<T, Colider>
+  #colidedItems: Array<T>
+
+  constructor(raycaster: Raycaster) {
+    this.#coliderToItemMap = new Map()
+    this.#itemToColiderMap = new Map()
+    this.#colidedItems = []
+    this.#raycaster = raycaster
+  }
+
+  get colidedItems() {
+    return this.#colidedItems
+  }
+
+  addTarget(colider: Colider, item: T) {
+    this.#coliderToItemMap.set(colider, item)
+    this.#itemToColiderMap.set(item, colider)
+
+    this.#raycaster.addTarget(colider)
+  }
+
+  removeTarget(item: T) {
+    const targetColider = this.#itemToColiderMap.get(item)
+    if (!targetColider) return
+
+    this.#raycaster.removeTarget(targetColider)
+
+    this.#coliderToItemMap.delete(targetColider)
+    this.#itemToColiderMap.delete(item)
+  }
+
+  check(normalizedX: number, normalizedY: number) {
+    this.#colidedItems = this.#raycaster.check(normalizedX, normalizedY)
+      .map(colider => this.#coliderToItemMap.get(colider))
+      .filter((colider): colider is T => !!colider)
 
     return this.#colidedItems
   }

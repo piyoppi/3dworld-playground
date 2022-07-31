@@ -3,16 +3,16 @@ import { MouseControllable } from "./MouseDragHandler";
 import { Raycaster } from "./Raycaster";
 
 export type ControlHandle = {
-  colider: Colider | null,
+  colider: Colider,
   handled: MouseControllable
 }
 
 export class MouseInteractionHandler<T> {
-  #raycaster: Raycaster<T>
+  #raycaster: Raycaster
   #handleItems: Array<ControlHandle>
   #handlingItems: Array<ControlHandle>
 
-  constructor(raycaster: Raycaster<T>) {
+  constructor(raycaster: Raycaster) {
     this.#raycaster = raycaster
     this.#handleItems = []
     this.#handlingItems = []
@@ -26,6 +26,15 @@ export class MouseInteractionHandler<T> {
     if (!Array.isArray(handled)) handled = [handled]
 
     handled.forEach(item => this.#handleItems.push(item))
+  }
+
+  remove(handled: ControlHandle) {
+    this.#handleItems.map((handler, index) => handler === handled ? index : -1)
+      .filter(index => index >= 0)
+      .sort((a, b) => b - a)
+      .forEach(index => {
+        this.#handleItems.splice(index, 1)
+      })
   }
 
   mousedown(screenX: number, screenY: number) {
@@ -55,6 +64,6 @@ export class MouseInteractionHandler<T> {
   }
 
   private colidedHandleItems() {
-    return this.#handleItems.filter(handledItem => !handledItem.colider || this.#raycaster.colidedColiders.includes(handledItem.colider))
+    return this.#handleItems.filter(handledItem => this.#raycaster.colidedColiders.includes(handledItem.colider))
   }
 }

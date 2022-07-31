@@ -5,7 +5,7 @@ import { MouseHandler } from '../lib/MouseHandler.js'
 import { makeItem } from '../lib/ItemFactory.js'
 import { ThreeFactory as Factory } from '../lib/threeAdapter/ThreeFactory.js'
 import { Coordinate } from '../lib/Coordinate.js'
-import { Raycaster } from '../lib/Raycaster.js'
+import { Raycaster, ItemRaycaster } from '../lib/Raycaster.js'
 import { makeMarker } from '../lib/VectorMarker.js'
 import { BoxColider } from '../lib/Colider.js'
 import { setRenderer } from '../lib/Debugger.js'
@@ -21,7 +21,7 @@ renderer.initialize(window.innerWidth, window.innerHeight)
 
 setRenderer(renderer)
 
-const raycaster = new Raycaster<Item>(renderer.camera)
+const raycaster = new ItemRaycaster<Item>(new Raycaster(renderer.camera))
 
 async function run() {
   const lightCoordinate = new Coordinate()
