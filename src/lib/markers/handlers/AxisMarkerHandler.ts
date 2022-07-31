@@ -1,7 +1,7 @@
 import { Camera } from "../../Camera.js"
 import { Item } from "../../Item.js"
 import { Mat3, Mat4, Vec3, MatrixArray3, VectorArray3 } from "../../Matrix.js"
-import { MouseControllable, MouseDragHandler } from "../../MouseDragHandler.js"
+import { MouseControllable, MouseDragHandler } from "../../mouse/MouseDragHandler.js"
 
 export class AxisMarkerHandler implements MouseControllable {
   #manipulateItem: Item

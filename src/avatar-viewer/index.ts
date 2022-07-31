@@ -1,7 +1,7 @@
 import { LookAtCameraHandler } from '../lib/LookAtCameraHandler.js'
 import { loadGlb } from '../lib/threeAdapter/ThreeLoaderHelper.js'
 import { extractItemsFromThreeBones } from '../lib/threeAdapter/ThreeBonePointExtractor.js'
-import { MouseHandler } from '../lib/MouseHandler.js'
+import { MouseHandler } from '../lib/mouse/MouseHandler.js'
 import { makeItem } from '../lib/ItemFactory.js'
 import { ThreeFactory as Factory } from '../lib/threeAdapter/ThreeFactory.js'
 import { Coordinate } from '../lib/Coordinate.js'

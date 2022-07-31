@@ -1,6 +1,6 @@
-import { Colider } from "./Colider";
-import { MouseControllable } from "./MouseDragHandler";
-import { Raycaster } from "./Raycaster";
+import { Colider } from "../Colider"
+import { MouseControllable } from "./MouseDragHandler"
+import { Raycaster } from "../Raycaster"
 
 export type ControlHandle = {
   colider: Colider,

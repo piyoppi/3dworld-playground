@@ -1,4 +1,4 @@
-import { VectorArray2 } from "./Matrix"
+import { VectorArray2 } from "../Matrix"
 
 export interface MouseControllable {
   start: (cursorX: number, cursorY: number) => void

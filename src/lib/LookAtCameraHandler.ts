@@ -1,5 +1,5 @@
 import { Mat4, VectorArray3  } from './Matrix.js'
-import { MouseControllable, MouseDragHandler } from "./MouseDragHandler.js"
+import { MouseControllable, MouseDragHandler } from "./mouse/MouseDragHandler.js"
 
 export class LookAtCameraHandler implements MouseControllable {
   #mouseDragHandler

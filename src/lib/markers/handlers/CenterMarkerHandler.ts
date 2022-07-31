@@ -1,6 +1,6 @@
 import { Camera } from "../../Camera.js"
 import { Item } from "../../Item.js"
-import { MouseControllable, MouseDragHandler } from "../../MouseDragHandler.js"
+import { MouseControllable, MouseDragHandler } from "../../mouse/MouseDragHandler.js"
 import { Mat3, Mat4, Vec3, MatrixArray3, VectorArray3 } from "../../Matrix.js"
 
 export class CenterMarkerHandler implements MouseControllable {

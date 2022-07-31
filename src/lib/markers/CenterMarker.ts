@@ -1,8 +1,8 @@
 import { BallColider } from "../Colider.js"
 import { Coordinate } from "../Coordinate.js"
 import { Item } from "../Item.js"
-import { MouseControllable } from "../MouseDragHandler.js"
-import { MouseInteractionHandler } from "../MouseInteractionHandler.js"
+import { MouseControllable } from "../mouse/MouseDragHandler.js"
+import { MouseInteractionHandler } from "../mouse/MouseInteractionHandler.js"
 import { Raycaster } from "../Raycaster.js"
 import { HandledColiders } from "./Marker.js"
 import { Camera } from '../Camera.js'
