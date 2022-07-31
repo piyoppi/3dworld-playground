@@ -7,21 +7,21 @@ import { Raycaster } from "./Raycaster.js"
 import { Renderer } from "./Renderer.js"
 import { RenderingObjectBuilder } from './RenderingObjectBuilder.js'
 import { Colider } from './Colider.js'
+import { Marker } from "./Marker.js"
 
 export class AxisMarker<T> {
   #axes
-  #coliders: Array<Colider>
-  #handles: Array<ControlHandle>
   #norm: number
+  #radius: number
   #parentCoordinate: Coordinate
+  #marker: Marker
 
-  constructor() {
+  constructor(norm: number, radius: number) {
     this.#axes = [new Item(), new Item(), new Item()]
-    this.#coliders = []
-    this.#handles = []
     this.#axes[0].parentCoordinate.rotateZ(-Math.PI / 2)
     this.#axes[2].parentCoordinate.rotateX(Math.PI / 2)
-    this.#norm = 0.1
+    this.#norm = norm
+    this.#radius = radius
 
     this.#axes[0].parentCoordinate.x = this.#norm / 2
     this.#axes[1].parentCoordinate.y = this.#norm / 2
@@ -29,6 +29,7 @@ export class AxisMarker<T> {
 
     this.#parentCoordinate = new Coordinate()
     this.setParentCoordinate(new Coordinate())
+    this.#marker = new Marker()
   }
 
   get xItem() {
@@ -47,25 +48,22 @@ export class AxisMarker<T> {
     return this.#axes
   }
 
-  setColider(raycaster: Raycaster, interactionHandler: MouseInteractionHandler<Item>, handlers: [MouseControllable, MouseControllable, MouseControllable], radius: number) {
-    this.#coliders.forEach(colider => raycaster.removeTarget(colider))
-    this.#handles.forEach(controlHandle => interactionHandler.remove(controlHandle))
-
-    this.#coliders.length = 0
-    this.#handles.length = 0
-
-    this.#axes.map(axis => new BoxColider(radius, this.#norm, radius, axis.parentCoordinate))
-      .map((colider, index) => {
-        raycaster.addTarget(colider)
-        const controlHandle = {colider, handled: handlers[index]}
-        interactionHandler.add(controlHandle)
-
-        this.#coliders.push(colider)
-        this.#handles.push(controlHandle)
-      })
+  get norm() {
+    return this.#norm
   }
 
-  setParentCoordinate(coordinate: Coordinate | null = null) {
+  get radius() {
+    return this.#radius
+  }
+
+  setColider(raycaster: Raycaster, interactionHandler: MouseInteractionHandler, handlers: [MouseControllable, MouseControllable, MouseControllable]) {
+    const coliders = this.#axes.map(axis => new BoxColider(this.#radius, this.#norm, this.#radius, axis.parentCoordinate))
+    const handles = coliders.map((colider, index) => ({colider, handled: handlers[index]}))
+
+    this.#marker.setColider(raycaster, interactionHandler, coliders, handles)
+  }
+
+  setParentCoordinate(coordinate: Coordinate) {
     this.#axes.forEach(axis => this.#parentCoordinate.removeChild(axis.parentCoordinate))
 
     if (coordinate) {
@@ -77,9 +75,9 @@ export class AxisMarker<T> {
 
   attachRenderingObject(builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
     [
-      builder.makeVector(this.#norm, {r: 255, g: 0, b: 0}),
-      builder.makeVector(this.#norm, {r: 0, g: 255, b: 0}),
-      builder.makeVector(this.#norm, {r: 0, g: 0, b: 255})
+      builder.makeVector(this.#norm, this.#radius, {r: 255, g: 0, b: 0}),
+      builder.makeVector(this.#norm, this.#radius, {r: 0, g: 255, b: 0}),
+      builder.makeVector(this.#norm, this.#radius, {r: 0, g: 0, b: 255})
     ].forEach((renderingObject, index) => renderer.addItem(this.#axes[index], renderingObject))
   }
 }

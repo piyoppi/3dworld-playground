@@ -7,13 +7,13 @@ export type ControlHandle = {
   handled: MouseControllable
 }
 
-export class MouseInteractionHandler<T> {
-  #raycaster: Raycaster
+export class MouseInteractionHandler {
+  #raycasters: Array<Raycaster>
   #handleItems: Array<ControlHandle>
   #handlingItems: Array<ControlHandle>
 
-  constructor(raycaster: Raycaster) {
-    this.#raycaster = raycaster
+  constructor() {
+    this.#raycasters = []
     this.#handleItems = []
     this.#handlingItems = []
   }
@@ -22,6 +22,10 @@ export class MouseInteractionHandler<T> {
     return this.#handlingItems.length > 0
   }
 
+  addRaycaster(raycaster: Raycaster) {
+    this.#raycasters.push(raycaster)
+  }
+ 
   add(handled: ControlHandle | Array<ControlHandle>) {
     if (!Array.isArray(handled)) handled = [handled]
 
@@ -64,6 +68,7 @@ export class MouseInteractionHandler<T> {
   }
 
   private colidedHandleItems() {
-    return this.#handleItems.filter(handledItem => this.#raycaster.colidedColiders.includes(handledItem.colider))
+    const colided = this.#raycasters.map(raycaster => raycaster.colidedColiders).flat()
+    return this.#handleItems.filter(handledItem => colided.includes(handledItem.colider))
   }
 }

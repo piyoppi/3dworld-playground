@@ -26,8 +26,8 @@ renderer.initialize(window.innerWidth, window.innerHeight)
 
 const raycaster = new ItemRaycaster<Item>(new Raycaster(renderer.camera))
 const axesRaycaster = new Raycaster(renderer.camera)
-const mouseInteractionHandler = new MouseInteractionHandler(axesRaycaster)
-mouseInteractionHandler.capture()
+const mouseInteractionHandler = new MouseInteractionHandler()
+mouseInteractionHandler.addRaycaster(axesRaycaster)
 
 const lightCoordinate = new Coordinate()
 lightCoordinate.y = 1
@@ -47,7 +47,7 @@ for (let x = -3; x < 3; x+=0.2) {
   }
 }
 
-const marker = new AxisMarker<ThreeRenderingObject>()
+const marker = new AxisMarker<ThreeRenderingObject>(0.1, 0.01)
 marker.attachRenderingObject(primitiveRenderingObjectBuilder, renderer)
 
 function captureMouseClicked() {
@@ -67,13 +67,9 @@ function captureMouseClicked() {
         new AxisMarkerHandler(box, [1, 0, 0], 0.01, renderer.camera),
         new AxisMarkerHandler(box, [0, 1, 0], 0.01, renderer.camera),
         new AxisMarkerHandler(box, [0, 0, 1], 0.01, renderer.camera),
-      ],
-      0.03
+      ]
     )
-    //lookAtCameraHandler.setTarget(box.parentCoordinate.x, box.parentCoordinate.y, box.parentCoordinate.z)
   }
-
-  lookAtCameraHandler.isLocked = mouseInteractionHandler.handling
 }
 
 renderer.setRenderingLoop(() => {
@@ -89,13 +85,17 @@ window.addEventListener('resize', () => renderer.resize(window.innerWidth, windo
 window.addEventListener('mousedown', e => {
   lookAtCameraHandler.start(e.screenX, e.screenY)
   captureMouseClicked()
+  mouseInteractionHandler.mousedown(e.screenX, e.screenY)
 })
 window.addEventListener('mousemove', e => {
+  mouseInteractionHandler.mousemove(e.screenX, e.screenY)
+  lookAtCameraHandler.isLocked = mouseInteractionHandler.handling
   lookAtCameraHandler.move(e.screenX, e.screenY)
 })
 window.addEventListener('wheel', e => {
   lookAtCameraHandler.addDistance(e.deltaY * 0.001)
 })
-window.addEventListener('mouseup', () => {
+window.addEventListener('mouseup', e => {
   lookAtCameraHandler.end()
+  mouseInteractionHandler.mouseup(e.screenX, e.screenY)
 })

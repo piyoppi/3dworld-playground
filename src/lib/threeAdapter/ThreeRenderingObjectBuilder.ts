@@ -13,9 +13,9 @@ import { Item } from '../Item.js'
 import { RGBColor, convertRgbToHex } from '../helpers/color.js'
 
 export class ThreeRenderingObjectBuilder implements RenderingObjectBuilder<ThreeRenderingObject> {
-  makeVector(norm: number, shaftColor: RGBColor) {
-    const cylinder = new CylinderGeometry(0.005, 0.005, norm, 8)
-    const direction = new TetrahedronGeometry(0.015, 0)
+  makeVector(norm: number, radius: number, shaftColor: RGBColor) {
+    const cylinder = new CylinderGeometry(radius, radius, norm, 8)
+    const direction = new TetrahedronGeometry(radius * 3, 0)
     const material = new MeshBasicMaterial({color: 0xffff00})
     const directionMaterial = new MeshBasicMaterial({color: 0x0000ff})
     material.depthTest = false

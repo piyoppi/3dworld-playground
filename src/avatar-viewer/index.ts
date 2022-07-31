@@ -35,7 +35,7 @@ async function run() {
   avatar.parentCoordinate.y = -1
   renderer.addItem(avatar, {item: avatarRenderingObject})
 
-  const marker = new AxisMarker<ThreeRenderingObject>()
+  const marker = new AxisMarker<ThreeRenderingObject>(0.1, 0.03)
 
   setTimeout(() => {
     const bones = extractItemsFromThreeBones(avatarRenderingObject, avatar)

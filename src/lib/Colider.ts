@@ -7,6 +7,12 @@ export interface Colider {
   checkRay(ray: Ray): number
 }
 
+export class InfiniteColider implements Colider {
+  checkRay(ray: Ray): number {
+    return 0.01
+  }
+}
+
 export class BallColider implements Colider {
   #radius = 0
   #parentCoordinate: Coordinate
