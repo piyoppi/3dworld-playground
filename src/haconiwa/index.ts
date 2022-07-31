@@ -47,7 +47,7 @@ for (let i=-3; i<3; i++) {
   raycaster.addTarget(colider, road)
 }
 
-const centerMarker = new CenterMarker(1)
+const centerMarker = new CenterMarker(0.2)
 const marker = new AxisMarker<ThreeRenderingObject>(1, 0.05)
 marker.attachRenderingObject(primitiveRenderingObjectBuilder, renderer)
 
