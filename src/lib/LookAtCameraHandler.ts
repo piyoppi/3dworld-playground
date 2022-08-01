@@ -1,4 +1,4 @@
-import { Mat4, VectorArray3  } from './Matrix.js'
+import { Mat4, Mat3, MatrixArray4, VectorArray3, MatrixArray3  } from './Matrix.js'
 import { MouseControllable, MouseDragHandler } from "./mouse/MouseDragHandler.js"
 
 export type LookAtCameraHandlerMode = 'direction' | 'target'
@@ -61,10 +61,14 @@ class LookAtRotation implements MouseControllable {
 class LookAtTarget implements MouseControllable {
   #target: VectorArray3
   #mouseDragHandler
+  #matrix: MatrixArray4
+  #transformDirectionalMat: MatrixArray3
 
   constructor(mouseDragHandler: MouseDragHandler) {
     this.#target = [0, 0, 0]
     this.#mouseDragHandler = mouseDragHandler
+    this.#matrix = Mat4.getIdentityMatrix()
+    this.#transformDirectionalMat = Mat3.getIdentityMatrix()
   }
 
   get isStart() {
@@ -93,6 +97,11 @@ class LookAtTarget implements MouseControllable {
     this.#target[2] = z
   }
 
+  setMatrix(val: MatrixArray4) {
+    this.#matrix = val
+    this.#transformDirectionalMat = Mat4.convertToDirectionalTransformMatrix(this.#matrix)
+  }
+
   start(cursorX: number, cursorY: number) {
     this.#mouseDragHandler.start(cursorX, cursorY)
   }
@@ -102,8 +111,10 @@ class LookAtTarget implements MouseControllable {
 
     if (dx === 0 && dy === 0) return
 
-    this.#target[2] += dx * 0.01
-    this.#target[0] += dy * 0.01
+    const vec = Mat3.mulVec3(this.#transformDirectionalMat, [dx, dy, 0])
+
+    this.#target[0] += vec[0] * 0.01
+    this.#target[2] += vec[2] * 0.01
   }
 
   end() {
@@ -223,6 +234,7 @@ export class LookAtCameraHandler implements MouseControllable {
   }
 
   start(cursorX: number, cursorY: number) {
+    this.#targetPositionHandler.setMatrix(Mat4.lookAt(this.#targetPositionHandler.target, this.getCameraPosition()))
     this.#currentHandler.start(cursorX, cursorY)
   }
 
