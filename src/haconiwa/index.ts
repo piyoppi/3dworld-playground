@@ -78,6 +78,14 @@ renderer.mount()
 
 window.addEventListener('resize', () => renderer.resize(window.innerWidth, window.innerHeight))
 window.addEventListener('mousedown', e => {
+  switch(e.button) {
+    case 0:
+      lookAtCameraHandler.setTargetPositionHandler()
+      break
+    case 1:
+      lookAtCameraHandler.setRotationHandler()
+      break
+  }
   lookAtCameraHandler.start(e.screenX, e.screenY)
   captureMouseClicked()
   mouseInteractionHandler.mousedown(e.screenX, e.screenY)
