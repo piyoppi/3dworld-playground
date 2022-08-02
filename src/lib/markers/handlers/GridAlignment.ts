@@ -7,10 +7,10 @@ export class GridAlignment implements AlignmentAdapter {
   #updated: boolean
   #alignedPosition: VectorArray3
 
-  constructor() {
+  constructor(resolution: number) {
     this.#currentPosition = [0, 0, 0]
     this.#alignedPosition = [0, 0, 0]
-    this.#resolution = 1
+    this.#resolution = resolution
     this.#updated = false
   }
 

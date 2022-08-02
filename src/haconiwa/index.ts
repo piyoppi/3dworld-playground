@@ -11,6 +11,7 @@ import { CameraKeyboardHandler } from '../lib/CameraKeyboardHandler.js'
 import { BoxColider } from '../lib/Colider.js'
 import { loadGlb } from '../lib/threeAdapter/ThreeLoaderHelper.js'
 import { attachCenterMarkerToItem, CenterMarker } from '../lib/markers/CenterMarker.js'
+import { GridAlignment } from '../lib/markers/handlers/GridAlignment.js'
 
 const lookAtCameraHandler = new LookAtCameraHandler()
 const cameraKeyBoardHandler = new CameraKeyboardHandler()
@@ -60,9 +61,9 @@ function captureMouseClicked() {
 
   if (!axesRaycaster.hasColided && !centerMarkerRaycaster.hasColided && raycaster.colidedItems.length > 0) {
     const box = raycaster.colidedItems[0]
-    attachAxisMarkerToItem(marker, box, axesRaycaster, mouseInteractionHandler, 0.1, renderer.camera)
+    attachAxisMarkerToItem(marker, box, axesRaycaster, mouseInteractionHandler, 0.1, renderer.camera, new GridAlignment(1))
 
-    attachCenterMarkerToItem(centerMarker, box, centerMarkerRaycaster, mouseInteractionHandler, 0.1, renderer.camera)
+    attachCenterMarkerToItem(centerMarker, box, centerMarkerRaycaster, mouseInteractionHandler, 0.1, renderer.camera, new GridAlignment(1))
   }
 }
 
