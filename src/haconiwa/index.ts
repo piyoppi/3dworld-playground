@@ -10,7 +10,6 @@ import { MouseInteractionHandler } from '../lib/mouse/MouseInteractionHandler.js
 import { CameraKeyboardHandler } from '../lib/CameraKeyboardHandler.js'
 import { BoxColider } from '../lib/Colider.js'
 import { loadGlb } from '../lib/threeAdapter/ThreeLoaderHelper.js'
-import { CenterMarkerHandler } from '../lib/markers/handlers/CenterMarkerHandler.js'
 import { attachCenterMarkerToItem, CenterMarker } from '../lib/markers/CenterMarker.js'
 
 const lookAtCameraHandler = new LookAtCameraHandler()
@@ -96,7 +95,7 @@ window.addEventListener('mousemove', e => {
   lookAtCameraHandler.move(e.screenX, e.screenY)
 })
 window.addEventListener('wheel', e => {
-  lookAtCameraHandler.addDistance(e.deltaY * 0.001)
+  lookAtCameraHandler.addDistance(e.deltaY * 0.01)
 })
 window.addEventListener('mouseup', e => {
   lookAtCameraHandler.end()

@@ -1,7 +1,8 @@
 import { Camera } from "../../Camera.js"
 import { Item } from "../../Item.js"
-import { Mat3, Mat4, Vec3, MatrixArray3, VectorArray3 } from "../../Matrix.js"
+import { Vec3, VectorArray3 } from "../../Matrix.js"
 import { MouseControllable, MouseDragHandler } from "../../mouse/MouseDragHandler.js"
+import { CursorDirectionScreenToWorldConverter } from "./CursorDirectionScreenToWorldConverter.js"
 
 export class AxisMarkerHandler implements MouseControllable {
   #manipulateItem: Item
@@ -9,7 +10,7 @@ export class AxisMarkerHandler implements MouseControllable {
   #direction: VectorArray3
   #scale: number
   #camera: Camera
-  #transformMatrix: MatrixArray3
+  #cursorDirectionConverter: CursorDirectionScreenToWorldConverter
 
   constructor(manipulateItem: Item, directionInLocal: VectorArray3, scale: number, camera: Camera) {
     this.#mouseDragHandler = new MouseDragHandler()
@@ -17,7 +18,7 @@ export class AxisMarkerHandler implements MouseControllable {
     this.#direction = directionInLocal
     this.#scale = scale
     this.#camera = camera
-    this.#transformMatrix = Mat3.getIdentityMatrix()
+    this.#cursorDirectionConverter = new CursorDirectionScreenToWorldConverter()
   }
 
   get isStart() {
@@ -28,14 +29,14 @@ export class AxisMarkerHandler implements MouseControllable {
     if (this.#mouseDragHandler.isStart) return
 
     this.#mouseDragHandler.start(cursorX, cursorY)
-    this.calcTransformMatrix()
+    this.#cursorDirectionConverter.calcTransformMatrix(this.#manipulateItem.parentCoordinate, this.#camera.coordinate)
   }
 
   move(cursorX: number, cursorY: number) {
     if (!this.#mouseDragHandler.isStart) return
 
     const mouseDelta = this.#mouseDragHandler.move(cursorX, cursorY)
-    const mouseDeltaInItemCoordinate = Vec3.normalize(Mat3.mulVec3(this.#transformMatrix, [mouseDelta[0], mouseDelta[1], 0]))
+    const mouseDeltaInItemCoordinate = this.#cursorDirectionConverter.convert(mouseDelta)
     const len = Vec3.dotprod(mouseDeltaInItemCoordinate, this.#direction)
     const scale = len * this.#scale
     const addingVector = Vec3.mulScale(this.#direction, scale)
@@ -47,14 +48,5 @@ export class AxisMarkerHandler implements MouseControllable {
 
   end() {
     this.#mouseDragHandler.end()
-  }
-
-  private calcTransformMatrix() {
-    const transform = Mat4.mulAll([
-      this.#manipulateItem.parentCoordinate.getTransformMatrixFromWorldToCoordinate(),
-      this.#camera.coordinate.getTransformMatrixToWorld()
-    ])
-
-    this.#transformMatrix = Mat4.convertToDirectionalTransformMatrix(transform)
   }
 }
