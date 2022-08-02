@@ -2,7 +2,9 @@ import { Camera } from "../../Camera.js"
 import { Item } from "../../Item.js"
 import { Vec3, VectorArray3 } from "../../Matrix.js"
 import { MouseControllable, MouseDragHandler } from "../../mouse/MouseDragHandler.js"
+import { AlignmentAdapter } from "./AlignmentAdapter.js"
 import { CursorDirectionScreenToWorldConverter } from "./CursorDirectionScreenToWorldConverter.js"
+import { NoneAlignment } from "./NoneAlignment.js"
 
 export class AxisMarkerHandler implements MouseControllable {
   #manipulateItem: Item
@@ -11,6 +13,7 @@ export class AxisMarkerHandler implements MouseControllable {
   #scale: number
   #camera: Camera
   #cursorDirectionConverter: CursorDirectionScreenToWorldConverter
+  #alignment: AlignmentAdapter
 
   constructor(manipulateItem: Item, directionInLocal: VectorArray3, scale: number, camera: Camera) {
     this.#mouseDragHandler = new MouseDragHandler()
@@ -19,15 +22,21 @@ export class AxisMarkerHandler implements MouseControllable {
     this.#scale = scale
     this.#camera = camera
     this.#cursorDirectionConverter = new CursorDirectionScreenToWorldConverter()
+    this.#alignment = new NoneAlignment()
   }
 
   get isStart() {
     return this.#mouseDragHandler.isStart
   }
 
+  setAlignment(alignment: AlignmentAdapter) {
+    this.#alignment = alignment
+  }
+
   start(cursorX: number, cursorY: number) {
     if (this.#mouseDragHandler.isStart) return
 
+    this.#alignment.reset(this.#manipulateItem.parentCoordinate.position)
     this.#mouseDragHandler.start(cursorX, cursorY)
     this.#cursorDirectionConverter.calcTransformMatrix(this.#manipulateItem.parentCoordinate, this.#camera.coordinate)
   }
@@ -41,9 +50,11 @@ export class AxisMarkerHandler implements MouseControllable {
     const scale = len * this.#scale
     const addingVector = Vec3.mulScale(this.#direction, scale)
 
-    this.#manipulateItem.parentCoordinate.x += addingVector[0]
-    this.#manipulateItem.parentCoordinate.y += addingVector[1]
-    this.#manipulateItem.parentCoordinate.z += addingVector[2]
+    this.#alignment.add(addingVector)
+
+    this.#manipulateItem.parentCoordinate.x = this.#alignment.alignedPosition[0]
+    this.#manipulateItem.parentCoordinate.y = this.#alignment.alignedPosition[1]
+    this.#manipulateItem.parentCoordinate.z = this.#alignment.alignedPosition[2]
   }
 
   end() {

@@ -347,7 +347,7 @@ export class Vec3 {
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
   }
 
-  static mulScale(a: VectorArray3, scale: number) {
+  static mulScale(a: VectorArray3, scale: number): VectorArray3 {
     return [a[0] * scale, a[1] * scale, a[2] * scale]
   }
 

@@ -7,6 +7,7 @@ import { Raycaster } from "../Raycaster.js"
 import { HandledColiders } from "./Marker.js"
 import { Camera } from '../Camera.js'
 import { CenterMarkerHandler } from "./handlers/CenterMarkerHandler.js"
+import { AlignmentAdapter } from "./handlers/AlignmentAdapter.js"
 
 export class CenterMarker<T> {
   #parentCoordinate: Coordinate
@@ -38,11 +39,16 @@ export class CenterMarker<T> {
   }
 }
 
-export const attachCenterMarkerToItem = (marker: CenterMarker<never>, item: Item, raycaster: Raycaster, mouseHandler: MouseInteractionHandler, scale: number, camera: Camera) => {
+export const attachCenterMarkerToItem = (marker: CenterMarker<never>, item: Item, raycaster: Raycaster, mouseHandler: MouseInteractionHandler, scale: number, camera: Camera, alignmentAdapter: AlignmentAdapter | null = null) => {
+  const handler = new CenterMarkerHandler(item, [1, 0, 0], [0, 0, 1], scale, camera)
   marker.setParentCoordinate(item.parentCoordinate)
   marker.setColider(
     raycaster,
     mouseHandler,
-    new CenterMarkerHandler(item, [1, 0, 0], [0, 0, 1], scale, camera),
+    handler,
   )
+
+  if (alignmentAdapter) {
+    handler.setAlignment(alignmentAdapter)
+  }
 }

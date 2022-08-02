@@ -9,6 +9,7 @@ import { RenderingObjectBuilder } from '../RenderingObjectBuilder.js'
 import { HandledColiders } from "./Marker.js"
 import { AxisMarkerHandler } from './handlers/AxisMarkerHandler.js'
 import { Camera } from '../Camera.js'
+import { AlignmentAdapter } from "./handlers/AlignmentAdapter.js"
 
 export class AxisMarker<T> {
   #axes
@@ -57,7 +58,7 @@ export class AxisMarker<T> {
     return this.#radius
   }
 
-  setColider(raycaster: Raycaster, interactionHandler: MouseInteractionHandler, handlers: [MouseControllable, MouseControllable, MouseControllable]) {
+  setColider(raycaster: Raycaster, interactionHandler: MouseInteractionHandler, handlers: readonly [MouseControllable, MouseControllable, MouseControllable]) {
     const coliders = this.#axes.map(axis => new BoxColider(this.#radius, this.#norm, this.#radius, axis.parentCoordinate))
     const handles = coliders.map((colider, index) => ({colider, handled: handlers[index]}))
 
@@ -83,15 +84,20 @@ export class AxisMarker<T> {
   }
 }
 
-export const attachAxisMarkerToItem = (marker: AxisMarker<never>, item: Item, raycaster: Raycaster, mouseHandler: MouseInteractionHandler, scale: number, camera: Camera) => {
+export const attachAxisMarkerToItem = (marker: AxisMarker<never>, item: Item, raycaster: Raycaster, mouseHandler: MouseInteractionHandler, scale: number, camera: Camera, alignmentAdapter: AlignmentAdapter | null = null) => {
+  const handlers = [
+    new AxisMarkerHandler(item, [1, 0, 0], scale, camera),
+    new AxisMarkerHandler(item, [0, 1, 0], scale, camera),
+    new AxisMarkerHandler(item, [0, 0, 1], scale, camera)
+  ] as const
   marker.setParentCoordinate(item.parentCoordinate)
   marker.setColider(
     raycaster,
     mouseHandler,
-    [
-      new AxisMarkerHandler(item, [1, 0, 0], scale, camera),
-      new AxisMarkerHandler(item, [0, 1, 0], scale, camera),
-      new AxisMarkerHandler(item, [0, 0, 1], scale, camera),
-    ]
+    handlers
   )
+
+  if (alignmentAdapter) {
+    handlers.forEach(handler => handler.setAlignment(alignmentAdapter))
+  }
 }
