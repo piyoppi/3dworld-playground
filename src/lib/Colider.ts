@@ -83,3 +83,21 @@ export class BoxColider implements Colider {
     return Math.min(xyRange[0], xyzRange[1])
   }
 }
+
+export class PlaneColider implements Colider {
+  #norm: VectorArray3
+  #position: VectorArray3
+
+  constructor(position: VectorArray3, norm: VectorArray3) {
+    this.#position = position
+    this.#norm = norm
+  }
+
+  checkRay(ray: Ray): number {
+    const parallel = Vec3.dotprod(this.#norm, ray.direction)
+
+    if (Math.abs(parallel) < 0.001) return -1
+
+    return (Vec3.dotprod(this.#norm, Vec3.subtract(this.#position, ray.position))) / parallel
+  }
+}
