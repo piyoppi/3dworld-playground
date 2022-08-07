@@ -7,6 +7,7 @@ import { Scene } from './Scene.js'
 export interface Renderer<T> {
   setRenderingLoop: (callable: () => void) => void,
   addItem: (item: Item, renderingObject: T) => void,
+  removeItem: (item: Item) => void,
   setColor: (item: Item, color: RGBColor) => void,
   addLight: (coordinate: Coordinate) => void
   readonly camera: Camera

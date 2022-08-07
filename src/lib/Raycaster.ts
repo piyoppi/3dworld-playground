@@ -9,8 +9,29 @@ type ColidedItem<T> = {
   item: T
 }
 
+export class ColidedDetails {
+  #colider: Colider
+  #distance: number
+  #ray: Ray
+
+  constructor(colider: Colider, distance: number, ray: Ray) {
+    this.#colider = colider
+    this.#distance = distance
+    this.#ray = ray
+  }
+
+  get position() {
+    return Vec3.add(this.#ray.position, Vec3.mulScale(this.#ray.direction, this.#distance))
+  }
+
+  get distance() {
+    return this.#distance
+  }
+}
+
 export class Raycaster {
   #camera: Camera
+  #colidedDetails: Array<ColidedDetails>
   #colidedColiders: Array<Colider>
   #targetColiders: Array<Colider>
 
@@ -18,10 +39,15 @@ export class Raycaster {
     this.#camera = camera
     this.#targetColiders = []
     this.#colidedColiders = []
+    this.#colidedDetails = []
   }
 
   get colidedColiders() {
     return this.#colidedColiders
+  }
+
+  get colidedDetails() {
+    return this.#colidedDetails
   }
 
   get hasColided() {
@@ -67,6 +93,7 @@ export class Raycaster {
       .sort((a, b) => a.distance - b.distance)
 
     this.#colidedColiders = colided.map(item => item.colider)
+    this.#colidedDetails = colided.map(item => new ColidedDetails(item.colider, item.distance, ray))
 
     return this.#colidedColiders
   }

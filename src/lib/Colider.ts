@@ -98,6 +98,8 @@ export class PlaneColider implements Colider {
 
     if (Math.abs(parallel) < 0.001) return -1
 
-    return (Vec3.dotprod(this.#norm, Vec3.subtract(this.#position, ray.position))) / parallel
+    const distance = (Vec3.dotprod(this.#norm, Vec3.subtract(this.#position, ray.position))) / parallel
+
+    return distance
   }
 }

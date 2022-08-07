@@ -5,7 +5,6 @@ import { Item } from '../Item.js'
 import { Coordinate } from '../Coordinate.js'
 import { syncCoordinate } from './ThreeSyncCoordinate.js'
 import { RGBColor, convertRgbToHex } from '../helpers/color.js'
-
 import { CylinderGeometry, MeshBasicMaterial } from 'three'
 
 type ThreePrimitiveRenderingObject = {
@@ -85,6 +84,14 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
     item.parentCoordinate.setUpdateCallback(() => syncCoordinate(item.parentCoordinate, mesh))
 
     syncCoordinate(item.parentCoordinate, mesh)
+  }
+
+  removeItem(item: Item) {
+    const renderingItem = this.#mapItemIdToRenderingItem.get(item.uuid)
+    if (!renderingItem) return
+
+    this.#scene.remove(renderingItem)
+    this.#mapItemIdToRenderingItem.delete(item.uuid)
   }
 
   private coordinateSetChildCallbackHandler(parent: Coordinate, child: Coordinate) {

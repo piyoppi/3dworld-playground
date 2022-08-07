@@ -144,6 +144,13 @@ export class Coordinate {
     return [this.matrix[12], this.matrix[13], this.matrix[14]]
   }
 
+  set position(val: VectorArray3) {
+    this.matrix[12] = val[0]
+    this.matrix[13] = val[1]
+    this.matrix[14] = val[2]
+    this.#updatedCallback()
+  }
+
   set x(val) {
     this.matrix[12] = val
     this.#updatedCallback()
