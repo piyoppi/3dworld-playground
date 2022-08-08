@@ -11,7 +11,7 @@ export class LinearAlignment implements Alignment {
   }
 
   align(items: Array<Alignable>, span: number) {
-    const tSpan = 1 / (this.#spacing + span + this.#spacing)
+    const tSpan = (this.#spacing + span) / this.#line.length
 
     let t = 0
     items.forEach(item => {
