@@ -65,6 +65,9 @@ export class LineItemGenerator<T> implements MouseControllable {
   start(cursorX: number, cursorY: number) {
     if (!this.#raycaster.hasColided) return 
 
+    this.#generated = []
+    this.#generatedItemsCoordinate = []
+
     this.#startPosition = this.#raycaster.colidedDetails[0].position
     this.#currentPosition = this.#raycaster.colidedDetails[0].position
 
@@ -102,6 +105,7 @@ export class LineItemGenerator<T> implements MouseControllable {
   }
 
   end() {
+    if (!this.#isStart) return
     this.#isStart = false
   }
 }

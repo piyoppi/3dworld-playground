@@ -109,6 +109,7 @@ window.addEventListener('mousedown', e => {
   mouseInteractionHandler.mousedown(e.screenX, e.screenY)
 })
 window.addEventListener('mousemove', e => {
+  captureMouseClicked()
   mouseInteractionHandler.mousemove(e.screenX, e.screenY)
   lookAtCameraHandler.isLocked = mouseInteractionHandler.handling
   lookAtCameraHandler.move(e.screenX, e.screenY)
