@@ -8,10 +8,11 @@ import { ThreeRenderingObject } from '../lib/threeAdapter/ThreeRenderer.js'
 import { Item } from '../lib/Item.js'
 import { MouseInteractionHandler } from '../lib/mouse/MouseInteractionHandler.js'
 import { CameraKeyboardHandler } from '../lib/CameraKeyboardHandler.js'
-import { BoxColider } from '../lib/Colider.js'
+import { BoxColider, PlaneColider } from '../lib/Colider.js'
 import { loadGlb } from '../lib/threeAdapter/ThreeLoaderHelper.js'
 import { attachCenterMarkerToItem, CenterMarker } from '../lib/markers/CenterMarker.js'
 import { GridAlignment } from '../lib/markers/handlers/GridAlignment.js'
+import { LineItemGenerator, LineSegmentGenerator } from '../lib/itemGenerators/ItemGenerator.js'
 
 const lookAtCameraHandler = new LookAtCameraHandler()
 const cameraKeyBoardHandler = new CameraKeyboardHandler()
@@ -38,18 +39,33 @@ lightCoordinate.y = 1
 lightCoordinate.lookAt([0, 0, 0])
 renderer.addLight(lightCoordinate)
 
-for (let i=-3; i<3; i++) {
-  const road = new Item()
-  const roadRenderingObj = await loadGlb('./assets/road.glb')
-  renderer.addItem(road, {item: roadRenderingObj})
-  road.parentCoordinate.z = i
-  const colider = new BoxColider(6, 1, 0.5, road.parentCoordinate)
-  raycaster.addTarget(colider, road)
-}
+//for (let i=-3; i<3; i++) {
+//  const road = new Item()
+//  const roadRenderingObj = await loadGlb('./assets/road.glb')
+//  renderer.addItem(road, {item: roadRenderingObj})
+//  road.parentCoordinate.z = i
+//  const colider = new BoxColider(6, 1, 0.5, road.parentCoordinate)
+//  raycaster.addTarget(colider, road)
+//}
 
 const centerMarker = new CenterMarker(0.2)
 const marker = new AxisMarker<ThreeRenderingObject>(1, 0.05)
 marker.attachRenderingObject(primitiveRenderingObjectBuilder, renderer)
+
+//----------------
+const roadRenderingObj = await loadGlb('./assets/road.glb')
+const itemFactory = () => {
+  const renderingObject = roadRenderingObj.clone()
+  const item = new Item()
+
+  return {item, renderingObject: {item: renderingObject}}
+}
+const itemAlignRaycaster = new Raycaster(renderer.camera)
+const floorColider = new PlaneColider([0, 0, 0], [0, 1, 0])
+itemAlignRaycaster.addTarget(floorColider)
+const itemGenerator = new LineItemGenerator(new LineSegmentGenerator(), itemFactory, renderer, 1, itemAlignRaycaster)
+
+//------------------
 
 function captureMouseClicked() {
   if (!mouseHandler.updated) return
@@ -58,6 +74,7 @@ function captureMouseClicked() {
   raycaster.check(pos[0], pos[1])
   axesRaycaster.check(pos[0], pos[1])
   centerMarkerRaycaster.check(pos[0], pos[1])
+  itemAlignRaycaster.check(pos[0], pos[1])
 
   if (!axesRaycaster.hasColided && !centerMarkerRaycaster.hasColided && raycaster.colidedItems.length > 0) {
     const box = raycaster.colidedItems[0]
@@ -87,6 +104,7 @@ window.addEventListener('mousedown', e => {
       break
   }
   lookAtCameraHandler.start(e.screenX, e.screenY)
+  itemGenerator.start(e.screenX, e.screenY)
   captureMouseClicked()
   mouseInteractionHandler.mousedown(e.screenX, e.screenY)
 })
@@ -94,11 +112,13 @@ window.addEventListener('mousemove', e => {
   mouseInteractionHandler.mousemove(e.screenX, e.screenY)
   lookAtCameraHandler.isLocked = mouseInteractionHandler.handling
   lookAtCameraHandler.move(e.screenX, e.screenY)
+  itemGenerator.move(e.screenX, e.screenY)
 })
 window.addEventListener('wheel', e => {
   lookAtCameraHandler.addDistance(e.deltaY * 0.01)
 })
 window.addEventListener('mouseup', e => {
   lookAtCameraHandler.end()
+  itemGenerator.end()
   mouseInteractionHandler.mouseup(e.screenX, e.screenY)
 })
