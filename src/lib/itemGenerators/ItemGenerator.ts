@@ -35,24 +35,61 @@ export class LineSegmentGenerator implements LineGenerator {
   }
 }
 
-export class LineItemGenerator<T> implements MouseControllable {
+export class LineItemGeneratorAdapter<T> implements MouseControllable {
+  #raycaster: Raycaster
+  #lineItemGenerator: LineItemGenerator<T>
+  #renderer: Renderer<T>
+
+  constructor(lineGenerator: LineGenerator, generator: GenerateItemFactory<T>, renderer: Renderer<T>, span: number, raycaster: Raycaster) {
+    this.#raycaster = raycaster
+    this.#renderer = renderer
+    this.#lineItemGenerator = new LineItemGenerator<T>(lineGenerator, generator, span)
+  }
+
+  get isStart() {
+    return this.#lineItemGenerator.isStart
+  }
+
+  start(cursorX: number, cursorY: number) {
+    if (!this.#raycaster.hasColided) return
+
+    const position = this.#raycaster.colidedDetails[0].position
+    this.#lineItemGenerator.start(position)
+  }
+
+  move(cursorX: number, cursorY: number) {
+    if (!this.#lineItemGenerator.isStart || !this.#raycaster.hasColided) return
+
+    const position = this.#raycaster.colidedDetails[0].position
+    const result = this.#lineItemGenerator.move(position)
+
+    result.generatedItems.forEach(generated => {
+      this.#renderer.addItem(generated.item, generated.renderingObject)
+    })
+
+    result.removedItems.forEach(removed => {
+      this.#renderer.removeItem(removed.item)
+    })
+  }
+
+  end() {
+    this.#lineItemGenerator.end()
+  }
+}
+
+export class LineItemGenerator<T> {
   #lineGenerator: LineGenerator
   #generator: GenerateItemFactory<T>
-  #raycaster: Raycaster
   #startPosition: VectorArray3 = [0, 0, 0]
-  #currentPosition: VectorArray3 = [0, 0, 0]
   #isStart: boolean = false
   #itemSpan: number
   #generated: Array<GeneratedItem<T>> = []
   #generatedItemsCoordinate: Array<Coordinate> = []
-  #renderer: Renderer<T>
 
-  constructor(lineGenerator: LineGenerator, generator: GenerateItemFactory<T>, renderer: Renderer<T>, span: number, raycaster: Raycaster) {
+  constructor(lineGenerator: LineGenerator, generator: GenerateItemFactory<T>, span: number) {
     this.#lineGenerator = lineGenerator
     this.#generator = generator
-    this.#raycaster = raycaster
     this.#itemSpan = span
-    this.#renderer = renderer
   }
 
   get isStart() {
@@ -63,42 +100,43 @@ export class LineItemGenerator<T> implements MouseControllable {
     return this.#generated
   }
 
-  start(cursorX: number, cursorY: number) {
-    if (!this.#raycaster.hasColided) return 
-
+  start(position: VectorArray3) {
     this.#generated = []
     this.#generatedItemsCoordinate = []
 
-    this.#startPosition = this.#raycaster.colidedDetails[0].position
-    this.#currentPosition = this.#raycaster.colidedDetails[0].position
+    this.#startPosition = position
 
     this.#lineGenerator.setStartPosition(this.#startPosition)
 
     this.#isStart = true
   }
 
-  move(cursorX: number, cursorY: number) {
-    if (!this.#isStart) return
+  move(currentPosition: VectorArray3) {
+    if (!this.#isStart) return {generatedItems: [], removedItems: []}
 
-    this.#currentPosition = this.#raycaster.colidedDetails[0].position
-    this.#lineGenerator.setPosition(this.#currentPosition)
+    this.#lineGenerator.setPosition(currentPosition)
 
     const line = this.#lineGenerator.getLine()
     const itemCount = Math.floor(line.length / this.#itemSpan)
     const shortage = itemCount - this.#generated.length
 
+    const generatedItems = []
+    const removedItems = []
+
     for (let i = 0; i < shortage; i++) {
       const generated = this.#generator()
-      this.#renderer.addItem(generated.item, generated.renderingObject)
       this.#generated.push(generated)
       this.#generatedItemsCoordinate.push(generated.item.parentCoordinate)
+      generatedItems.push(generated)
     }
 
-    for (let i = -shortage; i >= 0; i--) {
-      const removed = this.#generated.splice(i, 1)
-      this.#generatedItemsCoordinate.splice(i, 1)
+    if (shortage < 0) {
+      for (let i = -shortage; i >= 0; i--) {
+        const removed = this.#generated.splice(i, 1)
+        this.#generatedItemsCoordinate.splice(i, 1)
 
-      this.#renderer.removeItem(removed[0].item)
+        removedItems.push(removed[0])
+      }
     }
 
     const alignment = new LinearAlignment(line)
@@ -106,6 +144,11 @@ export class LineItemGenerator<T> implements MouseControllable {
       const coordinate = this.#generatedItemsCoordinate[index]
       coordinate.matrix = Mat4.transformZAxis(aligned.direction, aligned.position)
     })
+
+    return {
+      generatedItems,
+      removedItems
+    }
   }
 
   end() {

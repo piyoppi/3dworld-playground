@@ -12,7 +12,7 @@ import { BoxColider, PlaneColider } from '../lib/Colider.js'
 import { loadGlb } from '../lib/threeAdapter/ThreeLoaderHelper.js'
 import { attachCenterMarkerToItem, CenterMarker } from '../lib/markers/CenterMarker.js'
 import { GridAlignment } from '../lib/markers/handlers/GridAlignment.js'
-import { LineItemGenerator, LineSegmentGenerator } from '../lib/itemGenerators/ItemGenerator.js'
+import { LineItemGeneratorAdapter, LineSegmentGenerator } from '../lib/itemGenerators/ItemGenerator.js'
 
 const lookAtCameraHandler = new LookAtCameraHandler()
 const cameraKeyBoardHandler = new CameraKeyboardHandler()
@@ -63,7 +63,7 @@ const itemFactory = () => {
 const itemAlignRaycaster = new Raycaster(renderer.camera)
 const floorColider = new PlaneColider([0, 0, 0], [0, 1, 0])
 itemAlignRaycaster.addTarget(floorColider)
-const itemGenerator = new LineItemGenerator(new LineSegmentGenerator(), itemFactory, renderer, 1, itemAlignRaycaster)
+const itemGenerator = new LineItemGeneratorAdapter(new LineSegmentGenerator(), itemFactory, renderer, 1, itemAlignRaycaster)
 
 //------------------
 
