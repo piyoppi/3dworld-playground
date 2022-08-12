@@ -1,5 +1,5 @@
 import { Line } from "../lines/line.js"
-import { Alignment, Alignable } from "./alignment.js"
+import { Alignment, Aligned } from "./alignment.js"
 
 export class LinearAlignment implements Alignment {
   #line: Line
@@ -10,16 +10,22 @@ export class LinearAlignment implements Alignment {
     this.#spacing = 0
   }
 
-  align(items: Array<Alignable>, span: number) {
+  align(itemCount: number, span: number): Array<Aligned> {
     const tSpan = (this.#spacing + span) / this.#line.length
 
     let t = 0
-    items.forEach(item => {
-      item.position = this.#line.getPosition(t)
+    let aligned: Array<Aligned> = []
+    for(let i = 0; i < itemCount; i++) {
+      aligned.push({
+        position: this.#line.getPosition(t),
+        direction: this.#line.getDirection(t)
+      })
 
       if (t + tSpan <= 1) {
         t += tSpan
       }
-    })
+    }
+
+    return aligned
   }
 }

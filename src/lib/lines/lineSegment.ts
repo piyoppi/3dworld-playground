@@ -5,11 +5,14 @@ export class LineSegment implements Line {
   #start: VectorArray3
   #end: VectorArray3
   #length: number
+  #direction: VectorArray3
 
   constructor(start: VectorArray3, end: VectorArray3) {
     this.#start = start
     this.#end = end
-    this.#length = Vec3.norm(Vec3.subtract(this.#end, this.#start))
+    const lineSegmentVector = Vec3.subtract(this.#end, this.#start)
+    this.#length = Vec3.norm(lineSegmentVector)
+    this.#direction = Vec3.normalize(lineSegmentVector)
   }
 
   get length() {
@@ -18,5 +21,9 @@ export class LineSegment implements Line {
 
   getPosition(t: number) {
     return Vec3.add(Vec3.mulScale(this.#start, (1 - t)), Vec3.mulScale(this.#end, t))
+  }
+
+  getDirection(_: number) {
+    return this.#direction
   }
 }

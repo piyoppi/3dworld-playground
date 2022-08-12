@@ -1,9 +1,10 @@
 import { VectorArray3 } from "../Matrix"
 
-export interface Alignable {
+export interface Aligned {
   position: VectorArray3
+  direction: VectorArray3
 }
 
 export interface Alignment {
-  align: (items: Array<Alignable>, span: number) => void
+  align: (itemCount: number, span: number) => Array<Aligned>
 }

@@ -6,7 +6,8 @@ import { VectorArray3 } from "../Matrix.js"
 import { MouseControllable } from "../mouse/MouseDragHandler"
 import { Renderer } from "../Renderer.js"
 import { LinearAlignment } from "../alignments/linearArrangement.js"
-import { Alignable } from "../alignments/alignment.js"
+import { Coordinate } from "../Coordinate.js"
+import { Mat4 } from "../Matrix.js"
 
 export type GeneratedItem<T> = {item: Item, renderingObject: T}
 export type GenerateItemFactory<T> = () => GeneratedItem<T>
@@ -43,7 +44,7 @@ export class LineItemGenerator<T> implements MouseControllable {
   #isStart: boolean = false
   #itemSpan: number
   #generated: Array<GeneratedItem<T>> = []
-  #generatedItemsCoordinate: Array<Alignable> = []
+  #generatedItemsCoordinate: Array<Coordinate> = []
   #renderer: Renderer<T>
 
   constructor(lineGenerator: LineGenerator, generator: GenerateItemFactory<T>, renderer: Renderer<T>, span: number, raycaster: Raycaster) {
@@ -101,7 +102,10 @@ export class LineItemGenerator<T> implements MouseControllable {
     }
 
     const alignment = new LinearAlignment(line)
-    alignment.align(this.#generatedItemsCoordinate, this.#itemSpan)
+    alignment.align(this.#generatedItemsCoordinate.length, this.#itemSpan).forEach((aligned, index) => {
+      const coordinate = this.#generatedItemsCoordinate[index]
+      coordinate.matrix = Mat4.transformZAxis(aligned.direction, aligned.position)
+    })
   }
 
   end() {
