@@ -1,7 +1,7 @@
 import { BoxColider } from "../Colider.js"
 import { Coordinate } from "../Coordinate.js"
 import { Item } from "../Item.js"
-import { MouseControllable } from "../mouse/MouseDragHandler.js"
+import { MouseControllable } from "../mouse/MouseControllable.js"
 import { MouseInteractionHandler } from "../mouse/MouseInteractionHandler.js"
 import { Raycaster } from "../Raycaster.js"
 import { Renderer } from "../Renderer.js"

@@ -1,5 +1,6 @@
 import { Mat4, Mat3, MatrixArray4, VectorArray3, MatrixArray3  } from './Matrix.js'
-import { MouseControllable, MouseDragHandler } from "./mouse/MouseDragHandler.js"
+import { MouseDragHandler } from "./mouse/MouseDragHandler.js"
+import { MouseControllable } from "./mouse/MouseControllable.js"
 
 export type LookAtCameraHandlerMode = 'direction' | 'target'
 
@@ -220,7 +221,7 @@ export class LookAtCameraHandler implements MouseControllable {
     this.#changed = true
   }
 
-  getCameraPosition(): VectorArray3 {
+  #getCameraPosition(): VectorArray3 {
     return [
       this.#targetPositionHandler.target[0] + this.#distance * Math.cos(this.#rotationHandler.rotation[0]) * Math.cos(this.#rotationHandler.rotation[1]),
       this.#targetPositionHandler.target[1] + this.#distance * Math.sin(this.#rotationHandler.rotation[0]),
@@ -230,11 +231,11 @@ export class LookAtCameraHandler implements MouseControllable {
 
   getLookAtMatrix() {
     this.#changed = false
-    return Mat4.lookAt(this.#targetPositionHandler.target, this.getCameraPosition())
+    return Mat4.lookAt(this.#targetPositionHandler.target, this.#getCameraPosition())
   }
 
   start(cursorX: number, cursorY: number) {
-    this.#targetPositionHandler.setMatrix(Mat4.lookAt(this.#targetPositionHandler.target, this.getCameraPosition()))
+    this.#targetPositionHandler.setMatrix(Mat4.lookAt(this.#targetPositionHandler.target, this.#getCameraPosition()))
     this.#currentHandler.start(cursorX, cursorY)
   }
 

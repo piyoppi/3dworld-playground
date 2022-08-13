@@ -1,5 +1,5 @@
 import { LookAtCameraHandler } from '../lib/LookAtCameraHandler.js'
-import { MouseHandler } from '../lib/mouse/MouseHandler.js'
+import { MouseCapturer } from '../lib/mouse/MouseCapturer.js'
 import { ThreeFactory as Factory } from '../lib/threeAdapter/ThreeFactory.js'
 import { Coordinate } from '../lib/Coordinate.js'
 import { Raycaster, ItemRaycaster } from '../lib/Raycaster.js'
@@ -16,7 +16,7 @@ const cameraKeyBoardHandler = new CameraKeyboardHandler()
 cameraKeyBoardHandler.setLookAtCameraHandler(lookAtCameraHandler)
 cameraKeyBoardHandler.capture()
 
-const mouseHandler = new MouseHandler(window.innerWidth, window.innerHeight)
+const mouseHandler = new MouseCapturer(window.innerWidth, window.innerHeight)
 mouseHandler.capture()
 
 const factory = new Factory()
@@ -85,10 +85,10 @@ window.addEventListener('resize', () => renderer.resize(window.innerWidth, windo
 window.addEventListener('mousedown', e => {
   lookAtCameraHandler.start(e.screenX, e.screenY)
   captureMouseClicked()
-  mouseInteractionHandler.mousedown(e.screenX, e.screenY)
+  mouseInteractionHandler.start(e.screenX, e.screenY)
 })
 window.addEventListener('mousemove', e => {
-  mouseInteractionHandler.mousemove(e.screenX, e.screenY)
+  mouseInteractionHandler.move(e.screenX, e.screenY)
   lookAtCameraHandler.isLocked = mouseInteractionHandler.handling
   lookAtCameraHandler.move(e.screenX, e.screenY)
 })
@@ -97,5 +97,5 @@ window.addEventListener('wheel', e => {
 })
 window.addEventListener('mouseup', e => {
   lookAtCameraHandler.end()
-  mouseInteractionHandler.mouseup(e.screenX, e.screenY)
+  mouseInteractionHandler.end()
 })

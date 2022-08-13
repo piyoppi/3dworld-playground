@@ -1,6 +1,6 @@
 import { Raycaster } from '../Raycaster.js'
 import { Colider } from '../Colider.js'
-import { MouseControllable } from '../mouse/MouseDragHandler.js'
+import { MouseControllable } from '../mouse/MouseControllable.js'
 import { ControlHandle, MouseInteractionHandler } from "../mouse/MouseInteractionHandler.js"
 
 export class HandledColiders {

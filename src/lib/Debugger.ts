@@ -2,7 +2,7 @@ import { Item } from "./Item.js"
 import { VectorArray3 } from "./Matrix.js"
 import { Renderer } from './Renderer.js'
 import { BoxGeometry, MeshBasicMaterial, Mesh, Object3D, Group } from 'three'
-import { ThreeRenderingObject } from "./threeAdapter/ThreeRenderer.js"
+import { ThreePrimitiveRenderingObject, ThreeRenderingObject } from "./threeAdapter/ThreeRenderer.js"
 
 let commonRenderer: Renderer<ThreeRenderingObject> | null = null
 
@@ -22,5 +22,5 @@ export const showPoint = (position: VectorArray3) => {
   const material = new MeshBasicMaterial({color: 0xFFFF00})
   material.depthTest = false
 
-  commonRenderer.addItem(item, {item: {geometry, material}})
+  commonRenderer.addItem(item, new ThreeRenderingObject(new ThreePrimitiveRenderingObject(geometry, material)))
 }

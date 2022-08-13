@@ -1,4 +1,4 @@
-export class MouseHandler {
+export class MouseCapturer {
   #position
   #renderingAreaSize
   #updated

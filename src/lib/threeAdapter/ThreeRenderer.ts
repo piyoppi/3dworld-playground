@@ -7,13 +7,43 @@ import { syncCoordinate } from './ThreeSyncCoordinate.js'
 import { RGBColor, convertRgbToHex } from '../helpers/color.js'
 import { CylinderGeometry, MeshBasicMaterial } from 'three'
 
-type ThreePrimitiveRenderingObject = {
-  geometry: BufferGeometry,
-  material: Material
+export class ThreePrimitiveRenderingObject {
+  #geometry: BufferGeometry
+  #material: Material
+
+  constructor(geometry: BufferGeometry, material: Material) {
+    this.#geometry = geometry
+    this.#material = material
+  }
+
+  get geometry() {
+    return this.#geometry
+  }
+
+  get material() {
+    return this.#material
+  }
+
+  clone() {
+    return new ThreePrimitiveRenderingObject(this.#geometry.clone(), this.#material.clone())
+  }
 }
 
-export type ThreeRenderingObject = {
-  item: ThreePrimitiveRenderingObject | Scene | Group 
+type ThreeRenderingObjectRaw = ThreePrimitiveRenderingObject | Scene | Group
+export class ThreeRenderingObject {
+  #item: ThreeRenderingObjectRaw
+
+  constructor(item: ThreeRenderingObjectRaw) {
+    this.#item = item
+  }
+
+  get item() {
+    return this.#item
+  }
+
+  clone() {
+    return new ThreeRenderingObject(this.#item.clone())
+  }
 }
 
 export class ThreeRenderer implements Renderer<ThreeRenderingObject> {

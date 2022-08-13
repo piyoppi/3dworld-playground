@@ -1,0 +1,80 @@
+import type { MatrixArray4, VectorArray3 } from "../../Matrix"
+import { LinearAlignment } from "../../alignments/linearArrangement.js"
+import { Mat4 } from "../../Matrix.js"
+import type { LineGenerator } from "./lineGenerator/LineGenerator"
+import type { GeneratedItem, GenerateItemFactory, ItemGenerator } from "../ItemGenerator"
+
+export class LineItemGenerator<T, U> implements ItemGenerator<T, U> {
+  #lineGenerator: LineGenerator
+  #generator: GenerateItemFactory<T, U>
+  #startPosition: VectorArray3 = [0, 0, 0]
+  #isStart: boolean = false
+  #itemSpan: number
+  #generated: Array<GeneratedItem<T, U>> = []
+
+  constructor(lineGenerator: LineGenerator, generator: GenerateItemFactory<T, U>, span: number) {
+    this.#lineGenerator = lineGenerator
+    this.#generator = generator
+    this.#itemSpan = span
+  }
+
+  get isStart() {
+    return this.#isStart
+  }
+
+  get generated() {
+    return this.#generated
+  }
+
+  start(position: VectorArray3) {
+    this.#generated = []
+
+    this.#startPosition = position
+
+    this.#lineGenerator.setStartPosition(this.#startPosition)
+
+    this.#isStart = true
+  }
+
+  move(currentPosition: VectorArray3) {
+    if (!this.#isStart) return {generatedItems: [], removedItems: [], transformMatrixes: [], items: []}
+
+    this.#lineGenerator.setPosition(currentPosition)
+
+    const line = this.#lineGenerator.getLine()
+    const itemCount = Math.floor(line.length / this.#itemSpan)
+    const shortage = itemCount - this.#generated.length
+
+    const generatedItems: Array<GeneratedItem<T, U>> = []
+    const removedItems: Array<GeneratedItem<T, U>> = []
+
+    for (let i = 0; i < shortage; i++) {
+      const generated = this.#generator()
+      this.#generated.push(generated)
+      generatedItems.push(generated)
+    }
+
+    if (shortage < 0) {
+      for (let i = -shortage; i >= 0; i--) {
+        const removed = this.#generated.splice(i, 1)
+
+        removedItems.push(removed[0])
+      }
+    }
+
+    const alignment = new LinearAlignment(line)
+    const transformMatrixes: Array<MatrixArray4> = alignment.align(this.#generated.length, this.#itemSpan).map(aligned => Mat4.transformZAxis(aligned.direction, aligned.position))
+
+    return {
+      generatedItems,
+      removedItems,
+      transformMatrixes,
+      items: this.#generated
+    }
+  }
+
+  end() {
+    if (!this.#isStart) return
+    this.#isStart = false
+  }
+}

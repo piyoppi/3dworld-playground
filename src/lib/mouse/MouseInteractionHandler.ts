@@ -1,5 +1,5 @@
 import { Colider } from "../Colider"
-import { MouseControllable } from "./MouseDragHandler"
+import { MouseControllable } from "./MouseControllable.js"
 import { Raycaster } from "../Raycaster"
 
 export type ControlHandle = {
@@ -7,10 +7,11 @@ export type ControlHandle = {
   handled: MouseControllable
 }
 
-export class MouseInteractionHandler {
+export class MouseInteractionHandler implements MouseControllable {
   #raycasters: Array<Raycaster>
   #handleItems: Array<ControlHandle>
   #handlingItems: Array<ControlHandle>
+  #isStart: boolean = false
 
   constructor() {
     this.#raycasters = []
@@ -41,7 +42,11 @@ export class MouseInteractionHandler {
       })
   }
 
-  mousedown(screenX: number, screenY: number) {
+  get isStart() {
+    return this.#isStart
+  }
+
+  start(screenX: number, screenY: number) {
     this.colidedHandleItems()
       .forEach(handledItem => {
         if (!handledItem.handled.isStart) {
@@ -51,20 +56,20 @@ export class MouseInteractionHandler {
       })
   }
 
-  mousemove(screenX: number, screenY: number) {
+  move(screenX: number, screenY: number) {
     this.#handlingItems.forEach(handledItem => handledItem.handled.move(screenX, screenY))
   }
 
-  mouseup(screenX: number, screenY: number) {
+  end() {
     this.#handlingItems.forEach(handledItem => handledItem.handled.end())
       
     this.#handlingItems.length = 0
   }
 
   capture() {
-    window.addEventListener('mousedown', e => this.mousedown(e.screenX, e.screenY))
-    window.addEventListener('mousemove', e => this.mousemove(e.screenX, e.screenY))
-    window.addEventListener('mouseup', e => this.mouseup(e.screenX, e.screenY))
+    window.addEventListener('mousedown', e => this.start(e.screenX, e.screenY))
+    window.addEventListener('mousemove', e => this.move(e.screenX, e.screenY))
+    window.addEventListener('mouseup', e => this.end())
   }
 
   private colidedHandleItems() {

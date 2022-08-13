@@ -1,5 +1,5 @@
 import { RenderingObjectBuilder } from '../RenderingObjectBuilder.js'
-import { ThreeRenderingObject } from "./ThreeRenderer.js"
+import { ThreePrimitiveRenderingObject, ThreeRenderingObject } from "./ThreeRenderer.js"
 import {
   CylinderGeometry,
   TetrahedronGeometry,
@@ -9,7 +9,6 @@ import {
   Group,
   Color
 } from 'three'
-import { Item } from '../Item.js'
 import { RGBColor, convertRgbToHex } from '../helpers/color.js'
 
 export class ThreeRenderingObjectBuilder implements RenderingObjectBuilder<ThreeRenderingObject> {
@@ -37,20 +36,13 @@ export class ThreeRenderingObjectBuilder implements RenderingObjectBuilder<Three
     group.add(cylinderMesh)
     group.add(directionMesh)
 
-    return {
-      item: group
-    }
+    return new ThreeRenderingObject(group)
   }
 
   makeBox(width: number, height: number, depth: number, color: RGBColor) {
     const geometry = new BoxGeometry(width, height, depth);
     const material = new MeshBasicMaterial( {color: convertRgbToHex(color)} );
 
-    return {
-      item: {
-        geometry,
-        material
-      }
-    }
+    return new ThreeRenderingObject(new ThreePrimitiveRenderingObject(geometry, material))
   }
 }

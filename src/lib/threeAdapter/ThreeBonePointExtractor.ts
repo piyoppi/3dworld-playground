@@ -1,8 +1,8 @@
 import { getBonesTree, ObjectTree } from './ThreeObjectSelectorHelper.js'
 import { Item } from '../Item.js'
-import { BoxGeometry, MeshBasicMaterial, Mesh, Object3D, Group } from 'three'
+import { BoxGeometry, MeshBasicMaterial, Object3D, Group } from 'three'
 import { Coordinate } from '../Coordinate.js'
-import { ThreeRenderingObject } from './ThreeRenderer.js'
+import { ThreePrimitiveRenderingObject, ThreeRenderingObject } from './ThreeRenderer.js'
 
 export const extractItemsFromThreeBones = (group: Group, rootItem: Item) => {
   const treeRoots = getBonesTree(group)
@@ -25,7 +25,7 @@ const makeItemsFromTree = (tree: ObjectTree<Object3D>, parentCoordinate: Coordin
   const geometry = new BoxGeometry(0.02, 0.02, 0.02)
   const material = new MeshBasicMaterial({color: 0x00FF00})
   material.depthTest = false
-  const renderingObject = {item: {geometry, material}}
+  const renderingObject = new ThreeRenderingObject(new ThreePrimitiveRenderingObject(geometry, material))
 
   coordinate.matrix = tree.target.matrix.toArray()
 

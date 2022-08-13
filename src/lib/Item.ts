@@ -1,5 +1,3 @@
-import { Ray } from './Ray.js'
-import { Colider } from "./Colider.js"
 import { Coordinate } from "./Coordinate.js"
 import { v4 as uuidv4 } from 'uuid'
 
@@ -23,5 +21,9 @@ export class Item {
 
   get parentCoordinate() {
     return this.#parentCoordinate
+  }
+
+  clone() {
+    return new Item()
   }
 }

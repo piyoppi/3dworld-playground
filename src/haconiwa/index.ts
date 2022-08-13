@@ -1,5 +1,5 @@
 import { LookAtCameraHandler } from '../lib/LookAtCameraHandler.js'
-import { MouseHandler } from '../lib/mouse/MouseHandler.js'
+import { MouseCapturer } from '../lib/mouse/MouseCapturer.js'
 import { ThreeFactory as Factory } from '../lib/threeAdapter/ThreeFactory.js'
 import { Coordinate } from '../lib/Coordinate.js'
 import { Raycaster, ItemRaycaster } from '../lib/Raycaster.js'
@@ -12,14 +12,15 @@ import { BoxColider, PlaneColider } from '../lib/Colider.js'
 import { loadGlb } from '../lib/threeAdapter/ThreeLoaderHelper.js'
 import { attachCenterMarkerToItem, CenterMarker } from '../lib/markers/CenterMarker.js'
 import { GridAlignment } from '../lib/markers/handlers/GridAlignment.js'
-import { LineItemGeneratorAdapter, LineSegmentGenerator } from '../lib/itemGenerators/ItemGenerator.js'
+import { LineItemGeneratorAdapter } from '../lib/itemGenerators/lineItemGenerator/LineItemGeneratorAdapter.js'
+import { LineSegmentGenerator } from '../lib/itemGenerators/lineItemGenerator/lineGenerator/LineSegmentGenerator.js'
 
 const lookAtCameraHandler = new LookAtCameraHandler()
 const cameraKeyBoardHandler = new CameraKeyboardHandler()
 cameraKeyBoardHandler.setLookAtCameraHandler(lookAtCameraHandler)
 cameraKeyBoardHandler.capture()
 
-const mouseHandler = new MouseHandler(window.innerWidth, window.innerHeight)
+const mouseHandler = new MouseCapturer(window.innerWidth, window.innerHeight)
 mouseHandler.capture()
 
 const factory = new Factory()
@@ -39,15 +40,6 @@ lightCoordinate.y = 1
 lightCoordinate.lookAt([0, 0, 0])
 renderer.addLight(lightCoordinate)
 
-//for (let i=-3; i<3; i++) {
-//  const road = new Item()
-//  const roadRenderingObj = await loadGlb('./assets/road.glb')
-//  renderer.addItem(road, {item: roadRenderingObj})
-//  road.parentCoordinate.z = i
-//  const colider = new BoxColider(6, 1, 0.5, road.parentCoordinate)
-//  raycaster.addTarget(colider, road)
-//}
-
 const centerMarker = new CenterMarker(0.2)
 const marker = new AxisMarker<ThreeRenderingObject>(1, 0.05)
 marker.attachRenderingObject(primitiveRenderingObjectBuilder, renderer)
@@ -58,7 +50,7 @@ const itemFactory = () => {
   const renderingObject = roadRenderingObj.clone()
   const item = new Item()
 
-  return {item, renderingObject: {item: renderingObject}}
+  return {item, renderingObject: new ThreeRenderingObject(renderingObject)}
 }
 const itemAlignRaycaster = new Raycaster(renderer.camera)
 const floorColider = new PlaneColider([0, 0, 0], [0, 1, 0])
@@ -103,14 +95,14 @@ window.addEventListener('mousedown', e => {
       lookAtCameraHandler.setRotationHandler()
       break
   }
+  captureMouseClicked()
   lookAtCameraHandler.start(e.screenX, e.screenY)
   itemGenerator.start(e.screenX, e.screenY)
-  captureMouseClicked()
-  mouseInteractionHandler.mousedown(e.screenX, e.screenY)
+  mouseInteractionHandler.start(e.screenX, e.screenY)
 })
 window.addEventListener('mousemove', e => {
   captureMouseClicked()
-  mouseInteractionHandler.mousemove(e.screenX, e.screenY)
+  mouseInteractionHandler.move(e.screenX, e.screenY)
   lookAtCameraHandler.isLocked = mouseInteractionHandler.handling
   lookAtCameraHandler.move(e.screenX, e.screenY)
   itemGenerator.move(e.screenX, e.screenY)
@@ -121,5 +113,5 @@ window.addEventListener('wheel', e => {
 window.addEventListener('mouseup', e => {
   lookAtCameraHandler.end()
   itemGenerator.end()
-  mouseInteractionHandler.mouseup(e.screenX, e.screenY)
+  mouseInteractionHandler.end()
 })

@@ -1,6 +1,7 @@
 import { Camera } from "../../Camera.js"
 import { Item } from "../../Item.js"
-import { MouseControllable, MouseDragHandler } from "../../mouse/MouseDragHandler.js"
+import { MouseDragHandler } from "../../mouse/MouseDragHandler.js"
+import { MouseControllable } from "../../mouse/MouseControllable.js"
 import { Vec3, VectorArray3 } from "../../Matrix.js"
 import { CursorDirectionScreenToWorldConverter } from "./CursorDirectionScreenToWorldConverter.js"
 import { NoneAlignment } from "./NoneAlignment.js"

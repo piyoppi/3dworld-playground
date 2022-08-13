@@ -1,7 +1,7 @@
 import { LookAtCameraHandler } from '../lib/LookAtCameraHandler.js'
 import { loadGlb } from '../lib/threeAdapter/ThreeLoaderHelper.js'
 import { extractItemsFromThreeBones } from '../lib/threeAdapter/ThreeBonePointExtractor.js'
-import { MouseHandler } from '../lib/mouse/MouseHandler.js'
+import { MouseCapturer } from '../lib/mouse/MouseCapturer.js'
 import { makeItem } from '../lib/ItemFactory.js'
 import { ThreeFactory as Factory } from '../lib/threeAdapter/ThreeFactory.js'
 import { Coordinate } from '../lib/Coordinate.js'
@@ -14,7 +14,7 @@ import { ThreeRenderingObject } from '../lib/threeAdapter/ThreeRenderer.js'
 import { Item } from '../lib/Item.js'
 
 const lookAtCameraHandler = new LookAtCameraHandler()
-const mouseHandler = new MouseHandler(window.innerWidth, window.innerHeight)
+const mouseHandler = new MouseCapturer(window.innerWidth, window.innerHeight)
 const factory = new Factory()
 const renderer = factory.makeRenderer({fov: 100, aspect: window.innerWidth / window.innerHeight, near: 0.001, far: 10})
 renderer.initialize(window.innerWidth, window.innerHeight)
@@ -33,7 +33,7 @@ async function run() {
   const avatar = makeItem()
   avatar.parentCoordinate.z = 0
   avatar.parentCoordinate.y = -1
-  renderer.addItem(avatar, {item: avatarRenderingObject})
+  renderer.addItem(avatar, new ThreeRenderingObject(avatarRenderingObject))
 
   const marker = new AxisMarker<ThreeRenderingObject>(0.1, 0.03)
 
