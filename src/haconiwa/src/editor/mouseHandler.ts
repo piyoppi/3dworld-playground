@@ -19,6 +19,14 @@ export class HaconiwaMouseHandler {
     this.#mouseControlHandlers.push(handler)
   }
 
+  remove(handler: MouseControllable) {
+    const index = this.#mouseControlHandlers.findIndex(item => item === handler)
+
+    if (index < 0) return
+
+    this.#mouseControlHandlers.splice(index, 1)
+  }
+
   addBeforeMouseDownCallback(callback: MouseDownCallbackFunction) {
     this.#beforeMouseDownCallbacks.push(callback)
   }

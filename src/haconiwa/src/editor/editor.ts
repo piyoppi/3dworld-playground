@@ -40,6 +40,10 @@ export class HaconiwaEditor<T extends Clonable<T>> {
     this.#editingPlane = new EditingPlane(this.#renderer.renderer.camera)
   }
 
+  get hasCurrentItemGenerator() {
+    return !!this.#currentItemGenerator
+  }
+
   captureMouseEvent() {
     this.#mouseHandlers.captureMouseEvent()
   }
@@ -47,10 +51,15 @@ export class HaconiwaEditor<T extends Clonable<T>> {
   setItemGeneratorFactory(generator: HaconiwaItemGeneratorFactory<T>, original: HaconiwaItemGeneratorClonedItem<T>) {
     this.#currentItemGenerator = generator.create(this.#renderer.renderer, this.#editingPlane.raycaster, original)
     this.#mouseHandlers.add(this.#currentItemGenerator)
+    this.#cameraHandler.isLocked = true
   }
 
   clearItemGenerator() {
+    if (!this.#currentItemGenerator) return
+
+    this.#mouseHandlers.remove(this.#currentItemGenerator)
     this.#currentItemGenerator = null
+    this.#cameraHandler.isLocked = false
   }
 
   handleMouseEvent() {
@@ -67,6 +76,7 @@ export class HaconiwaEditor<T extends Clonable<T>> {
         this.#cameraHandler.setRotationHandler()
         break
     }
+    this.#cameraHandler.isLocked = this.hasCurrentItemGenerator
     this.handleMouseEvent()
   }
 

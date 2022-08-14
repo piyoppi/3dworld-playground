@@ -16,4 +16,14 @@ const editor = new HaconiwaEditor(haconiwaRenderer, mouseCapturer)
 haconiwaRenderer.initialize(window.innerWidth, window.innerHeight)
 editor.captureMouseEvent()
 
-editor.setItemGeneratorFactory(new HaconiwaLineItemGeneratorFactory(), {item: new Item(), renderingObject: new ThreeRenderingObject(await loadGlb('./assets/road.glb'))})
+window.addEventListener('keydown', async (e) => {
+  switch(e.key) {
+    case '1':
+      editor.clearItemGenerator()
+      break
+
+    case '2':
+      editor.setItemGeneratorFactory(new HaconiwaLineItemGeneratorFactory(), {item: new Item(), renderingObject: new ThreeRenderingObject(await loadGlb('./assets/road.glb'))})
+      break
+  }
+})
