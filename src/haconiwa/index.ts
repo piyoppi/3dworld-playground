@@ -1,117 +1,19 @@
-import { LookAtCameraHandler } from '../lib/LookAtCameraHandler.js'
-import { MouseCapturer } from '../lib/mouse/MouseCapturer.js'
+import { HaconiwaRenderer } from "./src/renderer.js"
+import { HaconiwaEditor } from "./src/editor/editor.js"
 import { ThreeFactory as Factory } from '../lib/threeAdapter/ThreeFactory.js'
-import { Coordinate } from '../lib/Coordinate.js'
-import { Raycaster, ItemRaycaster } from '../lib/Raycaster.js'
-import { attachAxisMarkerToItem, AxisMarker } from '../lib/markers/AxisMarker.js'
-import { ThreeRenderingObject } from '../lib/threeAdapter/ThreeRenderer.js'
-import { Item } from '../lib/Item.js'
-import { MouseInteractionHandler } from '../lib/mouse/MouseInteractionHandler.js'
-import { CameraKeyboardHandler } from '../lib/CameraKeyboardHandler.js'
-import { BoxColider, PlaneColider } from '../lib/Colider.js'
+import { MouseCapturer } from '../lib/mouse/MouseCapturer.js'
+import { HaconiwaLineItemGeneratorFactory } from "./src/editor/itemGenerators/HaconiwaLineItemGenerator.js"
+import { ThreeRenderingObject } from "../lib/threeAdapter/ThreeRenderer.js"
 import { loadGlb } from '../lib/threeAdapter/ThreeLoaderHelper.js'
-import { attachCenterMarkerToItem, CenterMarker } from '../lib/markers/CenterMarker.js'
-import { GridAlignment } from '../lib/markers/handlers/GridAlignment.js'
-import { LineItemGeneratorAdapter } from '../lib/itemGenerators/lineItemGenerator/LineItemGeneratorAdapter.js'
-import { LineSegmentGenerator } from '../lib/itemGenerators/lineItemGenerator/lineGenerator/LineSegmentGenerator.js'
-
-const lookAtCameraHandler = new LookAtCameraHandler()
-const cameraKeyBoardHandler = new CameraKeyboardHandler()
-cameraKeyBoardHandler.setLookAtCameraHandler(lookAtCameraHandler)
-cameraKeyBoardHandler.capture()
-
-const mouseHandler = new MouseCapturer(window.innerWidth, window.innerHeight)
-mouseHandler.capture()
+import { Item } from '../lib/Item.js'
 
 const factory = new Factory()
+const mouseCapturer = new MouseCapturer(window.innerWidth, window.innerHeight)
 const renderer = factory.makeRenderer({fov: 100, aspect: window.innerWidth / window.innerHeight, near: 0.001, far: 100})
-const primitiveRenderingObjectBuilder = factory.makeRenderingObjectBuilder()
-renderer.initialize(window.innerWidth, window.innerHeight)
+const haconiwaRenderer = new HaconiwaRenderer(renderer)
+const editor = new HaconiwaEditor(haconiwaRenderer, mouseCapturer)
 
-const raycaster = new ItemRaycaster<Item>(new Raycaster(renderer.camera))
-const axesRaycaster = new Raycaster(renderer.camera)
-const centerMarkerRaycaster = new Raycaster(renderer.camera)
-const mouseInteractionHandler = new MouseInteractionHandler()
-mouseInteractionHandler.addRaycaster(axesRaycaster)
-mouseInteractionHandler.addRaycaster(centerMarkerRaycaster)
+haconiwaRenderer.initialize(window.innerWidth, window.innerHeight)
+editor.captureMouseEvent()
 
-const lightCoordinate = new Coordinate()
-lightCoordinate.y = 1
-lightCoordinate.lookAt([0, 0, 0])
-renderer.addLight(lightCoordinate)
-
-const centerMarker = new CenterMarker(0.2)
-const marker = new AxisMarker<ThreeRenderingObject>(1, 0.05)
-marker.attachRenderingObject(primitiveRenderingObjectBuilder, renderer)
-
-//----------------
-const roadRenderingObj = await loadGlb('./assets/road.glb')
-const itemFactory = () => {
-  const renderingObject = roadRenderingObj.clone()
-  const item = new Item()
-
-  return {item, renderingObject: new ThreeRenderingObject(renderingObject)}
-}
-const itemAlignRaycaster = new Raycaster(renderer.camera)
-const floorColider = new PlaneColider([0, 0, 0], [0, 1, 0])
-itemAlignRaycaster.addTarget(floorColider)
-const itemGenerator = new LineItemGeneratorAdapter(new LineSegmentGenerator(), itemFactory, renderer, 1, itemAlignRaycaster)
-
-//------------------
-
-function captureMouseClicked() {
-  if (!mouseHandler.updated) return
-  const pos = mouseHandler.getNormalizedPosition()
-
-  raycaster.check(pos[0], pos[1])
-  axesRaycaster.check(pos[0], pos[1])
-  centerMarkerRaycaster.check(pos[0], pos[1])
-  itemAlignRaycaster.check(pos[0], pos[1])
-
-  if (!axesRaycaster.hasColided && !centerMarkerRaycaster.hasColided && raycaster.colidedItems.length > 0) {
-    const box = raycaster.colidedItems[0]
-    attachAxisMarkerToItem(marker, box, axesRaycaster, mouseInteractionHandler, 0.1, renderer.camera, new GridAlignment(1))
-
-    attachCenterMarkerToItem(centerMarker, box, centerMarkerRaycaster, mouseInteractionHandler, 0.1, renderer.camera, new GridAlignment(1))
-  }
-}
-
-renderer.setRenderingLoop(() => {
-  if (lookAtCameraHandler.changed) {
-    renderer.camera.coordinate.matrix = lookAtCameraHandler.getLookAtMatrix()
-  }
-
-  renderer.render()
-})
-renderer.mount()
-
-window.addEventListener('resize', () => renderer.resize(window.innerWidth, window.innerHeight))
-window.addEventListener('mousedown', e => {
-  switch(e.button) {
-    case 0:
-      lookAtCameraHandler.setTargetPositionHandler()
-      break
-    case 1:
-      lookAtCameraHandler.setRotationHandler()
-      break
-  }
-  captureMouseClicked()
-  lookAtCameraHandler.start(e.screenX, e.screenY)
-  itemGenerator.start(e.screenX, e.screenY)
-  mouseInteractionHandler.start(e.screenX, e.screenY)
-})
-window.addEventListener('mousemove', e => {
-  captureMouseClicked()
-  mouseInteractionHandler.move(e.screenX, e.screenY)
-  lookAtCameraHandler.isLocked = mouseInteractionHandler.handling
-  lookAtCameraHandler.move(e.screenX, e.screenY)
-  itemGenerator.move(e.screenX, e.screenY)
-})
-window.addEventListener('wheel', e => {
-  lookAtCameraHandler.addDistance(e.deltaY * 0.01)
-})
-window.addEventListener('mouseup', e => {
-  lookAtCameraHandler.end()
-  itemGenerator.end()
-  mouseInteractionHandler.end()
-})
+editor.setItemGeneratorFactory(new HaconiwaLineItemGeneratorFactory(), {item: new Item(), renderingObject: new ThreeRenderingObject(await loadGlb('./assets/road.glb'))})

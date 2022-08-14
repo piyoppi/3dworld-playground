@@ -250,6 +250,10 @@ export class LookAtCameraHandler implements MouseControllable {
     this.#changed = true
   }
 
+  wheel(delta: number) {
+    this.addDistance(delta * 0.01)
+  }
+
   end() {
     this.#currentHandler.end()
   }

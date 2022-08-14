@@ -1,10 +1,12 @@
 import { MouseControllable } from '../../../lib/mouse/MouseControllable.js'
 
 type MouseDownCallbackFunction = (x: number, y: number, mouseButton: number) => void
+type MouseMoveCallbackFunction = (x: number, y: number) => void
 
 export class HaconiwaMouseHandler {
   #mouseControlHandlers: Array<MouseControllable> = []
   #beforeMouseDownCallbacks: Array<MouseDownCallbackFunction> = []
+  #beforeMouseMoveCallbacks: Array<MouseMoveCallbackFunction> = []
 
   captureMouseEvent() {
     window.addEventListener('mousedown', e => this.mouseDown(e.screenX, e.screenY, e.button))
@@ -21,12 +23,17 @@ export class HaconiwaMouseHandler {
     this.#beforeMouseDownCallbacks.push(callback)
   }
 
+  addBeforeMouseMoveCallback(callback: MouseMoveCallbackFunction) {
+    this.#beforeMouseMoveCallbacks.push(callback)
+  }
+
   mouseDown(x: number, y: number, mouseButton: number) {
     this.#beforeMouseDownCallbacks.forEach(func => func(x, y, mouseButton))
     this.#mouseControlHandlers.forEach(handler => handler.start(x, y))
   }
 
   mouseMove(x: number, y: number) {
+    this.#beforeMouseMoveCallbacks.forEach(func => func(x, y))
     this.#mouseControlHandlers.forEach(handler => handler.move(x, y))
   }
 

@@ -1,3 +1,5 @@
+import type { VectorArray2 } from "../Matrix"
+
 export class MouseCapturer {
   #position
   #renderingAreaSize
@@ -24,7 +26,7 @@ export class MouseCapturer {
     return this.#position
   }
 
-  getNormalizedPosition() {
+  getNormalizedPosition(): VectorArray2 {
     this.#updated = false
     return [
        (this.#position[0] / this.#renderingAreaSize[0]) * 2 - 1,

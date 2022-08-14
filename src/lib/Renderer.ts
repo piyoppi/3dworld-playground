@@ -5,6 +5,7 @@ import { Item } from './Item.js'
 import { Scene } from './Scene.js'
 
 export interface Renderer<T> {
+  initialize: (width: number, height: number) => void
   setRenderingLoop: (callable: () => void) => void,
   addItem: (item: Item, renderingObject: T) => void,
   removeItem: (item: Item) => void,
