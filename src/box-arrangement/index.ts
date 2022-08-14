@@ -42,7 +42,7 @@ for (let x = -3; x < 3; x+=0.2) {
     box.parentCoordinate.x = x
     box.parentCoordinate.y = y
 
-    renderer.addItem(box, boxRenderingObject)
+    renderer.addItem(box.parentCoordinate, boxRenderingObject)
     raycaster.addTarget(colider, box)
   }
 }

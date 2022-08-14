@@ -80,7 +80,7 @@ export class AxisMarker<T> {
       builder.makeVector(this.#norm, this.#radius, {r: 255, g: 0, b: 0}),
       builder.makeVector(this.#norm, this.#radius, {r: 0, g: 255, b: 0}),
       builder.makeVector(this.#norm, this.#radius, {r: 0, g: 0, b: 255})
-    ].forEach((renderingObject, index) => renderer.addItem(this.#axes[index], renderingObject))
+    ].forEach((renderingObject, index) => renderer.addItem(this.#axes[index].parentCoordinate, renderingObject))
   }
 }
 

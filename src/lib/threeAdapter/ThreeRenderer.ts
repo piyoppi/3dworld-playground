@@ -1,11 +1,10 @@
 import { WebGLRenderer, Scene, BufferGeometry, Material, Mesh, AmbientLight, Group, GridHelper, Color } from 'three'
 import { Renderer } from '../Renderer.js'
 import { ThreeCamera } from './ThreeCamera.js'
-import { Item } from '../Item.js'
-import { Coordinate } from '../Coordinate.js'
 import { syncCoordinate } from './ThreeSyncCoordinate.js'
 import { RGBColor, convertRgbToHex } from '../helpers/color.js'
-import { CylinderGeometry, MeshBasicMaterial } from 'three'
+import type { Coordinate } from '../Coordinate.js'
+import { MeshBasicMaterial } from 'three'
 
 export class ThreePrimitiveRenderingObject {
   #geometry: BufferGeometry
@@ -51,15 +50,13 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
   #scene: Scene
   #camera: ThreeCamera
   #mapCoordinateIdToRenderingItem: Map<string, Mesh | Scene | Group>
-  #mapItemIdToRenderingItem: Map<string, Mesh | Scene | Group>
-  #pendingItems: Array<{mesh: Mesh | Scene | Group, item: Item}>
+  #pendingItems: Array<{mesh: Mesh | Scene | Group, coordinate: Coordinate}>
 
   constructor(scene: Scene, camera: ThreeCamera) {
     this.#renderer = new WebGLRenderer({ antialias: true })
     this.#scene = scene
     this.#camera = camera
     this.#mapCoordinateIdToRenderingItem = new Map()
-    this.#mapItemIdToRenderingItem = new Map()
     this.#pendingItems = []
     this.debug()
   }
@@ -73,24 +70,24 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
     this.#renderer.setPixelRatio( window.devicePixelRatio )
   }
 
-  addItem(item: Item, renderingObject: ThreeRenderingObject) {
+  addItem(coordinate: Coordinate, renderingObject: ThreeRenderingObject) {
     const mesh = (renderingObject.item instanceof Scene || renderingObject.item instanceof Group) ? renderingObject.item : new Mesh(renderingObject.item.geometry, renderingObject.item.material)
 
-    if (item.parentCoordinate.parent) {
-      const parentMesh = this.#mapCoordinateIdToRenderingItem.get(item.parentCoordinate.parent.uuid)
+    if (coordinate.parent) {
+      const parentMesh = this.#mapCoordinateIdToRenderingItem.get(coordinate.parent.uuid)
 
-      if (item.parentCoordinate.parent.items.length === 0) {
+      if (coordinate.parent.items.length === 0) {
         if (parentMesh && parentMesh instanceof Group) {
           parentMesh.add(mesh)
         } else {
           const group = new Group()
           group.add(mesh)
           this.#scene.add(group)
-          this.#mapCoordinateIdToRenderingItem.set(item.parentCoordinate.parent.uuid, group)
-          syncCoordinate(item.parentCoordinate.parent, group)
+          this.#mapCoordinateIdToRenderingItem.set(coordinate.parent.uuid, group)
+          syncCoordinate(coordinate.parent, group)
         }
       } else if (!parentMesh) {
-        this.#pendingItems.push({item, mesh})
+        this.#pendingItems.push({coordinate, mesh})
       } else {
         parentMesh.add(mesh)
       }
@@ -99,29 +96,28 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
     }
 
     this.#pendingItems.forEach(props => {
-      if (!item.parentCoordinate.parent) return
-      const parentMesh = this.#mapCoordinateIdToRenderingItem.get(item.parentCoordinate.parent.uuid)
+      if (!coordinate.parent) return
+      const parentMesh = this.#mapCoordinateIdToRenderingItem.get(coordinate.parent.uuid)
       if (!parentMesh) return
 
       parentMesh.add(props.mesh)
     })
 
-    this.#mapCoordinateIdToRenderingItem.set(item.parentCoordinate.uuid, mesh)
-    this.#mapItemIdToRenderingItem.set(item.uuid, mesh)
+    this.#mapCoordinateIdToRenderingItem.set(coordinate.uuid, mesh)
 
-    item.parentCoordinate.setSetChildCallback((parent, child) => this.coordinateSetChildCallbackHandler(parent, child))
-    item.parentCoordinate.setRemoveChildCallback((parent, child) => this.coordinateRemoveChildCallbackHandler(parent, child))
-    item.parentCoordinate.setUpdateCallback(() => syncCoordinate(item.parentCoordinate, mesh))
+    coordinate.setSetChildCallback((parent, child) => this.coordinateSetChildCallbackHandler(parent, child))
+    coordinate.setRemoveChildCallback((parent, child) => this.coordinateRemoveChildCallbackHandler(parent, child))
+    coordinate.setUpdateCallback(() => syncCoordinate(coordinate, mesh))
 
-    syncCoordinate(item.parentCoordinate, mesh)
+    syncCoordinate(coordinate, mesh)
   }
 
-  removeItem(item: Item) {
-    const renderingItem = this.#mapItemIdToRenderingItem.get(item.uuid)
+  removeItem(coordinate: Coordinate) {
+    const renderingItem = this.#mapCoordinateIdToRenderingItem.get(coordinate.uuid)
     if (!renderingItem) return
 
     this.#scene.remove(renderingItem)
-    this.#mapItemIdToRenderingItem.delete(item.uuid)
+    this.#mapCoordinateIdToRenderingItem.delete(coordinate.uuid)
   }
 
   private coordinateSetChildCallbackHandler(parent: Coordinate, child: Coordinate) {
@@ -144,8 +140,8 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
     syncCoordinate(child, childMesh)
   }
 
-  setColor(item: Item, color: RGBColor) {
-    const renderingItem = this.#mapItemIdToRenderingItem.get(item.uuid)
+  setColor(coordinate: Coordinate, color: RGBColor) {
+    const renderingItem = this.#mapCoordinateIdToRenderingItem.get(coordinate.uuid)
     if (!renderingItem) return
     if (!(renderingItem instanceof Mesh)) return
 

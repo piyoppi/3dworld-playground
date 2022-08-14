@@ -43,11 +43,11 @@ export class LineItemGeneratorAdapter<T> implements MouseControllable {
     })
 
     result.generatedItems.forEach(generated => {
-      this.#renderer.addItem(generated.item, generated.renderingObject)
+      this.#renderer.addItem(generated.item.parentCoordinate, generated.renderingObject)
     })
 
     result.removedItems.forEach(removed => {
-      this.#renderer.removeItem(removed.item)
+      this.#renderer.removeItem(removed.item.parentCoordinate)
     })
   }
 

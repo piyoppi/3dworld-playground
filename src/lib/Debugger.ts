@@ -22,5 +22,5 @@ export const showPoint = (position: VectorArray3) => {
   const material = new MeshBasicMaterial({color: 0xFFFF00})
   material.depthTest = false
 
-  commonRenderer.addItem(item, new ThreeRenderingObject(new ThreePrimitiveRenderingObject(geometry, material)))
+  commonRenderer.addItem(item.parentCoordinate, new ThreeRenderingObject(new ThreePrimitiveRenderingObject(geometry, material)))
 }

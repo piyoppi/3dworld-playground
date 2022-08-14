@@ -33,13 +33,13 @@ async function run() {
   const avatar = makeItem()
   avatar.parentCoordinate.z = 0
   avatar.parentCoordinate.y = -1
-  renderer.addItem(avatar, new ThreeRenderingObject(avatarRenderingObject))
+  renderer.addItem(avatar.parentCoordinate, new ThreeRenderingObject(avatarRenderingObject))
 
   const marker = new AxisMarker<ThreeRenderingObject>(0.1, 0.03)
 
   setTimeout(() => {
     const bones = extractItemsFromThreeBones(avatarRenderingObject, avatar)
-    bones.forEach(bone => renderer.addItem(bone.item, bone.renderingObject))
+    bones.forEach(bone => renderer.addItem(bone.item.parentCoordinate, bone.renderingObject))
     bones.forEach(bone => {
       const colider = new BoxColider(0.03, 0.03, 0.03, bone.item.parentCoordinate)  
       raycaster.addTarget(colider, bone.item)
@@ -68,7 +68,7 @@ async function run() {
 
       // raycast
       const items = raycaster.check(pos[0], pos[1])
-      items.forEach(item => renderer.setColor(item, {r: 255, g: 255, b: 0}))
+      items.forEach(item => renderer.setColor(item.parentCoordinate, {r: 255, g: 255, b: 0}))
 
       if (items.length > 0) {
         marker.setParentCoordinate(items[0].parentCoordinate)
