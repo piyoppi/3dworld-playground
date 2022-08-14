@@ -7,6 +7,10 @@ export class HaconiwaWorld {
 
   }
 
+  get items() {
+    return this.#items
+  }
+
   addItem(item: Item) {
     this.#items.push(item)
   }

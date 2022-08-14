@@ -9,6 +9,7 @@ import type { HaconiwaItemGeneratorFactory, HaconiwaItemGenerator, HaconiwaItemG
 import type { Clonable } from "../clonable"
 import { Camera } from '../../../lib/Camera.js'
 import { PlaneColider } from '../../../lib/Colider.js'
+import type { HaconiwaWorld } from '../world.js'
 
 type Plane = {
   position: VectorArray3,
@@ -24,7 +25,9 @@ export class HaconiwaEditor<T extends Clonable<T>> {
   #mouseCapturer: MouseCapturer
   #currentItemGenerator: HaconiwaItemGenerator<T> | null = null
 
-  constructor(renderer: HaconiwaRenderer<T>, mouseCapturer: MouseCapturer) {
+  #world: HaconiwaWorld
+
+  constructor(world: HaconiwaWorld, renderer: HaconiwaRenderer<T>, mouseCapturer: MouseCapturer) {
     this.#cameraHandler = new LookAtCameraHandler()
 
     this.#mouseHandlers.add(this.#cameraHandler)
@@ -38,6 +41,8 @@ export class HaconiwaEditor<T extends Clonable<T>> {
     this.#renderer.setBeforeRenderCallback(() => this.#renderingLoop())
 
     this.#editingPlane = new EditingPlane(this.#renderer.renderer.camera)
+
+    this.#world = world
   }
 
   get hasCurrentItemGenerator() {
@@ -50,6 +55,7 @@ export class HaconiwaEditor<T extends Clonable<T>> {
 
   setItemGeneratorFactory(generator: HaconiwaItemGeneratorFactory<T>, original: HaconiwaItemGeneratorClonedItem<T>) {
     this.#currentItemGenerator = generator.create(this.#renderer.renderer, this.#editingPlane.raycaster, original)
+    this.#currentItemGenerator.registerOnGeneratedCallback(generates => generates.forEach(item => this.#world.addItem(item.item)))
     this.#mouseHandlers.add(this.#currentItemGenerator)
     this.#cameraHandler.isLocked = true
   }
