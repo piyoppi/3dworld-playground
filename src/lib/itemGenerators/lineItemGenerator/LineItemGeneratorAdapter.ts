@@ -10,6 +10,7 @@ export class LineItemGeneratorAdapter<T> implements MouseControllable {
   #raycaster: Raycaster
   #lineItemGenerator: LineItemGenerator<Item, T>
   #renderer: Renderer<T>
+  #isStart: boolean = false
 
   constructor(lineGenerator: LineGenerator, generator: GenerateItemFactory<Item, T>, renderer: Renderer<T>, span: number, raycaster: Raycaster) {
     this.#raycaster = raycaster
@@ -18,7 +19,7 @@ export class LineItemGeneratorAdapter<T> implements MouseControllable {
   }
 
   get isStart() {
-    return this.#lineItemGenerator.isStart
+    return this.#isStart
   }
 
   get generated() {
@@ -29,14 +30,16 @@ export class LineItemGeneratorAdapter<T> implements MouseControllable {
     if (!this.#raycaster.hasColided) return
 
     const position = this.#raycaster.colidedDetails[0].position
-    this.#lineItemGenerator.start(position)
+    this.#lineItemGenerator.setStartPosition(position)
+
+    this.#isStart = true
   }
 
   move(cursorX: number, cursorY: number) {
-    if (!this.#lineItemGenerator.isStart || !this.#raycaster.hasColided) return
+    if (!this.#isStart || !this.#raycaster.hasColided) return
 
     const position = this.#raycaster.colidedDetails[0].position
-    const result = this.#lineItemGenerator.move(position)
+    const result = this.#lineItemGenerator.setEndPosition(position)
 
     result.transformMatrixes.forEach((matrix, index) => {
       result.items[index].item.parentCoordinate.matrix = matrix
@@ -52,6 +55,6 @@ export class LineItemGeneratorAdapter<T> implements MouseControllable {
   }
 
   end() {
-    this.#lineItemGenerator.end()
+    this.#isStart = false
   }
 }

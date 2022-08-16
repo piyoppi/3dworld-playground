@@ -8,7 +8,6 @@ export class LineItemGenerator<T, U> implements ItemGenerator<T, U> {
   #lineGenerator: LineGenerator
   #generator: GenerateItemFactory<T, U>
   #startPosition: VectorArray3 = [0, 0, 0]
-  #isStart: boolean = false
   #itemSpan: number
   #generated: Array<GeneratedItem<T, U>> = []
 
@@ -18,27 +17,19 @@ export class LineItemGenerator<T, U> implements ItemGenerator<T, U> {
     this.#itemSpan = span
   }
 
-  get isStart() {
-    return this.#isStart
-  }
-
   get generated() {
     return this.#generated
   }
 
-  start(position: VectorArray3) {
+  setStartPosition(position: VectorArray3) {
     this.#generated = []
 
     this.#startPosition = position
 
     this.#lineGenerator.setStartPosition(this.#startPosition)
-
-    this.#isStart = true
   }
 
-  move(currentPosition: VectorArray3) {
-    if (!this.#isStart) return {generatedItems: [], removedItems: [], transformMatrixes: [], items: []}
-
+  setEndPosition(currentPosition: VectorArray3) {
     this.#lineGenerator.setPosition(currentPosition)
 
     const line = this.#lineGenerator.getLine()
@@ -71,10 +62,5 @@ export class LineItemGenerator<T, U> implements ItemGenerator<T, U> {
       transformMatrixes,
       items: this.#generated
     }
-  }
-
-  end() {
-    if (!this.#isStart) return
-    this.#isStart = false
   }
 }
