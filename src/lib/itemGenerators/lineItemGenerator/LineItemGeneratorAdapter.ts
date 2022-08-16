@@ -5,17 +5,18 @@ import { LineItemGenerator } from "./LineItemGenerator.js"
 import type { LineGenerator } from "./lineGenerator/LineGenerator"
 import type { Item } from "../../Item"
 import type { GenerateItemFactory } from "../ItemGenerator"
+import type { Coordinate } from "../../Coordinate"
 
-export class LineItemGeneratorAdapter<T> implements MouseControllable {
+export class LineRenderingItemGenerator<T> implements MouseControllable {
   #raycaster: Raycaster
-  #lineItemGenerator: LineItemGenerator<Item, T>
+  #lineItemGenerator: LineItemGenerator<Coordinate, T>
   #renderer: Renderer<T>
   #isStart: boolean = false
 
-  constructor(lineGenerator: LineGenerator, generator: GenerateItemFactory<Item, T>, renderer: Renderer<T>, span: number, raycaster: Raycaster) {
+  constructor(lineGenerator: LineGenerator, generator: GenerateItemFactory<Coordinate, T>, renderer: Renderer<T>, span: number, raycaster: Raycaster) {
     this.#raycaster = raycaster
     this.#renderer = renderer
-    this.#lineItemGenerator = new LineItemGenerator<Item, T>(lineGenerator, generator, span)
+    this.#lineItemGenerator = new LineItemGenerator<Coordinate, T>(lineGenerator, generator, span)
   }
 
   get isStart() {
@@ -29,8 +30,7 @@ export class LineItemGeneratorAdapter<T> implements MouseControllable {
   start(cursorX: number, cursorY: number) {
     if (!this.#raycaster.hasColided) return
 
-    const position = this.#raycaster.colidedDetails[0].position
-    this.#lineItemGenerator.setStartPosition(position)
+    this.#lineItemGenerator.setStartPosition(this.#raycaster.colidedDetails[0].position)
 
     this.#isStart = true
   }
@@ -38,19 +38,18 @@ export class LineItemGeneratorAdapter<T> implements MouseControllable {
   move(cursorX: number, cursorY: number) {
     if (!this.#isStart || !this.#raycaster.hasColided) return
 
-    const position = this.#raycaster.colidedDetails[0].position
-    const result = this.#lineItemGenerator.setEndPosition(position)
+    const result = this.#lineItemGenerator.setEndPosition(this.#raycaster.colidedDetails[0].position)
 
     result.transformMatrixes.forEach((matrix, index) => {
-      result.items[index].item.parentCoordinate.matrix = matrix
+      result.items[index].item.matrix = matrix
     })
 
     result.generatedItems.forEach(generated => {
-      this.#renderer.addItem(generated.item.parentCoordinate, generated.renderingObject)
+      this.#renderer.addItem(generated.item, generated.renderingObject)
     })
 
     result.removedItems.forEach(removed => {
-      this.#renderer.removeItem(removed.item.parentCoordinate)
+      this.#renderer.removeItem(removed.item)
     })
   }
 

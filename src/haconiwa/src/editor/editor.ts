@@ -55,7 +55,7 @@ export class HaconiwaEditor<T extends Clonable<T>> {
 
   setItemGeneratorFactory(generator: HaconiwaItemGeneratorFactory<T>, original: HaconiwaItemGeneratorClonedItem<T>) {
     this.#currentItemGenerator = generator.create(this.#renderer.renderer, this.#editingPlane.raycaster, original)
-    this.#currentItemGenerator.registerOnGeneratedCallback(generates => generates.forEach(item => this.#world.addItem(item.item)))
+    this.#currentItemGenerator.registerOnGeneratedCallback(generates => generates.forEach(item => this.#world.addItem(item)))
     this.#mouseHandlers.add(this.#currentItemGenerator)
     this.#cameraHandler.isLocked = true
   }
