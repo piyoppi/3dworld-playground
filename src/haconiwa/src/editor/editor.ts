@@ -9,7 +9,7 @@ import type { HaconiwaItemGeneratorFactory, HaconiwaItemGenerator, HaconiwaItemG
 import type { Clonable } from "../clonable"
 import { Camera } from '../../../lib/Camera.js'
 import { PlaneColider } from '../../../lib/Colider.js'
-import type { HaconiwaWorld } from '../world.js'
+import { HaconiwaWorld, HaconiwaWorldItem } from '../world.js'
 
 type Plane = {
   position: VectorArray3,

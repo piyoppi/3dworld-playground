@@ -6,10 +6,11 @@ import { LineSegmentGenerator } from '../../../../lib/itemGenerators/lineItemGen
 import type { Clonable } from "../../clonable"
 import type { HaconiwaItemGenerator, HaconiwaItemGeneratorFactory, HaconiwaItemGeneratorClonedItem, HaconiwaItemGeneratedCallback } from "./HaconiwaItemGenerator"
 import { Coordinate } from "../../../../lib/Coordinate.js"
+import { HaconiwaWorldItem } from "../../world.js"
 
 export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements HaconiwaItemGenerator<T> {
   #itemGenerator: LineRenderingItemGenerator<T>
-  #onGeneratedCallbacks: Array<HaconiwaItemGeneratedCallback<Item>> = []
+  #onGeneratedCallbacks: Array<HaconiwaItemGeneratedCallback> = []
   private original: HaconiwaItemGeneratorClonedItem<T> | null = null
 
   constructor(renderer: Renderer<T>, raycaster: Raycaster) {
@@ -20,7 +21,7 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
     return this.#itemGenerator.isStart
   }
 
-  registerOnGeneratedCallback(func: HaconiwaItemGeneratedCallback<Item>) {
+  registerOnGeneratedCallback(func: HaconiwaItemGeneratedCallback) {
     this.#onGeneratedCallbacks.push(func) 
   }
 
@@ -44,7 +45,7 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
       item.parentCoordinate.addChild(generatedItem.item)
     })
 
-    this.#onGeneratedCallbacks.forEach(func => func([item]))
+    this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item)]))
   }
 
   private itemFactory() {

@@ -1,17 +1,16 @@
 import type { Item } from "../../../../lib/Item"
 import type { Renderer } from "../../../../lib/Renderer"
 import type { Raycaster } from "../../../../lib/Raycaster"
-import { GeneratedItem } from "../../../../lib/itemGenerators/ItemGenerator"
 import type { Clonable } from "../../clonable"
 import type { MouseControllable } from "../../../../lib/mouse/MouseControllable"
-import { Coordinate } from "../../../../lib/Coordinate.js"
+import { HaconiwaWorldItem } from "../../world"
 
 export interface HaconiwaItemGenerator<T> extends MouseControllable {
   setItem: (original: HaconiwaItemGeneratorClonedItem<T>) => void
-  registerOnGeneratedCallback: (callback: HaconiwaItemGeneratedCallback<T>) => void
+  registerOnGeneratedCallback: (callback: HaconiwaItemGeneratedCallback) => void
 }
 
-export type HaconiwaItemGeneratedCallback<T> = (generates: Array<Item>) => void
+export type HaconiwaItemGeneratedCallback = (generates: Array<HaconiwaWorldItem>) => void
 export type HaconiwaItemGeneratorClonedItem<T> = {
   item: Item,
   renderingObject: T
