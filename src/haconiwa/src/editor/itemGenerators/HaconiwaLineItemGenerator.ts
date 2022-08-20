@@ -1,16 +1,17 @@
 import { Item } from "../../../../lib/Item.js"
 import type { Raycaster } from "../../../../lib/Raycaster"
 import type { Renderer } from "../../../../lib/Renderer"
-import { LineRenderingItemGenerator } from '../../../../lib/itemGenerators/lineItemGenerator/LineItemGeneratorAdapter.js'
+import { LineRenderingItemGenerator } from '../../../../lib/itemGenerators/lineItemGenerator/LineRenderingItemGenerator.js'
 import { LineSegmentGenerator } from '../../../../lib/itemGenerators/lineItemGenerator/lineGenerator/LineSegmentGenerator.js'
 import type { Clonable } from "../../clonable"
 import type { HaconiwaItemGenerator, HaconiwaItemGeneratorFactory, HaconiwaItemGeneratorClonedItem, HaconiwaItemGeneratedCallback } from "./HaconiwaItemGenerator"
 import { Coordinate } from "../../../../lib/Coordinate.js"
 import { HaconiwaWorldItem } from "../../world.js"
+import { CenterMarker } from "../../../../lib/markers/CenterMarker.js"
 
 export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements HaconiwaItemGenerator<T> {
   #itemGenerator: LineRenderingItemGenerator<T>
-  #onGeneratedCallbacks: Array<HaconiwaItemGeneratedCallback> = []
+  #onGeneratedCallbacks: Array<HaconiwaItemGeneratedCallback<T>> = []
   private original: HaconiwaItemGeneratorClonedItem<T> | null = null
 
   constructor(renderer: Renderer<T>, raycaster: Raycaster) {
@@ -21,7 +22,7 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
     return this.#itemGenerator.isStart
   }
 
-  registerOnGeneratedCallback(func: HaconiwaItemGeneratedCallback) {
+  registerOnGeneratedCallback(func: HaconiwaItemGeneratedCallback<T>) {
     this.#onGeneratedCallbacks.push(func) 
   }
 
@@ -45,7 +46,9 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
       item.parentCoordinate.addChild(generatedItem.item)
     })
 
-    this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item)]))
+    const marker = new CenterMarker(0.1)
+
+    this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], [])]))
   }
 
   private itemFactory() {

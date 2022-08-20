@@ -1,11 +1,10 @@
 import type { Raycaster } from "../../Raycaster"
 import type { MouseControllable } from "../../mouse/MouseControllable"
 import type { Renderer } from "../../Renderer"
-import { LineItemGenerator } from "./LineItemGenerator.js"
 import type { LineGenerator } from "./lineGenerator/LineGenerator"
-import type { Item } from "../../Item"
 import type { GenerateItemFactory } from "../ItemGenerator"
 import type { Coordinate } from "../../Coordinate"
+import { LineItemGenerator } from "./LineItemGenerator.js"
 
 export class LineRenderingItemGenerator<T> implements MouseControllable {
   #raycaster: Raycaster
@@ -17,6 +16,14 @@ export class LineRenderingItemGenerator<T> implements MouseControllable {
     this.#raycaster = raycaster
     this.#renderer = renderer
     this.#lineItemGenerator = new LineItemGenerator<Coordinate, T>(lineGenerator, generator, span)
+  }
+
+  get renderer() {
+    return this.#renderer
+  }
+
+  get raycaster() {
+    return this.#raycaster
   }
 
   get isStart() {

@@ -3,11 +3,11 @@ import { MouseCapturer } from '../lib/mouse/MouseCapturer.js'
 import { ThreeFactory as Factory } from '../lib/threeAdapter/ThreeFactory.js'
 import { Coordinate } from '../lib/Coordinate.js'
 import { Raycaster, ItemRaycaster } from '../lib/Raycaster.js'
-import { AxisMarker } from '../lib/markers/AxisMarker.js'
+import { DirectionalMarker } from '../lib/markers/DirectionalMarker.js'
 import { ThreeRenderingObject } from '../lib/threeAdapter/ThreeRenderer.js'
 import { Item } from '../lib/Item.js'
-import { AxisMarkerHandler } from '../lib/markers/handlers/AxisMarkerHandler.js'
-import { MouseInteractionHandler } from '../lib/mouse/MouseInteractionHandler.js'
+import { DirectionalMoveHandler } from '../lib/markers/handlers/DirectionalMoveHandler.js'
+import { MouseHandlers } from '../lib/mouse/MouseInteractionHandler.js'
 import { CameraKeyboardHandler } from '../lib/CameraKeyboardHandler.js'
 import { BoxColider } from '../lib/Colider.js'
 
@@ -26,7 +26,7 @@ renderer.initialize(window.innerWidth, window.innerHeight)
 
 const raycaster = new ItemRaycaster<Item>(new Raycaster(renderer.camera))
 const axesRaycaster = new Raycaster(renderer.camera)
-const mouseInteractionHandler = new MouseInteractionHandler()
+const mouseInteractionHandler = new MouseHandlers()
 mouseInteractionHandler.addRaycaster(axesRaycaster)
 
 const lightCoordinate = new Coordinate()
@@ -47,8 +47,13 @@ for (let x = -3; x < 3; x+=0.2) {
   }
 }
 
-const marker = new AxisMarker<ThreeRenderingObject>(0.1, 0.01)
-marker.attachRenderingObject(primitiveRenderingObjectBuilder, renderer)
+const markerX = new DirectionalMarker(0.1, 0.01, [1, 0, 0])
+const markerY = new DirectionalMarker(0.1, 0.01, [0, 1, 0])
+const markerZ = new DirectionalMarker(0.1, 0.01, [0, 0, 1])
+
+markerX.attachRenderingObject({r: 255, g: 0, b: 0}, primitiveRenderingObjectBuilder, renderer)
+markerY.attachRenderingObject({r: 0, g: 255, b: 0}, primitiveRenderingObjectBuilder, renderer)
+markerZ.attachRenderingObject({r: 0, g: 0, b: 255}, primitiveRenderingObjectBuilder, renderer)
 
 function captureMouseClicked() {
   if (!mouseHandler.updated) return
@@ -59,16 +64,12 @@ function captureMouseClicked() {
 
   if (axesRaycaster.colidedColiders.length === 0 && raycaster.colidedItems.length > 0) {
     const box = raycaster.colidedItems[0]
-    marker.setParentCoordinate(box.parentCoordinate)
-    marker.setColider(
-      axesRaycaster,
-      mouseInteractionHandler,
-      [
-        new AxisMarkerHandler(box, [1, 0, 0], 0.01, renderer.camera),
-        new AxisMarkerHandler(box, [0, 1, 0], 0.01, renderer.camera),
-        new AxisMarkerHandler(box, [0, 0, 1], 0.01, renderer.camera),
-      ]
-    )
+    markerX.setParentCoordinate(box.parentCoordinate)
+    markerY.setParentCoordinate(box.parentCoordinate)
+    markerZ.setParentCoordinate(box.parentCoordinate)
+    markerX.setHandle(axesRaycaster, mouseInteractionHandler, new DirectionalMoveHandler(box, [1, 0, 0], 0.01, renderer.camera))
+    markerY.setHandle(axesRaycaster, mouseInteractionHandler, new DirectionalMoveHandler(box, [0, 1, 0], 0.01, renderer.camera))
+    markerZ.setHandle(axesRaycaster, mouseInteractionHandler, new DirectionalMoveHandler(box, [0, 0, 1], 0.01, renderer.camera))
   }
 }
 

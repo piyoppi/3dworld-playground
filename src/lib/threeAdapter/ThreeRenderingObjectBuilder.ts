@@ -3,6 +3,7 @@ import { ThreePrimitiveRenderingObject, ThreeRenderingObject } from "./ThreeRend
 import {
   CylinderGeometry,
   TetrahedronGeometry,
+  SphereGeometry,
   BoxGeometry,
   MeshBasicMaterial,
   Mesh,
@@ -41,6 +42,13 @@ export class ThreeRenderingObjectBuilder implements RenderingObjectBuilder<Three
 
   makeBox(width: number, height: number, depth: number, color: RGBColor) {
     const geometry = new BoxGeometry(width, height, depth);
+    const material = new MeshBasicMaterial( {color: convertRgbToHex(color)} );
+
+    return new ThreeRenderingObject(new ThreePrimitiveRenderingObject(geometry, material))
+  }
+
+  makeSphere(radius: number, color: RGBColor) {
+    const geometry = new SphereGeometry(radius, 16, 16);
     const material = new MeshBasicMaterial( {color: convertRgbToHex(color)} );
 
     return new ThreeRenderingObject(new ThreePrimitiveRenderingObject(geometry, material))

@@ -8,7 +8,7 @@ import { ThreeRenderingObject } from "../lib/threeAdapter/ThreeRenderer.js"
 import { loadGlb } from '../lib/threeAdapter/ThreeLoaderHelper.js'
 import { Item } from '../lib/Item.js'
 
-const world = new HaconiwaWorld()
+const world = new HaconiwaWorld<ThreeRenderingObject>()
 const factory = new Factory()
 const mouseCapturer = new MouseCapturer(window.innerWidth, window.innerHeight)
 const renderer = factory.makeRenderer({fov: 100, aspect: window.innerWidth / window.innerHeight, near: 0.001, far: 100})

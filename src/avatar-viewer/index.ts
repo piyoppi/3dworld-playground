@@ -6,10 +6,9 @@ import { makeItem } from '../lib/ItemFactory.js'
 import { ThreeFactory as Factory } from '../lib/threeAdapter/ThreeFactory.js'
 import { Coordinate } from '../lib/Coordinate.js'
 import { Raycaster, ItemRaycaster } from '../lib/Raycaster.js'
-import { makeMarker } from '../lib/VectorMarker.js'
 import { BoxColider } from '../lib/Colider.js'
 import { setRenderer } from '../lib/Debugger.js'
-import { AxisMarker } from '../lib/markers/AxisMarker.js'
+import { DirectionalMarker } from '../lib/markers/DirectionalMarker.js'
 import { ThreeRenderingObject } from '../lib/threeAdapter/ThreeRenderer.js'
 import { Item } from '../lib/Item.js'
 
@@ -35,7 +34,9 @@ async function run() {
   avatar.parentCoordinate.y = -1
   renderer.addItem(avatar.parentCoordinate, new ThreeRenderingObject(avatarRenderingObject))
 
-  const marker = new AxisMarker<ThreeRenderingObject>(0.1, 0.03)
+  const markerX = new DirectionalMarker(0.1, 0.01, [1, 0, 0])
+  const markerY = new DirectionalMarker(0.1, 0.01, [0, 1, 0])
+  const markerZ = new DirectionalMarker(0.1, 0.01, [0, 0, 1])
 
   setTimeout(() => {
     const bones = extractItemsFromThreeBones(avatarRenderingObject, avatar)
@@ -46,8 +47,12 @@ async function run() {
     })
 
     const primitiveRenderingObjectBuilder = factory.makeRenderingObjectBuilder()
-    marker.setParentCoordinate(bones[2].item.parentCoordinate)
-    marker.attachRenderingObject(primitiveRenderingObjectBuilder, renderer)
+    markerX.setParentCoordinate(bones[2].item.parentCoordinate)
+    markerY.setParentCoordinate(bones[2].item.parentCoordinate)
+    markerZ.setParentCoordinate(bones[2].item.parentCoordinate)
+    markerX.attachRenderingObject({r: 255, g: 0, b: 0}, primitiveRenderingObjectBuilder, renderer)
+    markerY.attachRenderingObject({r: 0, g: 255, b: 0}, primitiveRenderingObjectBuilder, renderer)
+    markerZ.attachRenderingObject({r: 0, g: 0, b: 255}, primitiveRenderingObjectBuilder, renderer)
   }, 50)
 
   //
@@ -58,20 +63,14 @@ async function run() {
     if (mouseHandler.updated) {
       const pos = mouseHandler.getNormalizedPosition()
 
-      // debug
-      // const ray = raycaster.getRay(pos[0], pos[1])
-      // const markerItem = makeMarker(ray.position, ray.direction)
-      // renderer.addItem(
-      //   markerItem,
-      //   primitiveRenderingObjectBuilder.makeVectorRenderingObject(5)
-      // )
-
       // raycast
       const items = raycaster.check(pos[0], pos[1])
       items.forEach(item => renderer.setColor(item.parentCoordinate, {r: 255, g: 255, b: 0}))
 
       if (items.length > 0) {
-        marker.setParentCoordinate(items[0].parentCoordinate)
+        markerX.setParentCoordinate(items[0].parentCoordinate)
+        markerY.setParentCoordinate(items[0].parentCoordinate)
+        markerZ.setParentCoordinate(items[0].parentCoordinate)
       }
     }
 

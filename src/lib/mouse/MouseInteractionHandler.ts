@@ -7,7 +7,7 @@ export type ControlHandle = {
   handled: MouseControllable
 }
 
-export class MouseInteractionHandler implements MouseControllable {
+export class MouseHandlers implements MouseControllable {
   #raycasters: Array<Raycaster>
   #handleItems: Array<ControlHandle>
   #handlingItems: Array<ControlHandle>
@@ -69,7 +69,7 @@ export class MouseInteractionHandler implements MouseControllable {
   capture() {
     window.addEventListener('mousedown', e => this.start(e.screenX, e.screenY))
     window.addEventListener('mousemove', e => this.move(e.screenX, e.screenY))
-    window.addEventListener('mouseup', e => this.end())
+    window.addEventListener('mouseup', _ => this.end())
   }
 
   private colidedHandleItems() {

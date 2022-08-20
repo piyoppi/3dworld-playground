@@ -237,8 +237,16 @@ export class Mat4 {
   }
 
   static transformYAxis(direction: VectorArray3, position: VectorArray3 = [0, 0, 0]): MatrixArray4 {
-    const xAxis = Vec3.normalize(Vec3.cross([0, 0, 1], direction))
-    const zAxis = Vec3.normalize(Vec3.cross(xAxis, direction))
+    let xAxis: VectorArray3
+    let zAxis: VectorArray3
+
+    if (Math.abs(Vec3.dotprod(direction, [0, 0, 1])) < 0.001) {
+      xAxis = Vec3.normalize(Vec3.cross([0, 0, 1], direction))
+      zAxis = Vec3.normalize(Vec3.cross(xAxis, direction))
+    } else {
+      zAxis = Vec3.normalize(Vec3.cross([1, 0, 0], direction))
+      xAxis = Vec3.normalize(Vec3.cross(zAxis, direction))
+    }
 
     return [
       ...xAxis, 0,

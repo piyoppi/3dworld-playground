@@ -1,27 +1,29 @@
 import { Camera } from "../../Camera.js"
-import { Item } from "../../Item.js"
-import { Vec3, VectorArray3 } from "../../Matrix.js"
 import { MouseDragHandler } from "../../mouse/MouseDragHandler.js"
 import { MouseControllable } from "../../mouse/MouseControllable.js"
-import { AlignmentAdapter } from "./AlignmentAdapter.js"
+import { Vec3, VectorArray3 } from "../../Matrix.js"
 import { CursorDirectionScreenToWorldConverter } from "./CursorDirectionScreenToWorldConverter.js"
 import { NoneAlignment } from "./NoneAlignment.js"
+import type { AlignmentAdapter } from "./AlignmentAdapter.js"
+import type { Coordinate } from "../../Coordinate.js"
 
-export class AxisMarkerHandler implements MouseControllable {
-  #manipulateItem: Item
+export class PlaneMoveHandler implements MouseControllable {
   #mouseDragHandler
-  #direction: VectorArray3
+  manipulateCoordinate: Coordinate
+  #planeXAxis: VectorArray3
+  #planeZAxis: VectorArray3
   #scale: number
   #camera: Camera
   #cursorDirectionConverter: CursorDirectionScreenToWorldConverter
   #alignment: AlignmentAdapter
 
-  constructor(manipulateItem: Item, directionInLocal: VectorArray3, scale: number, camera: Camera) {
+  constructor(manipulateCoordinate: Coordinate, planeXAxis: VectorArray3, planeZAxis: VectorArray3, scale: number, camera: Camera) {
     this.#mouseDragHandler = new MouseDragHandler()
-    this.#manipulateItem = manipulateItem
-    this.#direction = directionInLocal
-    this.#scale = scale
+    this.manipulateCoordinate = manipulateCoordinate
+    this.#planeXAxis = planeXAxis
+    this.#planeZAxis = planeZAxis
     this.#camera = camera
+    this.#scale = scale
     this.#cursorDirectionConverter = new CursorDirectionScreenToWorldConverter()
     this.#alignment = new NoneAlignment()
   }
@@ -37,9 +39,9 @@ export class AxisMarkerHandler implements MouseControllable {
   start(cursorX: number, cursorY: number) {
     if (this.#mouseDragHandler.isStart) return
 
-    this.#alignment.reset(this.#manipulateItem.parentCoordinate.position)
     this.#mouseDragHandler.start(cursorX, cursorY)
-    this.#cursorDirectionConverter.calcTransformMatrix(this.#manipulateItem.parentCoordinate, this.#camera.coordinate)
+    this.#alignment.reset(this.manipulateCoordinate.position)
+    this.#cursorDirectionConverter.calcTransformMatrix(this.manipulateCoordinate, this.#camera.coordinate)
   }
 
   move(cursorX: number, cursorY: number) {
@@ -47,15 +49,17 @@ export class AxisMarkerHandler implements MouseControllable {
 
     const mouseDelta = this.#mouseDragHandler.move(cursorX, cursorY)
     const mouseDeltaInItemCoordinate = this.#cursorDirectionConverter.convert(mouseDelta)
-    const len = Vec3.dotprod(mouseDeltaInItemCoordinate, this.#direction)
-    const scale = len * this.#scale
-    const addingVector = Vec3.mulScale(this.#direction, scale)
+    const addingVector: VectorArray3 = [
+      Vec3.dotprod(mouseDeltaInItemCoordinate, this.#planeXAxis) * this.#scale,
+      0,
+      Vec3.dotprod(mouseDeltaInItemCoordinate, this.#planeZAxis) * this.#scale,
+    ]
 
     this.#alignment.add(addingVector)
 
-    this.#manipulateItem.parentCoordinate.x = this.#alignment.alignedPosition[0]
-    this.#manipulateItem.parentCoordinate.y = this.#alignment.alignedPosition[1]
-    this.#manipulateItem.parentCoordinate.z = this.#alignment.alignedPosition[2]
+    this.manipulateCoordinate.x = this.#alignment.alignedPosition[0]
+    this.manipulateCoordinate.y = this.#alignment.alignedPosition[1]
+    this.manipulateCoordinate.z = this.#alignment.alignedPosition[2]
   }
 
   end() {

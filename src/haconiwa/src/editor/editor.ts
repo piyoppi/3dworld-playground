@@ -25,9 +25,9 @@ export class HaconiwaEditor<T extends Clonable<T>> {
   #mouseCapturer: MouseCapturer
   #currentItemGenerator: HaconiwaItemGenerator<T> | null = null
 
-  #world: HaconiwaWorld
+  #world: HaconiwaWorld<T>
 
-  constructor(world: HaconiwaWorld, renderer: HaconiwaRenderer<T>, mouseCapturer: MouseCapturer) {
+  constructor(world: HaconiwaWorld<T>, renderer: HaconiwaRenderer<T>, mouseCapturer: MouseCapturer) {
     this.#cameraHandler = new LookAtCameraHandler()
 
     this.#mouseHandlers.add(this.#cameraHandler)

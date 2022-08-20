@@ -21,8 +21,8 @@ export class Coordinate {
     this.#items = []
     this.#matrix = Mat4.getIdentityMatrix()
     this.#updatedCallback = () => {}
-    this.#setChildCallback = (parent, child) => {}
-    this.#removeChildCallback = (parent, child) => {}
+    this.#setChildCallback = (_parent, _child) => {}
+    this.#removeChildCallback = (_parent, _child) => {}
   }
 
   get matrix() {

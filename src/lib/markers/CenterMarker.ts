@@ -1,15 +1,15 @@
 import { BallColider } from "../Colider.js"
 import { Coordinate } from "../Coordinate.js"
-import { Item } from "../Item.js"
 import { MouseControllable } from "../mouse/MouseControllable.js"
-import { MouseInteractionHandler } from "../mouse/MouseInteractionHandler.js"
+import { MouseHandlers } from "../mouse/MouseInteractionHandler.js"
 import { Raycaster } from "../Raycaster.js"
-import { HandledColiders } from "./Marker.js"
-import { Camera } from '../Camera.js'
-import { CenterMarkerHandler } from "./handlers/CenterMarkerHandler.js"
-import { AlignmentAdapter } from "./handlers/AlignmentAdapter.js"
+import { HandledColiders } from "./HandledColiders.js"
+import type { RenderingObjectBuilder } from '../RenderingObjectBuilder.js'
+import type { RGBColor } from "../helpers/color.js"
+import type { Renderer } from "../Renderer.js"
+import { Marker } from "./Marker.js"
 
-export class CenterMarker<T> {
+export class CenterMarker implements Marker {
   #parentCoordinate: Coordinate
   #marker: HandledColiders
   #radius: number
@@ -25,11 +25,15 @@ export class CenterMarker<T> {
     return this.#radius
   }
 
-  setColider(raycaster: Raycaster, interactionHandler: MouseInteractionHandler, handler: MouseControllable) {
+  setHandle(raycaster: Raycaster, interactionHandler: MouseHandlers, handler: MouseControllable) {
     const colider = new BallColider(this.#radius, this.#parentCoordinate)
     const handle = {colider, handled: handler}
 
-    this.#marker.setColider(raycaster, interactionHandler, [colider], [handle])
+    this.#marker.setHandles(raycaster, interactionHandler, [handle])
+  }
+
+  removeHandle(raycaster: Raycaster, interactionHandler: MouseHandlers) {
+    this.#marker.removeHandles(raycaster, interactionHandler)
   }
 
   setParentCoordinate(coordinate: Coordinate) {
@@ -37,18 +41,8 @@ export class CenterMarker<T> {
       this.#parentCoordinate = coordinate
     }
   }
-}
 
-export const attachCenterMarkerToItem = (marker: CenterMarker<never>, item: Item, raycaster: Raycaster, mouseHandler: MouseInteractionHandler, scale: number, camera: Camera, alignmentAdapter: AlignmentAdapter | null = null) => {
-  const handler = new CenterMarkerHandler(item, [1, 0, 0], [0, 0, 1], scale, camera)
-  marker.setParentCoordinate(item.parentCoordinate)
-  marker.setColider(
-    raycaster,
-    mouseHandler,
-    handler,
-  )
-
-  if (alignmentAdapter) {
-    handler.setAlignment(alignmentAdapter)
+  attachRenderingObject<T>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
+    renderer.addItem(this.#parentCoordinate, builder.makeSphere(this.#radius, color))
   }
 }

@@ -7,10 +7,10 @@ import { HaconiwaWorldItem } from "../../world"
 
 export interface HaconiwaItemGenerator<T> extends MouseControllable {
   setItem: (original: HaconiwaItemGeneratorClonedItem<T>) => void
-  registerOnGeneratedCallback: (callback: HaconiwaItemGeneratedCallback) => void
+  registerOnGeneratedCallback: (callback: HaconiwaItemGeneratedCallback<T>) => void
 }
 
-export type HaconiwaItemGeneratedCallback = (generates: Array<HaconiwaWorldItem>) => void
+export type HaconiwaItemGeneratedCallback<T> = (generates: Array<HaconiwaWorldItem<T>>) => void
 export type HaconiwaItemGeneratorClonedItem<T> = {
   item: Item,
   renderingObject: T
