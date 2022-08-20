@@ -1,6 +1,7 @@
 import { Mat4, Mat3, MatrixArray4, VectorArray3, MatrixArray3  } from './Matrix.js'
 import { MouseDragHandler } from "./mouse/MouseDragHandler.js"
-import { MouseControllable } from "./mouse/MouseControllable.js"
+import { MouseButton, MouseControllable } from "./mouse/MouseControllable.js"
+import { Coordinate } from './Coordinate.js'
 
 export type LookAtCameraHandlerMode = 'direction' | 'target'
 
@@ -234,18 +235,18 @@ export class LookAtCameraHandler implements MouseControllable {
     return Mat4.lookAt(this.#targetPositionHandler.target, this.#getCameraPosition())
   }
 
-  start(cursorX: number, cursorY: number) {
+  start(cursorX: number, cursorY: number, button: MouseButton, cameraCoordinate: Coordinate) {
     this.#targetPositionHandler.setMatrix(Mat4.lookAt(this.#targetPositionHandler.target, this.#getCameraPosition()))
-    this.#currentHandler.start(cursorX, cursorY)
+    this.#currentHandler.start(cursorX, cursorY, button, cameraCoordinate)
   }
 
-  move(cursorX: number, cursorY: number) {
+  move(cursorX: number, cursorY: number, button: MouseButton, cameraCoordinate: Coordinate) {
     if (this.#isLocked) {
       this.end()
       return
     }
 
-    this.#currentHandler.move(cursorX, cursorY)
+    this.#currentHandler.move(cursorX, cursorY, button, cameraCoordinate)
 
     this.#changed = true
   }

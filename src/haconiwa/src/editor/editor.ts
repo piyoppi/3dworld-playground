@@ -18,7 +18,7 @@ type Plane = {
 
 export class HaconiwaEditor<T extends Clonable<T>> {
   #cameraHandler: LookAtCameraHandler
-  #mouseHandlers = new HaconiwaMouseHandler()
+  #mouseHandlers: HaconiwaMouseHandler
   #editingPlane: EditingPlane
 
   #renderer: HaconiwaRenderer<T>
@@ -30,6 +30,7 @@ export class HaconiwaEditor<T extends Clonable<T>> {
   constructor(world: HaconiwaWorld<T>, renderer: HaconiwaRenderer<T>, mouseCapturer: MouseCapturer) {
     this.#cameraHandler = new LookAtCameraHandler()
 
+    this.#mouseHandlers = new HaconiwaMouseHandler(renderer.renderer.camera)
     this.#mouseHandlers.add(this.#cameraHandler)
     this.#mouseHandlers.addBeforeMouseDownCallback((x, y, mouseButton) => this.#mouseDownHandler(x, y, mouseButton))
     this.#mouseHandlers.addBeforeMouseMoveCallback((_x, _y) => this.#mouseMoveHandler())

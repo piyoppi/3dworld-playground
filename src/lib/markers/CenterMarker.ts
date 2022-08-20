@@ -1,13 +1,13 @@
 import { BallColider } from "../Colider.js"
 import { Coordinate } from "../Coordinate.js"
 import { MouseControllable } from "../mouse/MouseControllable.js"
-import { MouseHandlers } from "../mouse/MouseInteractionHandler.js"
 import { Raycaster } from "../Raycaster.js"
 import { HandledColiders } from "./HandledColiders.js"
-import type { RenderingObjectBuilder } from '../RenderingObjectBuilder.js'
-import type { RGBColor } from "../helpers/color.js"
-import type { Renderer } from "../Renderer.js"
-import { Marker } from "./Marker.js"
+import type { MouseHandlers } from "../mouse/MouseHandlers"
+import type { RenderingObjectBuilder } from '../RenderingObjectBuilder'
+import type { RGBColor } from "../helpers/color"
+import type { Renderer } from "../Renderer"
+import type { Marker } from "./Marker"
 
 export class CenterMarker implements Marker {
   #parentCoordinate: Coordinate

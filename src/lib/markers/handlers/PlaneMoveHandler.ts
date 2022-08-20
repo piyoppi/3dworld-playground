@@ -1,6 +1,6 @@
 import { Camera } from "../../Camera.js"
 import { MouseDragHandler } from "../../mouse/MouseDragHandler.js"
-import { MouseControllable } from "../../mouse/MouseControllable.js"
+import { MouseButton, MouseControllable } from "../../mouse/MouseControllable.js"
 import { Vec3, VectorArray3 } from "../../Matrix.js"
 import { CursorDirectionScreenToWorldConverter } from "./CursorDirectionScreenToWorldConverter.js"
 import { NoneAlignment } from "./NoneAlignment.js"
@@ -13,16 +13,14 @@ export class PlaneMoveHandler implements MouseControllable {
   #planeXAxis: VectorArray3
   #planeZAxis: VectorArray3
   #scale: number
-  #camera: Camera
   #cursorDirectionConverter: CursorDirectionScreenToWorldConverter
   #alignment: AlignmentAdapter
 
-  constructor(manipulateCoordinate: Coordinate, planeXAxis: VectorArray3, planeZAxis: VectorArray3, scale: number, camera: Camera) {
+  constructor(manipulateCoordinate: Coordinate, planeXAxis: VectorArray3, planeZAxis: VectorArray3, scale: number) {
     this.#mouseDragHandler = new MouseDragHandler()
     this.manipulateCoordinate = manipulateCoordinate
     this.#planeXAxis = planeXAxis
     this.#planeZAxis = planeZAxis
-    this.#camera = camera
     this.#scale = scale
     this.#cursorDirectionConverter = new CursorDirectionScreenToWorldConverter()
     this.#alignment = new NoneAlignment()
@@ -36,12 +34,12 @@ export class PlaneMoveHandler implements MouseControllable {
     this.#alignment = alignment
   }
 
-  start(cursorX: number, cursorY: number) {
+  start(cursorX: number, cursorY: number, _button: MouseButton, cameraCoordinate: Coordinate) {
     if (this.#mouseDragHandler.isStart) return
 
     this.#mouseDragHandler.start(cursorX, cursorY)
     this.#alignment.reset(this.manipulateCoordinate.position)
-    this.#cursorDirectionConverter.calcTransformMatrix(this.manipulateCoordinate, this.#camera.coordinate)
+    this.#cursorDirectionConverter.calcTransformMatrix(this.manipulateCoordinate, cameraCoordinate)
   }
 
   move(cursorX: number, cursorY: number) {

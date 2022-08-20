@@ -1,4 +1,6 @@
-import { MouseControllable } from '../../../lib/mouse/MouseControllable.js'
+import type { MouseControllable, MouseButton } from '../../../lib/mouse/MouseControllable.js'
+import type { Camera } from "../../../lib/Camera"
+import { convertButtonNumberToMouseButtonsType } from "../../../lib/mouse/ConvertMouseButtonIdToMouseButtonType.js"
 
 type MouseDownCallbackFunction = (x: number, y: number, mouseButton: number) => void
 type MouseMoveCallbackFunction = (x: number, y: number) => void
@@ -7,10 +9,15 @@ export class HaconiwaMouseHandler {
   #mouseControlHandlers: Array<MouseControllable> = []
   #beforeMouseDownCallbacks: Array<MouseDownCallbackFunction> = []
   #beforeMouseMoveCallbacks: Array<MouseMoveCallbackFunction> = []
+  #camera: Camera
+
+  constructor(camera: Camera) {
+    this.#camera = camera
+  }
 
   captureMouseEvent() {
     window.addEventListener('mousedown', e => this.mouseDown(e.screenX, e.screenY, e.button))
-    window.addEventListener('mousemove', e => this.mouseMove(e.screenX, e.screenY))
+    window.addEventListener('mousemove', e => this.mouseMove(e.screenX, e.screenY, e.button))
     window.addEventListener('mouseup', _ => this.mouseUp())
     window.addEventListener('wheel', e => this.mouseWheel(e.deltaY))
   }
@@ -36,13 +43,15 @@ export class HaconiwaMouseHandler {
   }
 
   mouseDown(x: number, y: number, mouseButton: number) {
+    const button = convertButtonNumberToMouseButtonsType(mouseButton)
     this.#beforeMouseDownCallbacks.forEach(func => func(x, y, mouseButton))
-    this.#mouseControlHandlers.forEach(handler => handler.start(x, y))
+    this.#mouseControlHandlers.forEach(handler => handler.start(x, y, button, this.#camera.coordinate))
   }
 
-  mouseMove(x: number, y: number) {
+  mouseMove(x: number, y: number, mouseButton: number) {
+    const button = convertButtonNumberToMouseButtonsType(mouseButton)
     this.#beforeMouseMoveCallbacks.forEach(func => func(x, y))
-    this.#mouseControlHandlers.forEach(handler => handler.move(x, y))
+    this.#mouseControlHandlers.forEach(handler => handler.move(x, y, button, this.#camera.coordinate))
   }
 
   mouseUp() {

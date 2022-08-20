@@ -7,9 +7,10 @@ import { DirectionalMarker } from '../lib/markers/DirectionalMarker.js'
 import { ThreeRenderingObject } from '../lib/threeAdapter/ThreeRenderer.js'
 import { Item } from '../lib/Item.js'
 import { DirectionalMoveHandler } from '../lib/markers/handlers/DirectionalMoveHandler.js'
-import { MouseHandlers } from '../lib/mouse/MouseInteractionHandler.js'
+import { MouseHandlers } from '../lib/mouse/MouseHandlers.js'
 import { CameraKeyboardHandler } from '../lib/CameraKeyboardHandler.js'
 import { BoxColider } from '../lib/Colider.js'
+import { convertButtonNumberToMouseButtonsType } from "../lib/mouse/ConvertMouseButtonIdToMouseButtonType.js"
 
 const lookAtCameraHandler = new LookAtCameraHandler()
 const cameraKeyBoardHandler = new CameraKeyboardHandler()
@@ -26,7 +27,7 @@ renderer.initialize(window.innerWidth, window.innerHeight)
 
 const raycaster = new ItemRaycaster<Item>(new Raycaster(renderer.camera))
 const axesRaycaster = new Raycaster(renderer.camera)
-const mouseInteractionHandler = new MouseHandlers()
+const mouseInteractionHandler = new MouseHandlers(renderer.camera)
 mouseInteractionHandler.addRaycaster(axesRaycaster)
 
 const lightCoordinate = new Coordinate()
@@ -67,9 +68,9 @@ function captureMouseClicked() {
     markerX.setParentCoordinate(box.parentCoordinate)
     markerY.setParentCoordinate(box.parentCoordinate)
     markerZ.setParentCoordinate(box.parentCoordinate)
-    markerX.setHandle(axesRaycaster, mouseInteractionHandler, new DirectionalMoveHandler(box, [1, 0, 0], 0.01, renderer.camera))
-    markerY.setHandle(axesRaycaster, mouseInteractionHandler, new DirectionalMoveHandler(box, [0, 1, 0], 0.01, renderer.camera))
-    markerZ.setHandle(axesRaycaster, mouseInteractionHandler, new DirectionalMoveHandler(box, [0, 0, 1], 0.01, renderer.camera))
+    markerX.setHandle(axesRaycaster, mouseInteractionHandler, new DirectionalMoveHandler(box.parentCoordinate, [1, 0, 0], 0.01))
+    markerY.setHandle(axesRaycaster, mouseInteractionHandler, new DirectionalMoveHandler(box.parentCoordinate, [0, 1, 0], 0.01))
+    markerZ.setHandle(axesRaycaster, mouseInteractionHandler, new DirectionalMoveHandler(box.parentCoordinate, [0, 0, 1], 0.01))
   }
 }
 
@@ -84,14 +85,16 @@ renderer.mount()
 
 window.addEventListener('resize', () => renderer.resize(window.innerWidth, window.innerHeight))
 window.addEventListener('mousedown', e => {
-  lookAtCameraHandler.start(e.screenX, e.screenY)
+  const button = convertButtonNumberToMouseButtonsType(e.button)
+  lookAtCameraHandler.start(e.screenX, e.screenY, button, renderer.camera.coordinate)
   captureMouseClicked()
-  mouseInteractionHandler.start(e.screenX, e.screenY)
+  mouseInteractionHandler.start(e.screenX, e.screenY, e.button)
 })
 window.addEventListener('mousemove', e => {
-  mouseInteractionHandler.move(e.screenX, e.screenY)
+  const button = convertButtonNumberToMouseButtonsType(e.button)
+  mouseInteractionHandler.move(e.screenX, e.screenY, e.button)
   lookAtCameraHandler.isLocked = mouseInteractionHandler.handling
-  lookAtCameraHandler.move(e.screenX, e.screenY)
+  lookAtCameraHandler.move(e.screenX, e.screenY, button, renderer.camera.coordinate)
 })
 window.addEventListener('wheel', e => {
   lookAtCameraHandler.addDistance(e.deltaY * 0.001)

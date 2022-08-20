@@ -4,7 +4,7 @@ import { Item } from "../Item.js"
 import { HandledColiders } from "./HandledColiders.js"
 import { Mat4, Vec3, VectorArray3 } from "../Matrix.js"
 import type { MouseControllable } from "../mouse/MouseControllable.js"
-import type { MouseHandlers } from "../mouse/MouseInteractionHandler.js"
+import type { MouseHandlers } from "../mouse/MouseHandlers"
 import type { Raycaster } from "../Raycaster.js"
 import type { Renderer } from "../Renderer.js"
 import type { RenderingObjectBuilder } from '../RenderingObjectBuilder.js'

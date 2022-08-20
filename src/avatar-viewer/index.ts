@@ -11,6 +11,7 @@ import { setRenderer } from '../lib/Debugger.js'
 import { DirectionalMarker } from '../lib/markers/DirectionalMarker.js'
 import { ThreeRenderingObject } from '../lib/threeAdapter/ThreeRenderer.js'
 import { Item } from '../lib/Item.js'
+import { convertButtonNumberToMouseButtonsType } from '../lib/mouse/ConvertMouseButtonIdToMouseButtonType.js'
 
 const lookAtCameraHandler = new LookAtCameraHandler()
 const mouseHandler = new MouseCapturer(window.innerWidth, window.innerHeight)
@@ -83,8 +84,10 @@ async function run() {
 
   window.addEventListener('resize', () => renderer.resize(window.innerWidth, window.innerHeight))
   window.addEventListener('click', e => mouseHandler.setPosition(e.clientX, e.clientY))
-  window.addEventListener('mousedown', e => lookAtCameraHandler.start(e.screenX, e.screenY))
-  window.addEventListener('mousemove', e => lookAtCameraHandler.move(e.screenX, e.screenY))
+  window.addEventListener('mousedown', e => {
+    lookAtCameraHandler.start(e.screenX, e.screenY, convertButtonNumberToMouseButtonsType(e.button), renderer.camera.coordinate)
+  })
+  window.addEventListener('mousemove', e => lookAtCameraHandler.move(e.screenX, e.screenY, convertButtonNumberToMouseButtonsType(e.button), renderer.camera.coordinate))
   window.addEventListener('wheel', e => lookAtCameraHandler.addDistance(e.deltaY * 0.001))
   window.addEventListener('mouseup', () => lookAtCameraHandler.end())
 }
