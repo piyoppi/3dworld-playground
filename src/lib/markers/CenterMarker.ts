@@ -11,13 +11,13 @@ import type { Marker } from "./Marker"
 
 export class CenterMarker implements Marker {
   #parentCoordinate: Coordinate
-  #marker: HandledColiders
+  #handledColiders: HandledColiders
   #radius: number
 
   constructor(radius: number) {
     this.#parentCoordinate = new Coordinate()
     this.setParentCoordinate(new Coordinate())
-    this.#marker = new HandledColiders()
+    this.#handledColiders= new HandledColiders()
     this.#radius = radius
   }
 
@@ -25,15 +25,23 @@ export class CenterMarker implements Marker {
     return this.#radius
   }
 
-  setHandle(raycaster: Raycaster, interactionHandler: MouseHandlers, handler: MouseControllable) {
+  get parentCoordinate() {
+    return this.#parentCoordinate
+  }
+
+  setHandler(handler: MouseControllable) {
     const colider = new BallColider(this.#radius, this.#parentCoordinate)
     const handle = {colider, handled: handler}
 
-    this.#marker.setHandles(raycaster, interactionHandler, [handle])
+    this.#handledColiders.setHandles([handle])
   }
 
-  removeHandle(raycaster: Raycaster, interactionHandler: MouseHandlers) {
-    this.#marker.removeHandles(raycaster, interactionHandler)
+  attach(raycaster: Raycaster, interactionHandler: MouseHandlers) {
+    this.#handledColiders.attach(raycaster, interactionHandler)
+  }
+
+  detach(raycaster: Raycaster, interactionHandler: MouseHandlers) {
+    this.#handledColiders.detach(raycaster, interactionHandler)
   }
 
   setParentCoordinate(coordinate: Coordinate) {

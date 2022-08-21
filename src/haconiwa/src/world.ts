@@ -33,6 +33,14 @@ export class HaconiwaWorldItem<T> {
     this.#markers = markers
   }
 
+  get markers() {
+    return this.#markers
+  }
+
+  get item() {
+    return this.#item
+  }
+
   dispose(raycaster: Raycaster, renderer: Renderer<T>, mouseHandlers: MouseHandlers) {
     this.#coliders.forEach(colider => raycaster.removeTarget(colider))
     renderer.removeItem(this.#item.parentCoordinate)

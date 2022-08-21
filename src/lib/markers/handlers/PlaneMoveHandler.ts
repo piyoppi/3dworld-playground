@@ -1,4 +1,3 @@
-import { Camera } from "../../Camera.js"
 import { MouseDragHandler } from "../../mouse/MouseDragHandler.js"
 import { MouseButton, MouseControllable } from "../../mouse/MouseControllable.js"
 import { Vec3, VectorArray3 } from "../../Matrix.js"
@@ -15,6 +14,7 @@ export class PlaneMoveHandler implements MouseControllable {
   #scale: number
   #cursorDirectionConverter: CursorDirectionScreenToWorldConverter
   #alignment: AlignmentAdapter
+  #updatedCallbacks: Array<() => void> = []
 
   constructor(manipulateCoordinate: Coordinate, planeXAxis: VectorArray3, planeZAxis: VectorArray3, scale: number) {
     this.#mouseDragHandler = new MouseDragHandler()
@@ -28,6 +28,10 @@ export class PlaneMoveHandler implements MouseControllable {
 
   get isStart() {
     return this.#mouseDragHandler.isStart
+  }
+
+  addUpdatedCallback(callback: () => void) {
+    this.#updatedCallbacks.push(callback)
   }
 
   setAlignment(alignment: AlignmentAdapter) {
@@ -55,9 +59,18 @@ export class PlaneMoveHandler implements MouseControllable {
 
     this.#alignment.add(addingVector)
 
-    this.manipulateCoordinate.x = this.#alignment.alignedPosition[0]
-    this.manipulateCoordinate.y = this.#alignment.alignedPosition[1]
-    this.manipulateCoordinate.z = this.#alignment.alignedPosition[2]
+    const isChanged =
+      this.manipulateCoordinate.x !== this.#alignment.alignedPosition[0] ||
+      this.manipulateCoordinate.y !== this.#alignment.alignedPosition[1] ||
+      this.manipulateCoordinate.z !== this.#alignment.alignedPosition[2]
+
+    if (isChanged) {
+      this.manipulateCoordinate.x = this.#alignment.alignedPosition[0]
+      this.manipulateCoordinate.y = this.#alignment.alignedPosition[1]
+      this.manipulateCoordinate.z = this.#alignment.alignedPosition[2]
+
+      this.#updatedCallbacks.forEach(callback => callback())
+    }
   }
 
   end() {

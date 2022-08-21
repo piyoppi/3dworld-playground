@@ -15,6 +15,10 @@ export class LineSegment implements Line {
     this.#direction = Vec3.normalize(lineSegmentVector)
   }
 
+  get controlPoints() {
+    return [this.#start, this.#end]
+  }
+
   get length() {
     return this.#length
   }

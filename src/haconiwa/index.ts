@@ -7,13 +7,14 @@ import { HaconiwaLineItemGeneratorFactory } from "./src/editor/itemGenerators/Ha
 import { ThreeRenderingObject } from "../lib/threeAdapter/ThreeRenderer.js"
 import { loadGlb } from '../lib/threeAdapter/ThreeLoaderHelper.js'
 import { Item } from '../lib/Item.js'
+import { ThreeRenderingObjectBuilder } from "../lib/threeAdapter/ThreeRenderingObjectBuilder.js"
 
 const world = new HaconiwaWorld<ThreeRenderingObject>()
 const factory = new Factory()
 const mouseCapturer = new MouseCapturer(window.innerWidth, window.innerHeight)
 const renderer = factory.makeRenderer({fov: 100, aspect: window.innerWidth / window.innerHeight, near: 0.001, far: 100})
 const haconiwaRenderer = new HaconiwaRenderer(renderer)
-const editor = new HaconiwaEditor(world, haconiwaRenderer, mouseCapturer)
+const editor = new HaconiwaEditor(world, haconiwaRenderer, mouseCapturer, new ThreeRenderingObjectBuilder())
 
 haconiwaRenderer.initialize(window.innerWidth, window.innerHeight)
 editor.captureMouseEvent()
@@ -25,7 +26,10 @@ window.addEventListener('keydown', async (e) => {
       break
 
     case '2':
-      editor.setItemGeneratorFactory(new HaconiwaLineItemGeneratorFactory(), {item: new Item(), renderingObject: new ThreeRenderingObject(await loadGlb('./assets/road.glb'))})
+      editor.setItemGeneratorFactory(
+        new HaconiwaLineItemGeneratorFactory(),
+        {item: new Item(), renderingObject: new ThreeRenderingObject(await loadGlb('./assets/road.glb'))}
+      )
       break
   }
 })

@@ -16,7 +16,7 @@ export class DirectionalMarker implements Marker {
   #norm: number
   #radius: number
   #parentCoordinate: Coordinate
-  #marker: HandledColiders
+  #handledColiders: HandledColiders
 
   constructor(norm: number, radius: number, direction: VectorArray3) {
     this.#direction = new Item()
@@ -26,16 +26,24 @@ export class DirectionalMarker implements Marker {
     this.#direction.parentCoordinate.matrix = Mat4.transformYAxis(direction, Vec3.mulScale(direction, norm / 2))
 
     this.#parentCoordinate = new Coordinate()
-    this.#marker = new HandledColiders()
+    this.#handledColiders = new HandledColiders()
   }
 
-  setHandle(raycaster: Raycaster, interactionHandler: MouseHandlers, handler: MouseControllable) {
+  get parentCoordinate() {
+    return this.#parentCoordinate
+  }
+
+  setHandler(handler: MouseControllable) {
     const colider = new BoxColider(this.#radius, this.#norm, this.#radius, this.#direction.parentCoordinate)
-    this.#marker.setHandles(raycaster, interactionHandler, [{colider, handled: handler}])
+    this.#handledColiders.setHandles([{colider, handled: handler}])
   }
 
-  removeHandle(raycaster: Raycaster, interactionHandler: MouseHandlers) {
-    this.#marker.removeHandles(raycaster, interactionHandler)
+  attach(raycaster: Raycaster, interactionHandler: MouseHandlers) {
+    this.#handledColiders.attach(raycaster, interactionHandler)
+  }
+
+  detach(raycaster: Raycaster, interactionHandler: MouseHandlers) {
+    this.#handledColiders.detach(raycaster, interactionHandler)
   }
 
   setParentCoordinate(coordinate: Coordinate) {

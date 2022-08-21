@@ -3,6 +3,7 @@ import { LinearAlignment } from "../../alignments/linearArrangement.js"
 import { Mat4 } from "../../Matrix.js"
 import type { LineGenerator } from "./lineGenerator/LineGenerator"
 import type { GeneratedItem, GenerateItemFactory, ItemGenerator } from "../ItemGenerator"
+import { Line } from "../../lines/line.js"
 
 export class LineItemGenerator<T, U> implements ItemGenerator<T, U> {
   #lineGenerator: LineGenerator
@@ -10,6 +11,7 @@ export class LineItemGenerator<T, U> implements ItemGenerator<T, U> {
   #startPosition: VectorArray3 = [0, 0, 0]
   #itemSpan: number
   #generated: Array<GeneratedItem<T, U>> = []
+  #line: Line | null = null
 
   constructor(lineGenerator: LineGenerator, generator: GenerateItemFactory<T, U>, span: number) {
     this.#lineGenerator = lineGenerator
@@ -19,6 +21,14 @@ export class LineItemGenerator<T, U> implements ItemGenerator<T, U> {
 
   get generated() {
     return this.#generated
+  }
+
+  get line() {
+    return this.#line
+  }
+
+  setGeneratedItems(items: Array<GeneratedItem<T, U>>) {
+    this.#generated = items
   }
 
   setStartPosition(position: VectorArray3) {
@@ -33,6 +43,8 @@ export class LineItemGenerator<T, U> implements ItemGenerator<T, U> {
     this.#lineGenerator.setPosition(currentPosition)
 
     const line = this.#lineGenerator.getLine()
+    this.#line = line
+
     const itemCount = Math.floor(line.length / this.#itemSpan)
     const shortage = itemCount - this.#generated.length
 
@@ -62,5 +74,9 @@ export class LineItemGenerator<T, U> implements ItemGenerator<T, U> {
       transformMatrixes,
       items: this.#generated
     }
+  }
+
+  clear() {
+    this.#generated.length = 0
   }
 }

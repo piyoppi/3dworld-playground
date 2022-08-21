@@ -1,13 +1,14 @@
 import { Item } from './Item.js'
 import { Mat4, MatrixArray4, VectorArray3 } from './Matrix.js'
 import { v4 as uuidv4 } from 'uuid'
+import { Coordinates } from './Coordinates.js'
 
 export class InvalidParentCoordinateError extends Error {}
 
 export class Coordinate {
   #items: Array<Item>
   protected _parent: Coordinate | null
-  #children: Array<Coordinate>
+  #children: Coordinates = new Coordinates()
   #matrix:  MatrixArray4
   #updatedCallback: () => void
   #setChildCallback: (parent: Coordinate, child: Coordinate) => void
@@ -17,7 +18,6 @@ export class Coordinate {
   constructor() {
     this._parent = null
     this.#uuid = uuidv4()
-    this.#children = []
     this.#items = []
     this.#matrix = Mat4.getIdentityMatrix()
     this.#updatedCallback = () => {}
@@ -107,10 +107,9 @@ export class Coordinate {
   }
 
   removeChild(child: Coordinate) {
-    const index = this.#children.findIndex(coord => coord.uuid === child.uuid)
-    if (index < 0) return
+    const removed = this.#children.remove(child)
+    if (!removed) return
 
-    this.#children.splice(index, 1)
     child._parent = null
 
     this.#removeChildCallback(this, child)

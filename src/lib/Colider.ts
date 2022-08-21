@@ -8,7 +8,7 @@ export interface Colider {
 }
 
 export class InfiniteColider implements Colider {
-  checkRay(ray: Ray): number {
+  checkRay(_ray: Ray): number {
     return 0.01
   }
 }

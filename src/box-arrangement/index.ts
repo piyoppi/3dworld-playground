@@ -68,9 +68,15 @@ function captureMouseClicked() {
     markerX.setParentCoordinate(box.parentCoordinate)
     markerY.setParentCoordinate(box.parentCoordinate)
     markerZ.setParentCoordinate(box.parentCoordinate)
-    markerX.setHandle(axesRaycaster, mouseInteractionHandler, new DirectionalMoveHandler(box.parentCoordinate, [1, 0, 0], 0.01))
-    markerY.setHandle(axesRaycaster, mouseInteractionHandler, new DirectionalMoveHandler(box.parentCoordinate, [0, 1, 0], 0.01))
-    markerZ.setHandle(axesRaycaster, mouseInteractionHandler, new DirectionalMoveHandler(box.parentCoordinate, [0, 0, 1], 0.01))
+    markerX.detach(axesRaycaster, mouseInteractionHandler)
+    markerY.detach(axesRaycaster, mouseInteractionHandler)
+    markerZ.detach(axesRaycaster, mouseInteractionHandler)
+    markerX.setHandler(new DirectionalMoveHandler(box.parentCoordinate, [1, 0, 0], 0.01))
+    markerY.setHandler(new DirectionalMoveHandler(box.parentCoordinate, [0, 1, 0], 0.01))
+    markerZ.setHandler(new DirectionalMoveHandler(box.parentCoordinate, [0, 0, 1], 0.01))
+    markerX.attach(axesRaycaster, mouseInteractionHandler)
+    markerY.attach(axesRaycaster, mouseInteractionHandler)
+    markerZ.attach(axesRaycaster, mouseInteractionHandler)
   }
 }
 

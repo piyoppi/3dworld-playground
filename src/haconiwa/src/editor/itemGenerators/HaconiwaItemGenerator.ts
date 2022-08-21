@@ -4,9 +4,10 @@ import type { Raycaster } from "../../../../lib/Raycaster"
 import type { Clonable } from "../../clonable"
 import type { MouseControllable } from "../../../../lib/mouse/MouseControllable"
 import { HaconiwaWorldItem } from "../../world"
+import { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder"
 
 export interface HaconiwaItemGenerator<T> extends MouseControllable {
-  setItem: (original: HaconiwaItemGeneratorClonedItem<T>) => void
+  setOriginal: (original: HaconiwaItemGeneratorClonedItem<T>) => void
   registerOnGeneratedCallback: (callback: HaconiwaItemGeneratedCallback<T>) => void
 }
 
@@ -17,5 +18,5 @@ export type HaconiwaItemGeneratorClonedItem<T> = {
 }
 
 export interface HaconiwaItemGeneratorFactory<T extends Clonable<T>> {
-  create: (renderer: Renderer<T>, raycaster: Raycaster, initialClonedItem: HaconiwaItemGeneratorClonedItem<T>) => HaconiwaItemGenerator<T>
+  create: (renderer: Renderer<T>, raycaster: Raycaster, initialClonedItem: HaconiwaItemGeneratorClonedItem<T>, renderingObjectBuilder: RenderingObjectBuilder<T>) => HaconiwaItemGenerator<T>
 }
