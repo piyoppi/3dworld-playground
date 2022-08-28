@@ -3,6 +3,7 @@ import type { MouseControllable, MouseButton, MouseControllableCallbackFunction 
 import type { Raycaster } from "../Raycaster"
 import type { Camera } from "../Camera"
 import { convertButtonNumberToMouseButtonsType } from "./ConvertMouseButtonIdToMouseButtonType.js"
+import { RaycasterItemOptions, Raycasters } from "../Raycasters.js"
 
 export type ControlHandle = {
   colider: Colider,
@@ -13,7 +14,7 @@ type MouseDownCallbackFunction = (x: number, y: number, mouseButton: MouseButton
 type MouseMoveCallbackFunction = (x: number, y: number, mouseButton: MouseButton) => void
 
 export class MouseHandlers {
-  #raycasters: Array<Raycaster>
+  #raycasters: Raycasters
   #handleItems: Array<{controlHandle: ControlHandle, startedCallback: MouseControllableCallbackFunction}>
   #handlingItems: Array<{controlHandle: ControlHandle, startedCallback: MouseControllableCallbackFunction}>
   #isStart: boolean = false
@@ -21,8 +22,8 @@ export class MouseHandlers {
   #beforeMouseDownCallbacks: Array<MouseDownCallbackFunction> = []
   #beforeMouseMoveCallbacks: Array<MouseMoveCallbackFunction> = []
 
-  constructor(camera: Camera) {
-    this.#raycasters = []
+  constructor(camera: Camera, raycasters: Raycasters) {
+    this.#raycasters = raycasters
     this.#handleItems = []
     this.#handlingItems = []
     this.#camera = camera
@@ -40,10 +41,6 @@ export class MouseHandlers {
     this.#beforeMouseMoveCallbacks.push(callback)
   }
 
-  addRaycaster(raycaster: Raycaster) {
-    this.#raycasters.push(raycaster)
-  }
- 
   add(handled: ControlHandle | Array<ControlHandle>) {
     if (!Array.isArray(handled)) handled = [handled]
 
@@ -110,7 +107,6 @@ export class MouseHandlers {
   }
 
   private colidedHandleItems() {
-    const colided = this.#raycasters.map(raycaster => raycaster.colidedColiders).flat()
-    return this.#handleItems.filter(handledItem => colided.includes(handledItem.controlHandle.colider))
+    return this.#handleItems.filter(handledItem => this.#raycasters.colidedColiders.includes(handledItem.controlHandle.colider))
   }
 }

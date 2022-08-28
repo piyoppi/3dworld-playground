@@ -11,6 +11,7 @@ import { MouseHandlers } from '../lib/mouse/MouseHandlers.js'
 import { CameraKeyboardHandler } from '../lib/CameraKeyboardHandler.js'
 import { BoxColider } from '../lib/Colider.js'
 import { convertButtonNumberToMouseButtonsType } from "../lib/mouse/ConvertMouseButtonIdToMouseButtonType.js"
+import { Raycasters } from '../lib/Raycasters.js'
 
 const lookAtCameraHandler = new LookAtCameraHandler()
 const cameraKeyBoardHandler = new CameraKeyboardHandler()
@@ -27,8 +28,9 @@ renderer.initialize(window.innerWidth, window.innerHeight)
 
 const raycaster = new ItemRaycaster<Item>(new Raycaster(renderer.camera))
 const axesRaycaster = new Raycaster(renderer.camera)
-const mouseInteractionHandler = new MouseHandlers(renderer.camera)
-mouseInteractionHandler.addRaycaster(axesRaycaster)
+const raycasters = new Raycasters()
+raycasters.add(axesRaycaster)
+const mouseInteractionHandler = new MouseHandlers(renderer.camera, raycasters)
 
 const lightCoordinate = new Coordinate()
 lightCoordinate.y = 1

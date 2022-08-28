@@ -1,19 +1,18 @@
-import { LookAtCameraHandler } from '../../../lib/LookAtCameraHandler.js'
-import { HaconiwaMouseHandler } from './mouseHandler.js'
-import { Raycaster, ItemRaycaster } from '../../../lib/Raycaster.js'
-import { Item } from '../../../lib/Item.js'
 import type { HaconiwaRenderer } from '../renderer'
 import type { MouseCapturer } from '../../../lib/mouse/MouseCapturer'
-import type { VectorArray2, VectorArray3 } from '../../../lib/Matrix'
+import type { VectorArray3 } from '../../../lib/Matrix'
 import type { HaconiwaItemGeneratorFactory, HaconiwaItemGenerator, HaconiwaItemGeneratorClonedItem } from './itemGenerators/HaconiwaItemGenerator'
 import type { Clonable } from "../clonable"
-import { Camera } from '../../../lib/Camera.js'
+import type { Camera } from '../../../lib/Camera.js'
+import type { RenderingObjectBuilder } from '../../../lib/RenderingObjectBuilder.js'
+import type { MouseButton } from '../../../lib/mouse/MouseControllable.js'
+import { LookAtCameraHandler } from '../../../lib/LookAtCameraHandler.js'
+import { Raycaster } from '../../../lib/Raycaster.js'
 import { Colider, PlaneColider } from '../../../lib/Colider.js'
-import { HaconiwaWorld, HaconiwaWorldItem } from '../world.js'
+import { HaconiwaWorld } from '../world.js'
 import { ControlHandle, MouseHandlers } from '../../../lib/mouse/MouseHandlers.js'
 import { InfiniteColider } from '../../../lib/Colider.js'
-import { MouseButton } from '../../../lib/mouse/MouseControllable.js'
-import { RenderingObjectBuilder } from '../../../lib/RenderingObjectBuilder.js'
+import { Raycasters } from '../../../lib/Raycasters.js'
 
 type Plane = {
   position: VectorArray3,
@@ -21,12 +20,13 @@ type Plane = {
 }
 
 export class HaconiwaEditor<T extends Clonable<T>> {
-  #cameraHandler: LookAtCameraHandler
+  #cameraController: CameraController
   #mouseHandlers: MouseHandlers
   #editingPlane: EditingPlane
   #raycaster: Raycaster
   #renderer: HaconiwaRenderer<T>
   #mouseCapturer: MouseCapturer
+  #raycasters = new Raycasters()
 
   #currentItemGenerator: HaconiwaItemGenerator<T> | null = null
   #currentItemGeneratorHandler: ControlHandle | null = null
@@ -36,24 +36,24 @@ export class HaconiwaEditor<T extends Clonable<T>> {
   #world: HaconiwaWorld<T>
 
   constructor(world: HaconiwaWorld<T>, renderer: HaconiwaRenderer<T>, mouseCapturer: MouseCapturer, renderingObjectBuilder: RenderingObjectBuilder<T>) {
-    this.#cameraHandler = new LookAtCameraHandler()
-
     this.#renderer = renderer
     this.#renderer.setBeforeRenderCallback(() => this.#renderingLoop())
     this.#renderingObjectBuilder = renderingObjectBuilder
 
     this.#editingPlane = new EditingPlane(this.#renderer.renderer.camera)
 
-    const screenColider = new InfiniteColider()
     this.#raycaster = new Raycaster(this.#renderer.renderer.camera)
-    this.#raycaster.addTarget(screenColider)
 
-    this.#mouseHandlers = new MouseHandlers(renderer.renderer.camera)
-    this.#mouseHandlers.add({colider: screenColider, handled: this.#cameraHandler})
+    this.#mouseHandlers = new MouseHandlers(renderer.renderer.camera, this.#raycasters)
     this.#mouseHandlers.addBeforeMouseDownCallback((x, y, mouseButton) => this.#mouseDownHandler(x, y, mouseButton))
     this.#mouseHandlers.addBeforeMouseMoveCallback((_x, _y) => this.#mouseMoveHandler())
-    this.#mouseHandlers.addRaycaster(this.#editingPlane.raycaster)
-    this.#mouseHandlers.addRaycaster(this.#raycaster)
+
+    this.#cameraController = new CameraController(renderer.renderer.camera)
+    this.#cameraController.setMouseHandlers(this.#mouseHandlers)
+
+    this.#raycasters.add(this.#raycaster, {transparency: false})
+    this.#raycasters.add(this.#editingPlane.raycaster)
+    this.#raycasters.add(this.#cameraController.raycaster)
 
     this.#mouseCapturer = mouseCapturer
     this.#mouseCapturer.capture()
@@ -79,7 +79,7 @@ export class HaconiwaEditor<T extends Clonable<T>> {
     })
     this.#currentItemGeneratorHandler = {colider: this.#editingPlane.colider, handled: this.#currentItemGenerator}
     this.#mouseHandlers.add(this.#currentItemGeneratorHandler)
-    this.#cameraHandler.isLocked = true
+    this.#raycasters.disable(this.#cameraController.raycaster)
   }
 
   clearItemGenerator() {
@@ -87,25 +87,23 @@ export class HaconiwaEditor<T extends Clonable<T>> {
 
     this.#mouseHandlers.remove(this.#currentItemGeneratorHandler)
     this.#currentItemGenerator = null
-    this.#cameraHandler.isLocked = false
+    this.#raycasters.enable(this.#cameraController.raycaster)
   }
 
   handleMouseEvent() {
     const pos = this.#mouseCapturer.getNormalizedPosition()
-    this.#editingPlane.mouseDown(pos)
-    this.#raycaster.check(pos[0], pos[1])
+    this.#raycasters.check(pos)
   }
 
   #mouseDownHandler(x: number, y: number, mouseButton: MouseButton) {
     switch(mouseButton) {
       case 'primary':
-        this.#cameraHandler.setTargetPositionHandler()
+        this.#cameraController.setTargetPositionHandler()
         break
       case 'wheel':
-        this.#cameraHandler.setRotationHandler()
+        this.#cameraController.setRotationHandler()
         break
     }
-    this.#cameraHandler.isLocked = this.hasCurrentItemGenerator
     this.handleMouseEvent()
   }
 
@@ -114,8 +112,8 @@ export class HaconiwaEditor<T extends Clonable<T>> {
   }
 
   #renderingLoop() {
-    if (this.#cameraHandler.changed) {
-      this.#renderer.renderer.camera.coordinate.matrix = this.#cameraHandler.getLookAtMatrix()
+    if (this.#cameraController.changed) {
+      this.#renderer.renderer.camera.coordinate.matrix = this.#cameraController.getLookAtMatrix()
     }
   }
 }
@@ -138,8 +136,39 @@ export class EditingPlane {
   get colider() {
     return this.#colider
   }
+}
 
-  mouseDown(pos: VectorArray2) {
-    this.#raycaster.check(pos[0], pos[1])
+export class CameraController {
+  #cameraHandler = new LookAtCameraHandler()
+  #raycaster: Raycaster
+  #colider = new InfiniteColider()
+
+  constructor(camera: Camera) {
+    this.#raycaster = new Raycaster(camera)
+    this.#raycaster.addTarget(this.#colider)
+  }
+
+  get raycaster() {
+    return this.#raycaster
+  }
+
+  get changed() {
+    return this.#cameraHandler.changed
+  }
+
+  setMouseHandlers(mouseHandlers: MouseHandlers) {
+    mouseHandlers.add({colider: this.#colider, handled: this.#cameraHandler})
+  }
+
+  setTargetPositionHandler() {
+    this.#cameraHandler.setTargetPositionHandler()
+  }
+
+  setRotationHandler() {
+    this.#cameraHandler.setRotationHandler()
+  }
+
+  getLookAtMatrix() {
+    return this.#cameraHandler.getLookAtMatrix()
   }
 }

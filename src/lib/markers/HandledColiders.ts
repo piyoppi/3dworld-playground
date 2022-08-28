@@ -13,19 +13,19 @@ export class HandledColiders {
     this.#controlHandles = handles
   }
 
-  attach(raycaster: Raycaster, interactionHandler: MouseHandlers) {
-    this.detach(raycaster, interactionHandler)
+  attach(raycaster: Raycaster, mouseHandlers: MouseHandlers) {
+    this.detach(raycaster, mouseHandlers)
 
     this.#controlHandles.forEach(handle => {
       raycaster.addTarget(handle.colider)
-      interactionHandler.add(handle)
+      mouseHandlers.add(handle)
     })
   }
 
-  detach(raycaster: Raycaster, interactionHandler: MouseHandlers) {
+  detach(raycaster: Raycaster, mouseHandlers: MouseHandlers) {
     this.#controlHandles.forEach(handle => {
       raycaster.removeTarget(handle.colider)
-      interactionHandler.remove(handle)
+      mouseHandlers.remove(handle)
     })
   }
 }

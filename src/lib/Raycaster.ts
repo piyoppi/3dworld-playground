@@ -97,6 +97,11 @@ export class Raycaster {
 
     return this.#colidedColiders
   }
+
+  clear() {
+    this.#colidedColiders.length = 0
+    this.#colidedDetails.length = 0
+  }
 }
 
 export class ItemRaycaster<T> {

@@ -13,7 +13,6 @@ import { Vec3 } from "../../../../lib/Matrix.js"
 import { LineItemGenerator } from "../../../../lib/itemGenerators/lineItemGenerator/LineItemGenerator.js"
 import { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder.js"
 import { Marker } from "../../../../lib/markers/Marker.js"
-import { LineGenerator } from "../../../../lib/itemGenerators/lineItemGenerator/lineGenerator/LineGenerator.js"
 import { MouseButton, MouseControllableCallbackFunction } from "../../../../lib/mouse/MouseControllable.js"
 import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
 
