@@ -5,6 +5,7 @@ import type { Raycaster } from "../Raycaster";
 
 export interface Marker {
   readonly parentCoordinate: Coordinate
+  readonly handler: MouseControllable | null
   setHandler: (handler: MouseControllable) => void
   attach: (raycaster: Raycaster, mouseHandlers: MouseHandlers) => void
   detach: (raycaster: Raycaster, mouseHandlers: MouseHandlers) => void

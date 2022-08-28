@@ -1,17 +1,27 @@
 import { Mat4, Mat3, MatrixArray4, VectorArray3, MatrixArray3  } from './Matrix.js'
 import { MouseDragHandler } from "./mouse/MouseDragHandler.js"
-import { MouseButton, MouseControllable } from "./mouse/MouseControllable.js"
+import { MouseButton, MouseControllable, MouseControllableCallbackFunction } from "./mouse/MouseControllable.js"
 import { Coordinate } from './Coordinate.js'
+import { CallbackFunctions } from './CallbackFunctions.js'
 
 export type LookAtCameraHandlerMode = 'direction' | 'target'
 
 class LookAtRotation implements MouseControllable {
   #rotation
   #mouseDragHandler
+  #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
 
   constructor(mouseDragHandler: MouseDragHandler) {
     this.#rotation = [0, 0]
     this.#mouseDragHandler = mouseDragHandler
+  }
+
+  setStartedCallback(func: MouseControllableCallbackFunction) {
+    this.#startedCallbacks.add(func)
+  }
+
+  removeStartedCallback(func: MouseControllableCallbackFunction) {
+    this.#startedCallbacks.remove(func)
   }
 
   setXYRotation(value: number) {
@@ -44,6 +54,7 @@ class LookAtRotation implements MouseControllable {
 
   start(cursorX: number, cursorY: number) {
     this.#mouseDragHandler.start(cursorX, cursorY)
+    this.#startedCallbacks.call()
   }
 
   move(cursorX: number, cursorY: number) {
@@ -65,6 +76,7 @@ class LookAtTarget implements MouseControllable {
   #mouseDragHandler
   #matrix: MatrixArray4
   #transformDirectionalMat: MatrixArray3
+  #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
 
   constructor(mouseDragHandler: MouseDragHandler) {
     this.#target = [0, 0, 0]
@@ -79,6 +91,14 @@ class LookAtTarget implements MouseControllable {
 
   get target() {
     return this.#target
+  }
+
+  setStartedCallback(func: MouseControllableCallbackFunction) {
+    this.#startedCallbacks.add(func)
+  }
+
+  removeStartedCallback(func: MouseControllableCallbackFunction) {
+    this.#startedCallbacks.remove(func)
   }
 
   addTargetX(val: number) {
@@ -106,6 +126,7 @@ class LookAtTarget implements MouseControllable {
 
   start(cursorX: number, cursorY: number) {
     this.#mouseDragHandler.start(cursorX, cursorY)
+    this.#startedCallbacks.call()
   }
 
   move(cursorX: number, cursorY: number) {
@@ -132,6 +153,7 @@ export class LookAtCameraHandler implements MouseControllable {
   #rotationHandler: LookAtRotation
   #targetPositionHandler: LookAtTarget
   #currentHandler: MouseControllable
+  #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
 
   constructor() {
     this.#mouseDragHandler = new MouseDragHandler()
@@ -165,6 +187,14 @@ export class LookAtCameraHandler implements MouseControllable {
 
   get isStart() {
     return this.#mouseDragHandler.isStart
+  }
+
+  setStartedCallback(func: MouseControllableCallbackFunction) {
+    this.#startedCallbacks.add(func)
+  }
+
+  removeStartedCallback(func: MouseControllableCallbackFunction) {
+    this.#startedCallbacks.remove(func)
   }
 
   setRotationHandler() {
@@ -238,6 +268,7 @@ export class LookAtCameraHandler implements MouseControllable {
   start(cursorX: number, cursorY: number, button: MouseButton, cameraCoordinate: Coordinate) {
     this.#targetPositionHandler.setMatrix(Mat4.lookAt(this.#targetPositionHandler.target, this.#getCameraPosition()))
     this.#currentHandler.start(cursorX, cursorY, button, cameraCoordinate)
+    this.#startedCallbacks.call()
   }
 
   move(cursorX: number, cursorY: number, button: MouseButton, cameraCoordinate: Coordinate) {

@@ -5,16 +5,19 @@ import type { LineGenerator } from "./lineGenerator/LineGenerator"
 import type { GeneratedItem, GenerateItemFactory, ItemGenerator } from "../ItemGenerator"
 import { Line } from "../../lines/line.js"
 
+export type LineItemGenerated<T, U> = {
+   generatedItems: Array<GeneratedItem<T, U>>,
+   removedItems: Array<GeneratedItem<T, U>>,
+   transformMatrixes: Array<MatrixArray4>,
+   items: Array<GeneratedItem<T, U>>
+}
+
 export class LineItemGenerator<T, U> implements ItemGenerator<T, U> {
-  #lineGenerator: LineGenerator
   #generator: GenerateItemFactory<T, U>
-  #startPosition: VectorArray3 = [0, 0, 0]
   #itemSpan: number
   #generated: Array<GeneratedItem<T, U>> = []
-  #line: Line | null = null
 
-  constructor(lineGenerator: LineGenerator, generator: GenerateItemFactory<T, U>, span: number) {
-    this.#lineGenerator = lineGenerator
+  constructor(generator: GenerateItemFactory<T, U>, span: number) {
     this.#generator = generator
     this.#itemSpan = span
   }
@@ -23,28 +26,11 @@ export class LineItemGenerator<T, U> implements ItemGenerator<T, U> {
     return this.#generated
   }
 
-  get line() {
-    return this.#line
-  }
-
   setGeneratedItems(items: Array<GeneratedItem<T, U>>) {
     this.#generated = items
   }
 
-  setStartPosition(position: VectorArray3) {
-    this.#generated = []
-
-    this.#startPosition = position
-
-    this.#lineGenerator.setStartPosition(this.#startPosition)
-  }
-
-  setEndPosition(currentPosition: VectorArray3) {
-    this.#lineGenerator.setPosition(currentPosition)
-
-    const line = this.#lineGenerator.getLine()
-    this.#line = line
-
+  update(line: Line): LineItemGenerated<T, U> {
     const itemCount = Math.floor(line.length / this.#itemSpan)
     const shortage = itemCount - this.#generated.length
 
@@ -78,5 +64,13 @@ export class LineItemGenerator<T, U> implements ItemGenerator<T, U> {
 
   clear() {
     this.#generated.length = 0
+  }
+
+  clone() {
+    const cloned = new LineItemGenerator(this.#generator, this.#itemSpan)
+    cloned.#generated = this.#generated
+    console.log(cloned.#generated);
+
+    return cloned
   }
 }

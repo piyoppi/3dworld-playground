@@ -1,7 +1,6 @@
 import { Coordinate } from './Coordinate.js'
 import { Vec3, Mat3, Mat4, VectorArray3 } from './Matrix.js'
 import { Ray } from './Ray.js'
-import { showPoint } from './Debugger.js'
 
 export interface Colider {
   checkRay(ray: Ray): number

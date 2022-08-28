@@ -29,6 +29,10 @@ export class CenterMarker implements Marker {
     return this.#parentCoordinate
   }
 
+  get handler() {
+    return this.#handledColiders.handlers[0]?.handled || null
+  }
+
   setHandler(handler: MouseControllable) {
     const colider = new BallColider(this.#radius, this.#parentCoordinate)
     const handle = {colider, handled: handler}

@@ -10,7 +10,7 @@ export class LineSegmentGenerator implements LineGenerator {
     this.#start = position
   }
 
-  setPosition(position: VectorArray3) {
+  setEndPosition(position: VectorArray3) {
     this.#end = position
   }
 

@@ -1,10 +1,11 @@
-import type { MouseButton, MouseControllable } from "../../mouse/MouseControllable.js"
+import type { MouseButton, MouseControllable, MouseControllableCallbackFunction } from "../../mouse/MouseControllable.js"
 import type { AlignmentAdapter } from "./AlignmentAdapter.js"
 import type { Coordinate } from "../../Coordinate"
 import { Vec3, VectorArray3 } from "../../Matrix.js"
 import { NoneAlignment } from "./NoneAlignment.js"
 import { CursorDirectionScreenToWorldConverter } from "./CursorDirectionScreenToWorldConverter.js"
 import { MouseDragHandler } from "../../mouse/MouseDragHandler.js"
+import { CallbackFunctions } from "../../CallbackFunctions.js"
 
 export class DirectionalMoveHandler implements MouseControllable {
   manipulateCoordinate: Coordinate
@@ -13,6 +14,7 @@ export class DirectionalMoveHandler implements MouseControllable {
   #scale: number
   #cursorDirectionConverter: CursorDirectionScreenToWorldConverter
   #alignment: AlignmentAdapter
+  #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
 
   constructor(manipulateCoordinate: Coordinate, directionInLocal: VectorArray3, scale: number) {
     this.#mouseDragHandler = new MouseDragHandler()
@@ -27,6 +29,14 @@ export class DirectionalMoveHandler implements MouseControllable {
     return this.#mouseDragHandler.isStart
   }
 
+  setStartedCallback(func: MouseControllableCallbackFunction) {
+    this.#startedCallbacks.add(func)
+  }
+
+  removeStartedCallback(func: MouseControllableCallbackFunction) {
+    this.#startedCallbacks.remove(func)
+  }
+
   setAlignment(alignment: AlignmentAdapter) {
     this.#alignment = alignment
   }
@@ -37,6 +47,8 @@ export class DirectionalMoveHandler implements MouseControllable {
     this.#alignment.reset(this.manipulateCoordinate.position)
     this.#mouseDragHandler.start(cursorX, cursorY)
     this.#cursorDirectionConverter.calcTransformMatrix(this.manipulateCoordinate, cameraCoordinate)
+
+    this.#startedCallbacks.call()
   }
 
   move(cursorX: number, cursorY: number) {

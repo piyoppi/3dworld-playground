@@ -5,6 +5,10 @@ import { ControlHandle, MouseHandlers } from "../mouse/MouseHandlers.js"
 export class HandledColiders {
   #controlHandles: Array<ControlHandle> = []
 
+  get handlers() {
+    return this.#controlHandles
+  }
+
   setHandles(handles: Array<ControlHandle>) {
     this.#controlHandles = handles
   }

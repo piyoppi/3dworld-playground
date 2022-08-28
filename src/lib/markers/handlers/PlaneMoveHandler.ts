@@ -1,10 +1,11 @@
 import { MouseDragHandler } from "../../mouse/MouseDragHandler.js"
-import { MouseButton, MouseControllable } from "../../mouse/MouseControllable.js"
+import { MouseButton, MouseControllable, MouseControllableCallbackFunction } from "../../mouse/MouseControllable.js"
 import { Vec3, VectorArray3 } from "../../Matrix.js"
 import { CursorDirectionScreenToWorldConverter } from "./CursorDirectionScreenToWorldConverter.js"
 import { NoneAlignment } from "./NoneAlignment.js"
 import type { AlignmentAdapter } from "./AlignmentAdapter.js"
 import type { Coordinate } from "../../Coordinate.js"
+import { CallbackFunctions } from "../../CallbackFunctions.js"
 
 export class PlaneMoveHandler implements MouseControllable {
   #mouseDragHandler
@@ -15,6 +16,7 @@ export class PlaneMoveHandler implements MouseControllable {
   #cursorDirectionConverter: CursorDirectionScreenToWorldConverter
   #alignment: AlignmentAdapter
   #updatedCallbacks: Array<() => void> = []
+  #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
 
   constructor(manipulateCoordinate: Coordinate, planeXAxis: VectorArray3, planeZAxis: VectorArray3, scale: number) {
     this.#mouseDragHandler = new MouseDragHandler()
@@ -30,6 +32,14 @@ export class PlaneMoveHandler implements MouseControllable {
     return this.#mouseDragHandler.isStart
   }
 
+  setStartedCallback(func: MouseControllableCallbackFunction) {
+    this.#startedCallbacks.add(func)
+  }
+
+  removeStartedCallback(func: MouseControllableCallbackFunction) {
+    this.#startedCallbacks.remove(func)
+  }
+
   addUpdatedCallback(callback: () => void) {
     this.#updatedCallbacks.push(callback)
   }
@@ -39,11 +49,14 @@ export class PlaneMoveHandler implements MouseControllable {
   }
 
   start(cursorX: number, cursorY: number, _button: MouseButton, cameraCoordinate: Coordinate) {
+    console.log('started')
     if (this.#mouseDragHandler.isStart) return
 
     this.#mouseDragHandler.start(cursorX, cursorY)
     this.#alignment.reset(this.manipulateCoordinate.position)
     this.#cursorDirectionConverter.calcTransformMatrix(this.manipulateCoordinate, cameraCoordinate)
+
+    this.#startedCallbacks.call()
   }
 
   move(cursorX: number, cursorY: number) {

@@ -9,79 +9,88 @@ import { Coordinate } from "../../../../lib/Coordinate.js"
 import { HaconiwaWorldItem } from "../../world.js"
 import { CenterMarker } from "../../../../lib/markers/CenterMarker.js"
 import { PlaneMoveHandler } from "../../../../lib/markers/handlers/PlaneMoveHandler.js"
-import { Coordinates } from "../../../../lib/Coordinates.js"
-import { VectorArray3 } from "../../../../lib/Matrix.js"
+import { Vec3 } from "../../../../lib/Matrix.js"
 import { LineItemGenerator } from "../../../../lib/itemGenerators/lineItemGenerator/LineItemGenerator.js"
-import { ThreeRenderingObjectBuilder } from "../../../../lib/threeAdapter/ThreeRenderingObjectBuilder.js"
 import { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder.js"
+import { Marker } from "../../../../lib/markers/Marker.js"
+import { LineGenerator } from "../../../../lib/itemGenerators/lineItemGenerator/lineGenerator/LineGenerator.js"
+import { MouseButton, MouseControllableCallbackFunction } from "../../../../lib/mouse/MouseControllable.js"
+import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
 
 export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements HaconiwaItemGenerator<T> {
   #itemGenerator: LineRenderingItemGenerator<T>
-  #lineItemGenerator: LineItemGenerator<Coordinate, T>
   #onGeneratedCallbacks: Array<HaconiwaItemGeneratedCallback<T>> = []
   #raycaster: Raycaster
-  #generatedItem: Item | null = null
   #renderingObjectBuilder: RenderingObjectBuilder<T>
+  #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   private original: HaconiwaItemGeneratorClonedItem<T> | null = null
+
+  #markers: Array<Marker> = []
 
   constructor(renderer: Renderer<T>, raycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) {
     this.#raycaster = raycaster
-    this.#lineItemGenerator = new LineItemGenerator<Coordinate, T>(new LineSegmentGenerator(), () => this.itemFactory(), 1)
-    this.#itemGenerator = new LineRenderingItemGenerator(this.#lineItemGenerator, renderer)
+    this.#itemGenerator = new LineRenderingItemGenerator(renderer)
     this.#renderingObjectBuilder = renderingObjectBuilder
   }
 
   get isStart() {
-    return this.#itemGenerator.isStart
+    return false
+  }
+
+  setStartedCallback(func: MouseControllableCallbackFunction) {
+    this.#startedCallbacks.add(func)
+  }
+
+  removeStartedCallback(func: MouseControllableCallbackFunction) {
+    this.#startedCallbacks.remove(func)
   }
 
   registerOnGeneratedCallback(func: HaconiwaItemGeneratedCallback<T>) {
-    this.#onGeneratedCallbacks.push(func) 
+    this.#onGeneratedCallbacks.push(func)
   }
 
   setOriginal(original: HaconiwaItemGeneratorClonedItem<T>) {
     this.original = original
   }
 
-  start() {
+  start(x: number, y: number, button: MouseButton, cameraCoordinate: Coordinate) {
     if (!this.#raycaster.hasColided) return
 
-    this._start(this.#raycaster.colidedDetails[0].position)
-  }
+    const lineGenerator = new LineSegmentGenerator()
+    lineGenerator.setStartPosition(this.#raycaster.colidedDetails[0].position)
+    lineGenerator.setEndPosition(Vec3.add([1, 0, 0], this.#raycaster.colidedDetails[0].position))
 
-  protected _start(pos: VectorArray3) {
-    this.#itemGenerator.start(this.#raycaster.colidedDetails[0].position)
-  }
-
-  move() {
-    if (!this.#raycaster.hasColided) return
-
-    this.#itemGenerator.move(this.#raycaster.colidedDetails[0].position)
-  }
-
-  end() {
-    this.#itemGenerator.end()
-
+    const lineItemGenerator = new LineItemGenerator<Coordinate, T>(() => this.itemFactory(), 1)
     const item = new Item()
-    this.#generatedItem = item
-    this.#itemGenerator.generated.forEach(generatedItem => {
-      this.#generatedItem?.parentCoordinate.addChild(generatedItem.item)
-    })
+    const line = lineGenerator.getLine()
 
-    const markers = this.#lineItemGenerator.line?.controlPoints.map(point => {
+    this.#markers = line.controlPoints.map((point, index) => {
       const marker = new CenterMarker(0.2)
+      const handler = new PlaneMoveHandler(marker.parentCoordinate, [1, 0, 0], [0, 0, 1], 0.1)
       marker.parentCoordinate.position = point
       marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#itemGenerator.renderer)
-      const handler = new PlaneMoveHandler(marker.parentCoordinate, [1, 0, 0], [0, 0, 1], 0.1)
       marker.setHandler(handler)
-      const generator = new HaconiwaLineItemGenerator(this.#itemGenerator.renderer, this.#raycaster, this.#renderingObjectBuilder)
-
-      generator._start(point)
-
+      marker.parentCoordinate.setUpdateCallback(() => {
+        line.setControlPoint(index, marker.parentCoordinate.position)
+        const generated = lineItemGenerator.update(line)
+        this.#itemGenerator.update(generated, item.parentCoordinate)
+      })
       return marker
     }) || []
 
-    this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], markers)]))
+    this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], this.#markers)]))
+
+    this.#markers[0]?.handler?.start(x, y, button, cameraCoordinate)
+
+    this.#startedCallbacks.call()
+  }
+
+  move() {
+    // noop
+  }
+
+  end() {
+    // noop
   }
 
   private itemFactory() {

@@ -2,6 +2,7 @@ import { Item } from './Item.js'
 import { Mat4, MatrixArray4, VectorArray3 } from './Matrix.js'
 import { v4 as uuidv4 } from 'uuid'
 import { Coordinates } from './Coordinates.js'
+import { CallbackFunctions } from './CallbackFunctions.js'
 
 export class InvalidParentCoordinateError extends Error {}
 
@@ -10,7 +11,7 @@ export class Coordinate {
   protected _parent: Coordinate | null
   #children: Coordinates = new Coordinates()
   #matrix:  MatrixArray4
-  #updatedCallback: () => void
+  #updatedCallbacks = new CallbackFunctions<() => void>()
   #setChildCallback: (parent: Coordinate, child: Coordinate) => void
   #removeChildCallback: (parent: Coordinate, child: Coordinate) => void
   #uuid: string
@@ -20,7 +21,6 @@ export class Coordinate {
     this.#uuid = uuidv4()
     this.#items = []
     this.#matrix = Mat4.getIdentityMatrix()
-    this.#updatedCallback = () => {}
     this.#setChildCallback = (_parent, _child) => {}
     this.#removeChildCallback = (_parent, _child) => {}
   }
@@ -31,7 +31,7 @@ export class Coordinate {
 
   set matrix(array) {
     this.#matrix = array
-    this.#updatedCallback()
+    this.#updatedCallbacks.call()
   }
 
   get matrixInverse() {
@@ -75,7 +75,7 @@ export class Coordinate {
   }
 
   setUpdateCallback(func: () => void) {
-    this.#updatedCallback = func
+    this.#updatedCallbacks.add(func)
   }
 
   setSetChildCallback(func: (parent: Coordinate, child: Coordinate) => void) {
@@ -147,20 +147,20 @@ export class Coordinate {
     this.matrix[12] = val[0]
     this.matrix[13] = val[1]
     this.matrix[14] = val[2]
-    this.#updatedCallback()
+    this.#updatedCallbacks.call()
   }
 
   set x(val) {
     this.matrix[12] = val
-    this.#updatedCallback()
+    this.#updatedCallbacks.call()
   }
   set y(val) {
     this.matrix[13] = val
-    this.#updatedCallback()
+    this.#updatedCallbacks.call()
   }
   set z(val) {
     this.matrix[14] = val
-    this.#updatedCallback()
+    this.#updatedCallbacks.call()
   }
 
   get items() { return this.#items }
