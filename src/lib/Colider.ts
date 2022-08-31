@@ -4,11 +4,16 @@ import { Ray } from './Ray.js'
 
 export interface Colider {
   checkRay(ray: Ray): number
+  checkColider(colider: Colider): VectorArray3
 }
 
 export class InfiniteColider implements Colider {
   checkRay(_ray: Ray): number {
     return 0.01
+  }
+
+  checkColider(colider: Colider): VectorArray3 {
+    return [0, 0, 0]
   }
 }
 
@@ -21,6 +26,14 @@ export class BallColider implements Colider {
     this.#parentCoordinate = parentCoordinate
   }
 
+  get radius() {
+    return this.#radius
+  }
+
+  get parentCoordinate() {
+    return this.#parentCoordinate
+  }
+
   checkRay(ray: Ray): number {
     const pos = this.#parentCoordinate.getGlobalPosition()
     const s = Vec3.subtract(ray.position, pos)
@@ -31,6 +44,22 @@ export class BallColider implements Colider {
     const d = Math.pow(b, 2) - 4 * a * c
 
     return (d >= 0) ? Math.min((-b + d) / 2 * a, (-b - d) / 2 * a) : -1
+  }
+
+  checkColider(colider: Colider): VectorArray3 {
+    if (colider instanceof BallColider) {
+      const radiusColided = colider.radius + this.#radius
+      const vec = Vec3.subtract(colider.parentCoordinate.getGlobalPosition(), this.#parentCoordinate.getGlobalPosition())
+      const vecNorm = Vec3.norm(vec)
+
+      if (radiusColided <= vecNorm) {
+        return [0, 0, 0]
+      }
+
+      return Vec3.mulScale(Vec3.normalize(vec), (radiusColided - vecNorm))
+    }
+
+    return [0, 0, 0]
   }
 }
 
@@ -81,6 +110,10 @@ export class BoxColider implements Colider {
 
     return Math.min(xyRange[0], xyzRange[1])
   }
+
+  checkColider(colider: Colider): VectorArray3 {
+    return [0, 0, 0]
+  }
 }
 
 export class PlaneColider implements Colider {
@@ -100,5 +133,9 @@ export class PlaneColider implements Colider {
     const distance = (Vec3.dotprod(this.#norm, Vec3.subtract(this.#position, ray.position))) / parallel
 
     return distance
+  }
+
+  checkColider(colider: Colider): VectorArray3 {
+    return [0, 0, 0]
   }
 }

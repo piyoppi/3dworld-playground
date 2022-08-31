@@ -65,7 +65,7 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
 
     this.#markers = line.controlPoints.map((point, index) => {
       const marker = new CenterMarker(0.2)
-      const handler = new PlaneMoveHandler(marker.parentCoordinate, [1, 0, 0], [0, 0, 1], 0.1)
+      const handler = new PlaneMoveHandler(marker.parentCoordinate, [1, 0, 0], [0, 0, 1], 0.15)
       marker.parentCoordinate.position = point
       marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#itemGenerator.renderer)
       marker.setHandler(handler)

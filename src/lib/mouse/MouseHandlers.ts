@@ -1,9 +1,8 @@
 import type { Colider } from "../Colider"
 import type { MouseControllable, MouseButton, MouseControllableCallbackFunction } from "./MouseControllable"
-import type { Raycaster } from "../Raycaster"
 import type { Camera } from "../Camera"
 import { convertButtonNumberToMouseButtonsType } from "./ConvertMouseButtonIdToMouseButtonType.js"
-import { RaycasterItemOptions, Raycasters } from "../Raycasters.js"
+import { Raycasters } from "../Raycasters.js"
 
 export type ControlHandle = {
   colider: Colider,

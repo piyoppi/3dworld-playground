@@ -49,7 +49,6 @@ export class PlaneMoveHandler implements MouseControllable {
   }
 
   start(cursorX: number, cursorY: number, _button: MouseButton, cameraCoordinate: Coordinate) {
-    console.log('started')
     if (this.#mouseDragHandler.isStart) return
 
     this.#mouseDragHandler.start(cursorX, cursorY)
