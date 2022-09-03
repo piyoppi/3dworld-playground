@@ -5,6 +5,7 @@ import { Ray } from './Ray.js'
 export interface Colider {
   checkRay(ray: Ray): number
   checkColider(colider: Colider): VectorArray3
+  readonly parentCoordinate?: Coordinate
 }
 
 export class InfiniteColider implements Colider {
@@ -74,6 +75,10 @@ export class BoxColider implements Colider {
       depth / 2.0
     ]
     this.#parentCoordinate = parentCoordinate
+  }
+
+  get parentCoordinate() {
+    return this.#parentCoordinate
   }
 
   checkRay(ray: Ray): number {

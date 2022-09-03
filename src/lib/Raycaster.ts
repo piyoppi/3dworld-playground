@@ -1,6 +1,5 @@
 import { Camera } from './Camera.js';
 import { Colider } from './Colider.js';
-import { Item } from './Item.js'
 import { Mat4, Vec3 } from './Matrix.js';
 import { Ray } from './Ray.js'
 
@@ -18,6 +17,10 @@ export class ColidedDetails {
     this.#colider = colider
     this.#distance = distance
     this.#ray = ray
+  }
+
+  get colider() {
+    return this.#colider
   }
 
   get position() {

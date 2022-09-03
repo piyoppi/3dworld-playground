@@ -18,5 +18,5 @@ export type HaconiwaItemGeneratorClonedItem<T> = {
 }
 
 export interface HaconiwaItemGeneratorFactory<T extends Clonable<T>> {
-  create: (renderer: Renderer<T>, raycaster: Raycaster, initialClonedItem: HaconiwaItemGeneratorClonedItem<T>, renderingObjectBuilder: RenderingObjectBuilder<T>) => HaconiwaItemGenerator<T>
+  create: (renderer: Renderer<T>, raycaster: Raycaster, markerRaycaster: Raycaster, initialClonedItem: HaconiwaItemGeneratorClonedItem<T>, renderingObjectBuilder: RenderingObjectBuilder<T>) => HaconiwaItemGenerator<T>
 }

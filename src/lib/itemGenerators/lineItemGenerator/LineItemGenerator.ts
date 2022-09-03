@@ -1,5 +1,5 @@
 import type { MatrixArray4, VectorArray3 } from "../../Matrix"
-import { LinearAlignment } from "../../alignments/linearArrangement.js"
+import { LinearAlignment } from "../../alignments/linearAlignment.js"
 import { Mat4 } from "../../Matrix.js"
 import type { LineGenerator } from "./lineGenerator/LineGenerator"
 import type { GeneratedItem, GenerateItemFactory, ItemGenerator } from "../ItemGenerator"

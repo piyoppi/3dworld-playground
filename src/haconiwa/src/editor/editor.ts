@@ -70,7 +70,13 @@ export class HaconiwaEditor<T extends Clonable<T>> {
   }
 
   setItemGeneratorFactory(generator: HaconiwaItemGeneratorFactory<T>, original: HaconiwaItemGeneratorClonedItem<T>) {
-    this.#currentItemGenerator = generator.create(this.#renderer.renderer, this.#editingPlane.raycaster, original, this.#renderingObjectBuilder)
+    this.#currentItemGenerator = generator.create(
+      this.#renderer.renderer,
+      this.#editingPlane.raycaster,
+      this.#raycaster,
+      original,
+      this.#renderingObjectBuilder
+    )
     this.#currentItemGenerator.registerOnGeneratedCallback(generates => {
       generates.forEach(item => {
         item.markers.forEach(marker => marker.attach(this.#raycaster, this.#mouseHandlers))

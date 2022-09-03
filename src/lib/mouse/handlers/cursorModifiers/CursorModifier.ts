@@ -1,6 +1,6 @@
-import { VectorArray3 } from "../../Matrix.js"
+import type { VectorArray3 } from "../../../Matrix"
 
-export interface AlignmentAdapter {
+export interface CursorModifier {
   readonly alignedPosition: VectorArray3
   add: (addingvVector: VectorArray3) => void
   reset: (initialPosition: VectorArray3) => void

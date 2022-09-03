@@ -38,6 +38,8 @@ export class CenterMarker implements Marker {
     const handle = {colider, handled: handler}
 
     this.#handledColiders.setHandles([handle])
+
+    return handle
   }
 
   attach(raycaster: Raycaster, interactionHandler: MouseHandlers) {

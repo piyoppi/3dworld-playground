@@ -1,6 +1,6 @@
 import { VectorArray2 } from "../Matrix"
 
-export class MouseDragHandler {
+export class CursorTrackDifferentialCalculator {
   #initialMousePosition
   #isStart: boolean
 
@@ -22,7 +22,7 @@ export class MouseDragHandler {
     this.#isStart = true
   }
 
-  move(cursorX: number, cursorY: number): VectorArray2 {
+  calculate(cursorX: number, cursorY: number): VectorArray2 {
     if (!this.#isStart) return [0, 0]
 
     const dx = (cursorX - this.#initialMousePosition[0])

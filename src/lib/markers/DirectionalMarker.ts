@@ -39,7 +39,10 @@ export class DirectionalMarker implements Marker {
 
   setHandler(handler: MouseControllable) {
     const colider = new BoxColider(this.#radius, this.#norm, this.#radius, this.#direction.parentCoordinate)
-    this.#handledColiders.setHandles([{colider, handled: handler}])
+    const handledColider = {colider, handled: handler}
+    this.#handledColiders.setHandles([handledColider])
+
+    return handledColider
   }
 
   attach(raycaster: Raycaster, interactionHandler: MouseHandlers) {

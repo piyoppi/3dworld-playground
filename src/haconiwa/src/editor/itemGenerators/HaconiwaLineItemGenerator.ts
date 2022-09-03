@@ -8,26 +8,29 @@ import type { HaconiwaItemGenerator, HaconiwaItemGeneratorFactory, HaconiwaItemG
 import { Coordinate } from "../../../../lib/Coordinate.js"
 import { HaconiwaWorldItem } from "../../world.js"
 import { CenterMarker } from "../../../../lib/markers/CenterMarker.js"
-import { PlaneMoveHandler } from "../../../../lib/markers/handlers/PlaneMoveHandler.js"
+import { PlaneMoveHandler } from "../../../../lib/mouse/handlers/PlaneMoveHandler.js"
 import { Vec3 } from "../../../../lib/Matrix.js"
 import { LineItemGenerator } from "../../../../lib/itemGenerators/lineItemGenerator/LineItemGenerator.js"
 import { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder.js"
 import { Marker } from "../../../../lib/markers/Marker.js"
 import { MouseButton, MouseControllableCallbackFunction } from "../../../../lib/mouse/MouseControllable.js"
 import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
+import { CursorSnapColiderModifier } from "../../../../lib/mouse/handlers/cursorModifiers/CursorSnapColiderModifier.js"
 
 export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements HaconiwaItemGenerator<T> {
   #itemGenerator: LineRenderingItemGenerator<T>
   #onGeneratedCallbacks: Array<HaconiwaItemGeneratedCallback<T>> = []
   #raycaster: Raycaster
+  #markerRaycaster: Raycaster
   #renderingObjectBuilder: RenderingObjectBuilder<T>
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   private original: HaconiwaItemGeneratorClonedItem<T> | null = null
 
   #markers: Array<Marker> = []
 
-  constructor(renderer: Renderer<T>, raycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) {
+  constructor(renderer: Renderer<T>, raycaster: Raycaster, markerRaycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) {
     this.#raycaster = raycaster
+    this.#markerRaycaster = markerRaycaster
     this.#itemGenerator = new LineRenderingItemGenerator(renderer)
     this.#renderingObjectBuilder = renderingObjectBuilder
   }
@@ -66,9 +69,10 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
     this.#markers = line.controlPoints.map((point, index) => {
       const marker = new CenterMarker(0.2)
       const handler = new PlaneMoveHandler(marker.parentCoordinate, [1, 0, 0], [0, 0, 1], 0.15)
+      const controlHandle = marker.setHandler(handler)
+      handler.setCursorModifier(new CursorSnapColiderModifier(this.#markerRaycaster, [controlHandle.colider]))
       marker.parentCoordinate.position = point
       marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#itemGenerator.renderer)
-      marker.setHandler(handler)
       marker.parentCoordinate.setUpdateCallback(() => {
         line.setControlPoint(index, marker.parentCoordinate.position)
         const generated = lineItemGenerator.update(line)
@@ -102,8 +106,8 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
 }
 
 export class HaconiwaLineItemGeneratorFactory<T extends Clonable<T>> implements HaconiwaItemGeneratorFactory<T> {
-  create(renderer: Renderer<T>, raycaster: Raycaster, initialClonedItem: HaconiwaItemGeneratorClonedItem<T>, renderingObjectBuilder: RenderingObjectBuilder<T>) {
-    const generator = new HaconiwaLineItemGenerator(renderer, raycaster, renderingObjectBuilder)
+  create(renderer: Renderer<T>, raycaster: Raycaster, markerRaycaster: Raycaster, initialClonedItem: HaconiwaItemGeneratorClonedItem<T>, renderingObjectBuilder: RenderingObjectBuilder<T>) {
+    const generator = new HaconiwaLineItemGenerator(renderer, raycaster, markerRaycaster, renderingObjectBuilder)
     generator.setOriginal(initialClonedItem)
 
     return generator

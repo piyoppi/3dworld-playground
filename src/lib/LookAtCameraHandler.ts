@@ -1,5 +1,5 @@
 import { Mat4, Mat3, MatrixArray4, VectorArray3, MatrixArray3  } from './Matrix.js'
-import { MouseDragHandler } from "./mouse/MouseDragHandler.js"
+import { CursorTrackDifferentialCalculator } from "./mouse/CursorTrackDifferenceCalculator.js"
 import { MouseButton, MouseControllable, MouseControllableCallbackFunction } from "./mouse/MouseControllable.js"
 import { Coordinate } from './Coordinate.js'
 import { CallbackFunctions } from './CallbackFunctions.js'
@@ -8,12 +8,11 @@ export type LookAtCameraHandlerMode = 'direction' | 'target'
 
 class LookAtRotation implements MouseControllable {
   #rotation
-  #mouseDragHandler
+  #cursorTrackDifference = new CursorTrackDifferentialCalculator()
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
 
-  constructor(mouseDragHandler: MouseDragHandler) {
+  constructor() {
     this.#rotation = [0, 0]
-    this.#mouseDragHandler = mouseDragHandler
   }
 
   setStartedCallback(func: MouseControllableCallbackFunction) {
@@ -45,7 +44,7 @@ class LookAtRotation implements MouseControllable {
   }
 
   get isStart() {
-    return this.#mouseDragHandler.isStart
+    return this.#cursorTrackDifference.isStart
   }
 
   get rotation() {
@@ -53,12 +52,12 @@ class LookAtRotation implements MouseControllable {
   }
 
   start(cursorX: number, cursorY: number) {
-    this.#mouseDragHandler.start(cursorX, cursorY)
+    this.#cursorTrackDifference.start(cursorX, cursorY)
     this.#startedCallbacks.call()
   }
 
   move(cursorX: number, cursorY: number) {
-    const [dx, dy] = this.#mouseDragHandler.move(cursorX, cursorY)
+    const [dx, dy] = this.#cursorTrackDifference.calculate(cursorX, cursorY)
 
     if (dx === 0 && dy === 0) return
 
@@ -67,26 +66,25 @@ class LookAtRotation implements MouseControllable {
   }
 
   end() {
-    this.#mouseDragHandler.end()
+    this.#cursorTrackDifference.end()
   }
 }
 
 class LookAtTarget implements MouseControllable {
   #target: VectorArray3
-  #mouseDragHandler
+  #cursorTrackDifference = new CursorTrackDifferentialCalculator()
   #matrix: MatrixArray4
   #transformDirectionalMat: MatrixArray3
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
 
-  constructor(mouseDragHandler: MouseDragHandler) {
+  constructor() {
     this.#target = [0, 0, 0]
-    this.#mouseDragHandler = mouseDragHandler
     this.#matrix = Mat4.getIdentityMatrix()
     this.#transformDirectionalMat = Mat3.getIdentityMatrix()
   }
 
   get isStart() {
-    return this.#mouseDragHandler.isStart
+    return this.#cursorTrackDifference.isStart
   }
 
   get target() {
@@ -125,12 +123,12 @@ class LookAtTarget implements MouseControllable {
   }
 
   start(cursorX: number, cursorY: number) {
-    this.#mouseDragHandler.start(cursorX, cursorY)
+    this.#cursorTrackDifference.start(cursorX, cursorY)
     this.#startedCallbacks.call()
   }
 
   move(cursorX: number, cursorY: number) {
-    const [dx, dy] = this.#mouseDragHandler.move(cursorX, cursorY)
+    const [dx, dy] = this.#cursorTrackDifference.calculate(cursorX, cursorY)
 
     if (dx === 0 && dy === 0) return
 
@@ -141,12 +139,11 @@ class LookAtTarget implements MouseControllable {
   }
 
   end() {
-    this.#mouseDragHandler.end()
+    this.#cursorTrackDifference.end()
   }
 }
 
 export class LookAtCameraHandler implements MouseControllable {
-  #mouseDragHandler
   #distance
   #changed: boolean
   #isLocked: boolean
@@ -156,12 +153,11 @@ export class LookAtCameraHandler implements MouseControllable {
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
 
   constructor() {
-    this.#mouseDragHandler = new MouseDragHandler()
     this.#distance = 1
     this.#changed = false
     this.#isLocked = false
-    this.#rotationHandler = new LookAtRotation(this.#mouseDragHandler)
-    this.#targetPositionHandler = new LookAtTarget(this.#mouseDragHandler)
+    this.#rotationHandler = new LookAtRotation()
+    this.#targetPositionHandler = new LookAtTarget()
     this.#currentHandler = this.#rotationHandler
   }
 
@@ -186,7 +182,7 @@ export class LookAtCameraHandler implements MouseControllable {
   }
 
   get isStart() {
-    return this.#mouseDragHandler.isStart
+    return this.#currentHandler.isStart
   }
 
   setStartedCallback(func: MouseControllableCallbackFunction) {

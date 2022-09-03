@@ -1,35 +1,34 @@
-import { MouseDragHandler } from "../../mouse/MouseDragHandler.js"
+import { CursorTrackDifferentialCalculator } from "../../mouse/CursorTrackDifferenceCalculator.js"
 import { MouseButton, MouseControllable, MouseControllableCallbackFunction } from "../../mouse/MouseControllable.js"
 import { Vec3, VectorArray3 } from "../../Matrix.js"
 import { CursorDirectionScreenToWorldConverter } from "./CursorDirectionScreenToWorldConverter.js"
-import { NoneAlignment } from "./NoneAlignment.js"
-import type { AlignmentAdapter } from "./AlignmentAdapter.js"
+import { CursorNoneModifier } from "./cursorModifiers/CursorNoneModifier.js"
+import type { CursorModifier } from "./cursorModifiers/CursorModifier"
 import type { Coordinate } from "../../Coordinate.js"
 import { CallbackFunctions } from "../../CallbackFunctions.js"
 
 export class PlaneMoveHandler implements MouseControllable {
-  #mouseDragHandler
+  #cursorTrackDifference = new CursorTrackDifferentialCalculator()
   manipulateCoordinate: Coordinate
   #planeXAxis: VectorArray3
   #planeZAxis: VectorArray3
   #scale: number
   #cursorDirectionConverter: CursorDirectionScreenToWorldConverter
-  #alignment: AlignmentAdapter
+  #cursorModifier: CursorModifier
   #updatedCallbacks: Array<() => void> = []
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
 
   constructor(manipulateCoordinate: Coordinate, planeXAxis: VectorArray3, planeZAxis: VectorArray3, scale: number) {
-    this.#mouseDragHandler = new MouseDragHandler()
     this.manipulateCoordinate = manipulateCoordinate
     this.#planeXAxis = planeXAxis
     this.#planeZAxis = planeZAxis
     this.#scale = scale
     this.#cursorDirectionConverter = new CursorDirectionScreenToWorldConverter()
-    this.#alignment = new NoneAlignment()
+    this.#cursorModifier = new CursorNoneModifier()
   }
 
   get isStart() {
-    return this.#mouseDragHandler.isStart
+    return this.#cursorTrackDifference.isStart
   }
 
   setStartedCallback(func: MouseControllableCallbackFunction) {
@@ -44,24 +43,24 @@ export class PlaneMoveHandler implements MouseControllable {
     this.#updatedCallbacks.push(callback)
   }
 
-  setAlignment(alignment: AlignmentAdapter) {
-    this.#alignment = alignment
+  setCursorModifier(modifier: CursorModifier) {
+    this.#cursorModifier = modifier
   }
 
   start(cursorX: number, cursorY: number, _button: MouseButton, cameraCoordinate: Coordinate) {
-    if (this.#mouseDragHandler.isStart) return
+    if (this.#cursorTrackDifference.isStart) return
 
-    this.#mouseDragHandler.start(cursorX, cursorY)
-    this.#alignment.reset(this.manipulateCoordinate.position)
+    this.#cursorTrackDifference.start(cursorX, cursorY)
+    this.#cursorModifier.reset(this.manipulateCoordinate.position)
     this.#cursorDirectionConverter.calcTransformMatrix(this.manipulateCoordinate, cameraCoordinate)
 
     this.#startedCallbacks.call()
   }
 
   move(cursorX: number, cursorY: number) {
-    if (!this.#mouseDragHandler.isStart) return
+    if (!this.#cursorTrackDifference.isStart) return
 
-    const mouseDelta = this.#mouseDragHandler.move(cursorX, cursorY)
+    const mouseDelta = this.#cursorTrackDifference.calculate(cursorX, cursorY)
     const mouseDeltaInItemCoordinate = this.#cursorDirectionConverter.convert(mouseDelta)
     const addingVector: VectorArray3 = [
       Vec3.dotprod(mouseDeltaInItemCoordinate, this.#planeXAxis) * this.#scale,
@@ -69,23 +68,23 @@ export class PlaneMoveHandler implements MouseControllable {
       Vec3.dotprod(mouseDeltaInItemCoordinate, this.#planeZAxis) * this.#scale,
     ]
 
-    this.#alignment.add(addingVector)
+    this.#cursorModifier.add(addingVector)
 
     const isChanged =
-      this.manipulateCoordinate.x !== this.#alignment.alignedPosition[0] ||
-      this.manipulateCoordinate.y !== this.#alignment.alignedPosition[1] ||
-      this.manipulateCoordinate.z !== this.#alignment.alignedPosition[2]
+      this.manipulateCoordinate.x !== this.#cursorModifier.alignedPosition[0] ||
+      this.manipulateCoordinate.y !== this.#cursorModifier.alignedPosition[1] ||
+      this.manipulateCoordinate.z !== this.#cursorModifier.alignedPosition[2]
 
     if (isChanged) {
-      this.manipulateCoordinate.x = this.#alignment.alignedPosition[0]
-      this.manipulateCoordinate.y = this.#alignment.alignedPosition[1]
-      this.manipulateCoordinate.z = this.#alignment.alignedPosition[2]
+      this.manipulateCoordinate.x = this.#cursorModifier.alignedPosition[0]
+      this.manipulateCoordinate.y = this.#cursorModifier.alignedPosition[1]
+      this.manipulateCoordinate.z = this.#cursorModifier.alignedPosition[2]
 
       this.#updatedCallbacks.forEach(callback => callback())
     }
   }
 
   end() {
-    this.#mouseDragHandler.end()
+    this.#cursorTrackDifference.end()
   }
 }

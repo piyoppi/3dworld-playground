@@ -1,7 +1,7 @@
-import { VectorArray3 } from "../../Matrix.js"
-import { AlignmentAdapter } from './AlignmentAdapter.js'
+import type { VectorArray3 } from "../../../Matrix"
+import { CursorModifier } from './CursorModifier.js'
 
-export class GridAlignment implements AlignmentAdapter {
+export class CursorGridModifier implements CursorGridModifier {
   #currentPosition: VectorArray3
   #resolution: number
   #updated: boolean

@@ -1,7 +1,7 @@
-import { VectorArray3 } from "../../Matrix.js"
-import { AlignmentAdapter } from './AlignmentAdapter.js'
+import type { VectorArray3 } from "../../../Matrix"
+import type { CursorModifier } from './CursorModifier'
 
-export class NoneAlignment implements AlignmentAdapter {
+export class CursorNoneModifier implements CursorModifier {
   #currentPosition: VectorArray3
 
   constructor() {
