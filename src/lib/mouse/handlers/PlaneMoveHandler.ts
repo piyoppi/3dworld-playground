@@ -1,34 +1,28 @@
 import { CursorTrackDifferentialCalculator } from "../../mouse/CursorTrackDifferenceCalculator.js"
-import { MouseButton, MouseControllable, MouseControllableCallbackFunction } from "../../mouse/MouseControllable.js"
-import { Vec3, VectorArray3 } from "../../Matrix.js"
+import type { MouseButton, MouseControllable, MouseControllableCallbackFunction } from "../../mouse/MouseControllable"
 import { CursorDirectionScreenToWorldConverter } from "./CursorDirectionScreenToWorldConverter.js"
 import { CursorNoneModifier } from "./cursorModifiers/CursorNoneModifier.js"
 import type { CursorModifier } from "./cursorModifiers/CursorModifier"
 import type { Coordinate } from "../../Coordinate.js"
 import { CallbackFunctions } from "../../CallbackFunctions.js"
+import type { Raycaster } from "../../Raycaster"
 
 export class PlaneMoveHandler implements MouseControllable {
-  #cursorTrackDifference = new CursorTrackDifferentialCalculator()
   manipulateCoordinate: Coordinate
-  #planeXAxis: VectorArray3
-  #planeZAxis: VectorArray3
-  #scale: number
-  #cursorDirectionConverter: CursorDirectionScreenToWorldConverter
   #cursorModifier: CursorModifier
   #updatedCallbacks: Array<() => void> = []
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
+  #raycaster
+  #isStart = false
 
-  constructor(manipulateCoordinate: Coordinate, planeXAxis: VectorArray3, planeZAxis: VectorArray3, scale: number) {
+  constructor(manipulateCoordinate: Coordinate, raycaster: Raycaster) {
     this.manipulateCoordinate = manipulateCoordinate
-    this.#planeXAxis = planeXAxis
-    this.#planeZAxis = planeZAxis
-    this.#scale = scale
-    this.#cursorDirectionConverter = new CursorDirectionScreenToWorldConverter()
     this.#cursorModifier = new CursorNoneModifier()
+    this.#raycaster = raycaster
   }
 
   get isStart() {
-    return this.#cursorTrackDifference.isStart
+    return this.#isStart
   }
 
   setStartedCallback(func: MouseControllableCallbackFunction) {
@@ -48,27 +42,17 @@ export class PlaneMoveHandler implements MouseControllable {
   }
 
   start(cursorX: number, cursorY: number, _button: MouseButton, cameraCoordinate: Coordinate) {
-    if (this.#cursorTrackDifference.isStart) return
 
-    this.#cursorTrackDifference.start(cursorX, cursorY)
+    this.#isStart = true
     this.#cursorModifier.reset(this.manipulateCoordinate.position)
-    this.#cursorDirectionConverter.calcTransformMatrix(this.manipulateCoordinate, cameraCoordinate)
 
     this.#startedCallbacks.call()
   }
 
-  move(cursorX: number, cursorY: number) {
-    if (!this.#cursorTrackDifference.isStart) return
+  move() {
+    if (!this.#isStart || !this.#raycaster.hasColided) return
 
-    const mouseDelta = this.#cursorTrackDifference.calculate(cursorX, cursorY)
-    const mouseDeltaInItemCoordinate = this.#cursorDirectionConverter.convert(mouseDelta)
-    const addingVector: VectorArray3 = [
-      Vec3.dotprod(mouseDeltaInItemCoordinate, this.#planeXAxis) * this.#scale,
-      0,
-      Vec3.dotprod(mouseDeltaInItemCoordinate, this.#planeZAxis) * this.#scale,
-    ]
-
-    this.#cursorModifier.add(addingVector)
+    this.#cursorModifier.setPosition(this.#raycaster.colidedDetails[0].position)
 
     const isChanged =
       this.manipulateCoordinate.x !== this.#cursorModifier.alignedPosition[0] ||
@@ -85,6 +69,6 @@ export class PlaneMoveHandler implements MouseControllable {
   }
 
   end() {
-    this.#cursorTrackDifference.end()
+    this.#isStart = false
   }
 }

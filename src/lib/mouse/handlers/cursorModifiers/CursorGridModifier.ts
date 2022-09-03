@@ -47,4 +47,10 @@ export class CursorGridModifier implements CursorGridModifier {
 
     this.#updated = true
   }
+
+  setPosition(vec: VectorArray3) {
+    this.#currentPosition = vec
+
+    this.#updated = true
+  }
 }

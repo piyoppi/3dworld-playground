@@ -21,4 +21,8 @@ export class CursorNoneModifier implements CursorModifier {
   reset(position: VectorArray3) {
     this.#currentPosition = position
   }
+
+  setPosition(vec: VectorArray3) {
+    this.#currentPosition = vec
+  }
 }

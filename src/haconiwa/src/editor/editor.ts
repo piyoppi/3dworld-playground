@@ -51,8 +51,8 @@ export class HaconiwaEditor<T extends Clonable<T>> {
     this.#cameraController = new CameraController(renderer.renderer.camera)
     this.#cameraController.setMouseHandlers(this.#mouseHandlers)
 
-    this.#raycasters.add(this.#raycaster, {transparency: false})
     this.#raycasters.add(this.#editingPlane.raycaster)
+    this.#raycasters.add(this.#raycaster, {transparency: false})
     this.#raycasters.add(this.#cameraController.raycaster)
 
     this.#mouseCapturer = mouseCapturer

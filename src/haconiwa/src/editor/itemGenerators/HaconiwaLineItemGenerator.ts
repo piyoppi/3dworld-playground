@@ -25,6 +25,7 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
   #renderingObjectBuilder: RenderingObjectBuilder<T>
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   private original: HaconiwaItemGeneratorClonedItem<T> | null = null
+  #isStarted = false
 
   #markers: Array<Marker> = []
 
@@ -36,7 +37,7 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
   }
 
   get isStart() {
-    return false
+    return this.#isStarted
   }
 
   setStartedCallback(func: MouseControllableCallbackFunction) {
@@ -56,7 +57,8 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
   }
 
   start(x: number, y: number, button: MouseButton, cameraCoordinate: Coordinate) {
-    if (!this.#raycaster.hasColided) return
+    if (!this.#raycaster.hasColided || this.#isStarted) return
+    this.#isStarted = true
 
     const lineGenerator = new LineSegmentGenerator()
     lineGenerator.setStartPosition(this.#raycaster.colidedDetails[0].position)
@@ -67,13 +69,14 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
     const line = lineGenerator.getLine()
 
     this.#markers = line.controlPoints.map((point, index) => {
-      const marker = new CenterMarker(0.2)
-      const handler = new PlaneMoveHandler(marker.parentCoordinate, [1, 0, 0], [0, 0, 1], 0.15)
+      const marker = new CenterMarker(0.5)
+      const handler = new PlaneMoveHandler(marker.parentCoordinate, this.#raycaster)
       const controlHandle = marker.setHandler(handler)
       handler.setCursorModifier(new CursorSnapColiderModifier(this.#markerRaycaster, [controlHandle.colider]))
       marker.parentCoordinate.position = point
       marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#itemGenerator.renderer)
       marker.parentCoordinate.setUpdateCallback(() => {
+        this.#isStarted = true
         line.setControlPoint(index, marker.parentCoordinate.position)
         const generated = lineItemGenerator.update(line)
         this.#itemGenerator.update(generated, item.parentCoordinate)
@@ -93,7 +96,7 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
   }
 
   end() {
-    // noop
+    this.#isStarted = false
   }
 
   private itemFactory() {
