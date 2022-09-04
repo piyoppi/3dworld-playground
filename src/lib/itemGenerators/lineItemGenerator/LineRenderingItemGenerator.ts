@@ -1,7 +1,6 @@
 import type { Renderer } from "../../Renderer"
 import type { Coordinate } from "../../Coordinate"
-import type { VectorArray3 } from "../../Matrix"
-import { LineItemGenerated } from "./LineItemGenerator.js"
+import type { LineItemGenerated } from "./LineItemGenerator"
 
 export class LineRenderingItemGenerator<T> {
   #renderer: Renderer<T>

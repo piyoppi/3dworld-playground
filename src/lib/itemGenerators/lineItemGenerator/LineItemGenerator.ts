@@ -1,9 +1,8 @@
-import type { MatrixArray4, VectorArray3 } from "../../Matrix"
+import type { MatrixArray4 } from "../../Matrix"
+import type { GeneratedItem, GenerateItemFactory, ItemGenerator } from "../ItemGenerator"
+import type { Line } from "../../lines/line"
 import { LinearAlignment } from "../../alignments/linearAlignment.js"
 import { Mat4 } from "../../Matrix.js"
-import type { LineGenerator } from "./lineGenerator/LineGenerator"
-import type { GeneratedItem, GenerateItemFactory, ItemGenerator } from "../ItemGenerator"
-import { Line } from "../../lines/line.js"
 
 export type LineItemGenerated<T, U> = {
    generatedItems: Array<GeneratedItem<T, U>>,
@@ -44,7 +43,7 @@ export class LineItemGenerator<T, U> implements ItemGenerator<T, U> {
     }
 
     if (shortage < 0) {
-      for (let i = -shortage; i >= 0; i--) {
+      for (let i = -shortage - 1; i >= 0; i--) {
         const removed = this.#generated.splice(i, 1)
 
         removedItems.push(removed[0])
@@ -69,7 +68,6 @@ export class LineItemGenerator<T, U> implements ItemGenerator<T, U> {
   clone() {
     const cloned = new LineItemGenerator(this.#generator, this.#itemSpan)
     cloned.#generated = this.#generated
-    console.log(cloned.#generated);
 
     return cloned
   }
