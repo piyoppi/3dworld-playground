@@ -4,7 +4,7 @@ import { Item } from "../Item.js"
 import { HandledColiders } from "./HandledColiders.js"
 import { Mat4, Vec3, VectorArray3 } from "../Matrix.js"
 import type { MouseControllable } from "../mouse/MouseControllable.js"
-import type { MouseHandlers } from "../mouse/MouseHandlers"
+import type { MouseControlHandles } from "../mouse/MouseControlHandles"
 import type { Raycaster } from "../Raycaster.js"
 import type { Renderer } from "../Renderer.js"
 import type { RenderingObjectBuilder } from '../RenderingObjectBuilder.js'
@@ -45,11 +45,11 @@ export class DirectionalMarker implements Marker {
     return handledColider
   }
 
-  attach(raycaster: Raycaster, interactionHandler: MouseHandlers) {
+  attach(raycaster: Raycaster, interactionHandler: MouseControlHandles) {
     this.#handledColiders.attach(raycaster, interactionHandler)
   }
 
-  detach(raycaster: Raycaster, interactionHandler: MouseHandlers) {
+  detach(raycaster: Raycaster, interactionHandler: MouseControlHandles) {
     this.#handledColiders.detach(raycaster, interactionHandler)
   }
 

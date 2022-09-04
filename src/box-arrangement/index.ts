@@ -7,7 +7,7 @@ import { DirectionalMarker } from '../lib/markers/DirectionalMarker.js'
 import { ThreeRenderingObject } from '../lib/threeAdapter/ThreeRenderer.js'
 import { Item } from '../lib/Item.js'
 import { DirectionalMoveHandler } from '../lib/mouse/handlers/DirectionalMoveHandler.js'
-import { MouseHandlers } from '../lib/mouse/MouseHandlers.js'
+import { MouseControlHandles } from '../lib/mouse/MouseControlHandles.js'
 import { CameraKeyboardHandler } from '../lib/CameraKeyboardHandler.js'
 import { BoxColider } from '../lib/Colider.js'
 import { convertButtonNumberToMouseButtonsType } from "../lib/mouse/ConvertMouseButtonIdToMouseButtonType.js"
@@ -30,7 +30,7 @@ const raycaster = new ItemRaycaster<Item>(new Raycaster(renderer.camera))
 const axesRaycaster = new Raycaster(renderer.camera)
 const raycasters = new Raycasters()
 raycasters.add(axesRaycaster)
-const mouseInteractionHandler = new MouseHandlers(renderer.camera, raycasters)
+const mouseInteractionHandler = new MouseControlHandles(renderer.camera, raycasters)
 
 const lightCoordinate = new Coordinate()
 lightCoordinate.y = 1

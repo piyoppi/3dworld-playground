@@ -3,7 +3,7 @@ import { Coordinate } from "../Coordinate.js"
 import { MouseControllable } from "../mouse/MouseControllable.js"
 import { Raycaster } from "../Raycaster.js"
 import { HandledColiders } from "./HandledColiders.js"
-import type { MouseHandlers } from "../mouse/MouseHandlers"
+import type { MouseControlHandles } from "../mouse/MouseControlHandles"
 import type { RenderingObjectBuilder } from '../RenderingObjectBuilder'
 import type { RGBColor } from "../helpers/color"
 import type { Renderer } from "../Renderer"
@@ -42,11 +42,11 @@ export class CenterMarker implements Marker {
     return handle
   }
 
-  attach(raycaster: Raycaster, interactionHandler: MouseHandlers) {
+  attach(raycaster: Raycaster, interactionHandler: MouseControlHandles) {
     this.#handledColiders.attach(raycaster, interactionHandler)
   }
 
-  detach(raycaster: Raycaster, interactionHandler: MouseHandlers) {
+  detach(raycaster: Raycaster, interactionHandler: MouseControlHandles) {
     this.#handledColiders.detach(raycaster, interactionHandler)
   }
 

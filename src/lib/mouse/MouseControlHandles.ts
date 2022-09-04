@@ -12,7 +12,7 @@ export type ControlHandle = {
 type MouseDownCallbackFunction = (x: number, y: number, mouseButton: MouseButton) => void
 type MouseMoveCallbackFunction = (x: number, y: number, mouseButton: MouseButton) => void
 
-export class MouseHandlers {
+export class MouseControlHandles {
   #raycasters: Raycasters
   #handleItems: Array<{controlHandle: ControlHandle, startedCallback: MouseControllableCallbackFunction}>
   #handlingItems: Array<{controlHandle: ControlHandle, startedCallback: MouseControllableCallbackFunction}>
@@ -70,12 +70,15 @@ export class MouseHandlers {
 
     this.#beforeMouseDownCallbacks.forEach(func => func(screenX, screenY, mouseButton))
 
-    this.colidedHandleItems()
-      .forEach(handledItem => {
-        if (!handledItem.controlHandle.handled.isStart) {
-          handledItem.controlHandle.handled.start(screenX, screenY, mouseButton, this.#camera.coordinate)
-        }
-      })
+    const colidedHandleItems = this.colidedHandleItems()
+
+    for (const handledItem of colidedHandleItems) {
+      if (!handledItem.controlHandle.handled.isStart) {
+        const skip = handledItem.controlHandle.handled.start(screenX, screenY, mouseButton, this.#camera.coordinate)
+
+        if (skip) break
+      }
+    }
   }
 
   move(screenX: number, screenY: number, button: number) {
@@ -90,7 +93,7 @@ export class MouseHandlers {
     this.#handlingItems.forEach(handledItem => {
       handledItem.controlHandle.handled.end()
     })
-      
+
     this.#handlingItems.length = 0
   }
 

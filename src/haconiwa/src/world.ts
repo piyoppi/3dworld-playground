@@ -2,7 +2,7 @@ import { Colider } from "../../lib/Colider.js"
 import { Item } from "../../lib/Item.js"
 import type { Renderer } from "../../lib/Renderer"
 import type { Raycaster } from "../../lib/Raycaster"
-import type { MouseHandlers } from "../../lib/mouse/MouseHandlers"
+import type { MouseControlHandles } from "../../lib/mouse/MouseControlHandles"
 import type { Marker } from "../../lib/markers/Marker"
 
 export class HaconiwaWorld<T> {
@@ -41,7 +41,7 @@ export class HaconiwaWorldItem<T> {
     return this.#item
   }
 
-  dispose(raycaster: Raycaster, renderer: Renderer<T>, mouseHandlers: MouseHandlers) {
+  dispose(raycaster: Raycaster, renderer: Renderer<T>, mouseHandlers: MouseControlHandles) {
     this.#coliders.forEach(colider => raycaster.removeTarget(colider))
     renderer.removeItem(this.#item.parentCoordinate)
 

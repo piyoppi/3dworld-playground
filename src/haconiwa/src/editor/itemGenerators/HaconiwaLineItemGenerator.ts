@@ -24,6 +24,7 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
   #markerRaycaster: Raycaster
   #renderingObjectBuilder: RenderingObjectBuilder<T>
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
+  #endedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   private original: HaconiwaItemGeneratorClonedItem<T> | null = null
   #isStarted = false
 
@@ -61,8 +62,10 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
     this.#isStarted = true
 
     const lineGenerator = new LineSegmentGenerator()
-    lineGenerator.setStartPosition(this.#raycaster.colidedDetails[0].position)
-    lineGenerator.setEndPosition(Vec3.add([1, 0, 0], this.#raycaster.colidedDetails[0].position))
+    const startPosition = this.#markerRaycaster.colidedDetails[0]?.colider.parentCoordinate?.position || this.#raycaster.colidedDetails[0].position
+    lineGenerator.setStartPosition(startPosition)
+
+    lineGenerator.setEndPosition(this.#raycaster.colidedDetails[0].position)
 
     const lineItemGenerator = new LineItemGenerator<Coordinate, T>(() => this.itemFactory(), 1)
     const item = new Item()
@@ -86,9 +89,11 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
 
     this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], this.#markers)]))
 
-    this.#markers[0]?.handler?.start(x, y, button, cameraCoordinate)
-
     this.#startedCallbacks.call()
+
+    this.#markers[1]?.handler?.start(x, y, button, cameraCoordinate)
+
+    return true
   }
 
   move() {
@@ -97,6 +102,7 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
 
   end() {
     this.#isStarted = false
+    this.#endedCallbacks.call()
   }
 
   private itemFactory() {

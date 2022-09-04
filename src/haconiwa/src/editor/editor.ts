@@ -10,7 +10,7 @@ import { LookAtCameraHandler } from '../../../lib/LookAtCameraHandler.js'
 import { Raycaster } from '../../../lib/Raycaster.js'
 import { Colider, PlaneColider } from '../../../lib/Colider.js'
 import { HaconiwaWorld } from '../world.js'
-import { ControlHandle, MouseHandlers } from '../../../lib/mouse/MouseHandlers.js'
+import { ControlHandle, MouseControlHandles } from '../../../lib/mouse/MouseControlHandles.js'
 import { InfiniteColider } from '../../../lib/Colider.js'
 import { Raycasters } from '../../../lib/Raycasters.js'
 
@@ -21,9 +21,9 @@ type Plane = {
 
 export class HaconiwaEditor<T extends Clonable<T>> {
   #cameraController: CameraController
-  #mouseHandlers: MouseHandlers
+  #mouseControlHandles: MouseControlHandles
   #editingPlane: EditingPlane
-  #raycaster: Raycaster
+  #markerRaycaster: Raycaster
   #renderer: HaconiwaRenderer<T>
   #mouseCapturer: MouseCapturer
   #raycasters = new Raycasters()
@@ -42,17 +42,17 @@ export class HaconiwaEditor<T extends Clonable<T>> {
 
     this.#editingPlane = new EditingPlane(this.#renderer.renderer.camera)
 
-    this.#raycaster = new Raycaster(this.#renderer.renderer.camera)
+    this.#markerRaycaster = new Raycaster(this.#renderer.renderer.camera)
 
-    this.#mouseHandlers = new MouseHandlers(renderer.renderer.camera, this.#raycasters)
-    this.#mouseHandlers.addBeforeMouseDownCallback((x, y, mouseButton) => this.#mouseDownHandler(x, y, mouseButton))
-    this.#mouseHandlers.addBeforeMouseMoveCallback((_x, _y) => this.#mouseMoveHandler())
+    this.#mouseControlHandles = new MouseControlHandles(renderer.renderer.camera, this.#raycasters)
+    this.#mouseControlHandles.addBeforeMouseDownCallback((x, y, mouseButton) => this.#mouseDownHandler(x, y, mouseButton))
+    this.#mouseControlHandles.addBeforeMouseMoveCallback((_x, _y) => this.#mouseMoveHandler())
 
     this.#cameraController = new CameraController(renderer.renderer.camera)
-    this.#cameraController.setMouseHandlers(this.#mouseHandlers)
+    this.#cameraController.setMouseHandlers(this.#mouseControlHandles)
 
     this.#raycasters.add(this.#editingPlane.raycaster)
-    this.#raycasters.add(this.#raycaster, {transparency: false})
+    this.#raycasters.add(this.#markerRaycaster, {transparency: false})
     this.#raycasters.add(this.#cameraController.raycaster)
 
     this.#mouseCapturer = mouseCapturer
@@ -66,32 +66,34 @@ export class HaconiwaEditor<T extends Clonable<T>> {
   }
 
   captureMouseEvent() {
-    this.#mouseHandlers.captureMouseEvent()
+    this.#mouseControlHandles.captureMouseEvent()
   }
 
   setItemGeneratorFactory(generator: HaconiwaItemGeneratorFactory<T>, original: HaconiwaItemGeneratorClonedItem<T>) {
     this.#currentItemGenerator = generator.create(
       this.#renderer.renderer,
       this.#editingPlane.raycaster,
-      this.#raycaster,
+      this.#markerRaycaster,
       original,
       this.#renderingObjectBuilder
     )
+
     this.#currentItemGenerator.registerOnGeneratedCallback(generates => {
       generates.forEach(item => {
-        item.markers.forEach(marker => marker.attach(this.#raycaster, this.#mouseHandlers))
+        item.markers.forEach(marker => marker.attach(this.#markerRaycaster, this.#mouseControlHandles))
         this.#world.addItem(item)
       })
     })
+
     this.#currentItemGeneratorHandler = {colider: this.#editingPlane.colider, handled: this.#currentItemGenerator}
-    this.#mouseHandlers.add(this.#currentItemGeneratorHandler)
+    this.#mouseControlHandles.add(this.#currentItemGeneratorHandler)
     this.#raycasters.disable(this.#cameraController.raycaster)
   }
 
   clearItemGenerator() {
     if (!this.#currentItemGenerator || !this.#currentItemGeneratorHandler) return
 
-    this.#mouseHandlers.remove(this.#currentItemGeneratorHandler)
+    this.#mouseControlHandles.remove(this.#currentItemGeneratorHandler)
     this.#currentItemGenerator = null
     this.#raycasters.enable(this.#cameraController.raycaster)
   }
@@ -162,8 +164,8 @@ export class CameraController {
     return this.#cameraHandler.changed
   }
 
-  setMouseHandlers(mouseHandlers: MouseHandlers) {
-    mouseHandlers.add({colider: this.#colider, handled: this.#cameraHandler})
+  setMouseHandlers(mouseControlHandles: MouseControlHandles) {
+    mouseControlHandles.add({colider: this.#colider, handled: this.#cameraHandler})
   }
 
   setTargetPositionHandler() {

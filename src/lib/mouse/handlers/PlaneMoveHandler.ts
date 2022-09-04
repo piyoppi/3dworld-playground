@@ -42,7 +42,6 @@ export class PlaneMoveHandler implements MouseControllable {
   }
 
   start(cursorX: number, cursorY: number, _button: MouseButton, cameraCoordinate: Coordinate) {
-
     this.#isStart = true
     this.#cursorModifier.reset(this.manipulateCoordinate.position)
 

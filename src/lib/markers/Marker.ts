@@ -1,13 +1,13 @@
 import type { Coordinate } from "../Coordinate";
 import type { MouseControllable } from "../mouse/MouseControllable";
-import type { ControlHandle, MouseHandlers } from "../mouse/MouseHandlers";
+import type { ControlHandle, MouseControlHandles } from "../mouse/MouseControlHandles";
 import type { Raycaster } from "../Raycaster";
 
 export interface Marker {
   readonly parentCoordinate: Coordinate
   readonly handler: MouseControllable | null
   setHandler: (handler: MouseControllable) => ControlHandle 
-  attach: (raycaster: Raycaster, mouseHandlers: MouseHandlers) => void
-  detach: (raycaster: Raycaster, mouseHandlers: MouseHandlers) => void
+  attach: (raycaster: Raycaster, mouseHandlers: MouseControlHandles) => void
+  detach: (raycaster: Raycaster, mouseHandlers: MouseControlHandles) => void
   setParentCoordinate: (coordinate: Coordinate) => void
 }

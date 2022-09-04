@@ -11,6 +11,7 @@ export interface HaconiwaItemGenerator<T> extends MouseControllable {
   registerOnGeneratedCallback: (callback: HaconiwaItemGeneratedCallback<T>) => void
 }
 
+
 export type HaconiwaItemGeneratedCallback<T> = (generates: Array<HaconiwaWorldItem<T>>) => void
 export type HaconiwaItemGeneratorClonedItem<T> = {
   item: Item,

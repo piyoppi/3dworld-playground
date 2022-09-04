@@ -1,5 +1,5 @@
 import type { Raycaster } from '../Raycaster'
-import type { ControlHandle, MouseHandlers } from "../mouse/MouseHandlers"
+import type { ControlHandle, MouseControlHandles } from "../mouse/MouseControlHandles"
 
 export class HandledColiders {
   #controlHandles: Array<ControlHandle> = []
@@ -12,7 +12,7 @@ export class HandledColiders {
     this.#controlHandles = handles
   }
 
-  attach(raycaster: Raycaster, mouseHandlers: MouseHandlers) {
+  attach(raycaster: Raycaster, mouseHandlers: MouseControlHandles) {
     this.detach(raycaster, mouseHandlers)
 
     this.#controlHandles.forEach(handle => {
@@ -21,7 +21,7 @@ export class HandledColiders {
     })
   }
 
-  detach(raycaster: Raycaster, mouseHandlers: MouseHandlers) {
+  detach(raycaster: Raycaster, mouseHandlers: MouseControlHandles) {
     this.#controlHandles.forEach(handle => {
       raycaster.removeTarget(handle.colider)
       mouseHandlers.remove(handle)
