@@ -12,10 +12,15 @@ export type ControlHandle = {
 type MouseDownCallbackFunction = (x: number, y: number, mouseButton: MouseButton) => void
 type MouseMoveCallbackFunction = (x: number, y: number, mouseButton: MouseButton) => void
 
+type HandleItem = {
+  controlHandle: ControlHandle,
+  startedCallback: MouseControllableCallbackFunction
+}
+
 export class MouseControlHandles {
   #raycasters: Raycasters
-  #handleItems: Array<{controlHandle: ControlHandle, startedCallback: MouseControllableCallbackFunction}>
-  #handlingItems: Array<{controlHandle: ControlHandle, startedCallback: MouseControllableCallbackFunction}>
+  #handleItems: Array<HandleItem>
+  #handlingItems: Array<HandleItem>
   #isStart: boolean = false
   #camera: Camera
   #beforeMouseDownCallbacks: Array<MouseDownCallbackFunction> = []
@@ -109,6 +114,8 @@ export class MouseControlHandles {
   }
 
   private colidedHandleItems() {
-    return this.#handleItems.filter(handledItem => this.#raycasters.colidedColiders.includes(handledItem.controlHandle.colider))
+    return this.#raycasters.colidedColiders
+      .map(colidedColider => this.#handleItems.find(handleItem => handleItem.controlHandle.colider === colidedColider))
+      .filter((item): item is HandleItem => !!item)
   }
 }

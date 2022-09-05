@@ -18,7 +18,6 @@ import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
 import { CursorSnapColiderModifier } from "../../../../lib/mouse/handlers/cursorModifiers/CursorSnapColiderModifier.js"
 
 export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements HaconiwaItemGenerator<T> {
-  #itemGenerator: LineRenderingItemGenerator<T>
   #onGeneratedCallbacks: Array<HaconiwaItemGeneratedCallback<T>> = []
   #raycaster: Raycaster
   #markerRaycaster: Raycaster
@@ -27,14 +26,13 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
   #endedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   private original: HaconiwaItemGeneratorClonedItem<T> | null = null
   #isStarted = false
-
-  #markers: Array<Marker> = []
+  #renderer
 
   constructor(renderer: Renderer<T>, raycaster: Raycaster, markerRaycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) {
     this.#raycaster = raycaster
     this.#markerRaycaster = markerRaycaster
-    this.#itemGenerator = new LineRenderingItemGenerator(renderer)
     this.#renderingObjectBuilder = renderingObjectBuilder
+    this.#renderer = renderer
   }
 
   get isStart() {
@@ -61,6 +59,7 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
     if (!this.#raycaster.hasColided || this.#isStarted) return
     this.#isStarted = true
 
+    const itemGenerator = new LineRenderingItemGenerator(this.#renderer)
     const lineGenerator = new LineSegmentGenerator()
     const startPosition = this.#markerRaycaster.colidedDetails[0]?.colider.parentCoordinate?.position || this.#raycaster.colidedDetails[0].position
     lineGenerator.setStartPosition(startPosition)
@@ -71,27 +70,27 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
     const item = new Item()
     const line = lineGenerator.getLine()
 
-    this.#markers = line.controlPoints.map((point, index) => {
+    const markers = line.controlPoints.map((point, index) => {
       const marker = new CenterMarker(0.5)
       const handler = new PlaneMoveHandler(marker.parentCoordinate, this.#raycaster)
       const controlHandle = marker.setHandler(handler)
       handler.setCursorModifier(new CursorSnapColiderModifier(this.#markerRaycaster, [controlHandle.colider]))
       marker.parentCoordinate.position = point
-      marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#itemGenerator.renderer)
+      marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, itemGenerator.renderer)
       marker.parentCoordinate.setUpdateCallback(() => {
         this.#isStarted = true
         line.setControlPoint(index, marker.parentCoordinate.position)
         const generated = lineItemGenerator.update(line)
-        this.#itemGenerator.update(generated, item.parentCoordinate)
+        itemGenerator.update(generated, item.parentCoordinate)
       })
       return marker
     }) || []
 
-    this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], this.#markers)]))
+    this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], markers)]))
 
     this.#startedCallbacks.call()
 
-    this.#markers[1]?.handler?.start(x, y, button, cameraCoordinate)
+    markers[1]?.handler?.start(x, y, button, cameraCoordinate)
 
     return true
   }
