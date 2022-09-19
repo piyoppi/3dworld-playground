@@ -5,7 +5,7 @@ import { MouseCapturer } from '../lib/mouse/MouseCapturer.js'
 import { makeItem } from '../lib/ItemFactory.js'
 import { ThreeFactory as Factory } from '../lib/threeAdapter/ThreeFactory.js'
 import { Coordinate } from '../lib/Coordinate.js'
-import { Raycaster, ItemRaycaster } from '../lib/Raycaster.js'
+import { Raycaster } from '../lib/Raycaster.js'
 import { BoxColider } from '../lib/Colider.js'
 import { setRenderer } from '../lib/Debugger.js'
 import { DirectionalMarker } from '../lib/markers/DirectionalMarker.js'
@@ -21,7 +21,7 @@ renderer.initialize(window.innerWidth, window.innerHeight)
 
 setRenderer(renderer)
 
-const raycaster = new ItemRaycaster<Item>(new Raycaster(renderer.camera))
+const raycaster = new Raycaster(renderer.camera)
 
 async function run() {
   const lightCoordinate = new Coordinate()
@@ -44,7 +44,7 @@ async function run() {
     bones.forEach(bone => renderer.addItem(bone.item.parentCoordinate, bone.renderingObject))
     bones.forEach(bone => {
       const colider = new BoxColider(0.03, 0.03, 0.03, bone.item.parentCoordinate)  
-      raycaster.addTarget(colider, bone.item)
+      raycaster.addTarget(colider)
     })
 
     const primitiveRenderingObjectBuilder = factory.makeRenderingObjectBuilder()
@@ -66,9 +66,9 @@ async function run() {
 
       // raycast
       const items = raycaster.check(pos[0], pos[1])
-      items.forEach(item => renderer.setColor(item.parentCoordinate, {r: 255, g: 255, b: 0}))
+      items.forEach(item => item.parentCoordinate && renderer.setColor(item.parentCoordinate, {r: 255, g: 255, b: 0}))
 
-      if (items.length > 0) {
+      if (items.length > 0 && items[0].parentCoordinate) {
         markerX.setParentCoordinate(items[0].parentCoordinate)
         markerY.setParentCoordinate(items[0].parentCoordinate)
         markerZ.setParentCoordinate(items[0].parentCoordinate)

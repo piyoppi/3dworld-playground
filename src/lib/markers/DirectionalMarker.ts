@@ -1,4 +1,4 @@
-import { BoxColider } from "../Colider.js"
+import { BoxColider, Colider } from "../Colider.js"
 import { Coordinate } from "../Coordinate.js"
 import { Item } from "../Item.js"
 import { HandledColiders } from "./HandledColiders.js"
@@ -9,7 +9,7 @@ import type { Raycaster } from "../Raycaster.js"
 import type { Renderer } from "../Renderer.js"
 import type { RenderingObjectBuilder } from '../RenderingObjectBuilder.js'
 import type { RGBColor } from "../helpers/color.js"
-import { Marker } from "./Marker.js"
+import type { Marker } from "./Marker"
 
 export class DirectionalMarker implements Marker {
   #direction
@@ -17,6 +17,7 @@ export class DirectionalMarker implements Marker {
   #radius: number
   #parentCoordinate: Coordinate
   #handledColiders: HandledColiders
+  #colider: Colider
 
   constructor(norm: number, radius: number, direction: VectorArray3) {
     this.#direction = new Item()
@@ -27,22 +28,28 @@ export class DirectionalMarker implements Marker {
 
     this.#parentCoordinate = new Coordinate()
     this.#handledColiders = new HandledColiders()
+    this.#colider = new BoxColider(this.#radius, this.#norm, this.#radius, this.#direction.parentCoordinate)
   }
 
   get parentCoordinate() {
     return this.#parentCoordinate
   }
 
-  get handler() {
-    return this.#handledColiders.handlers[0]?.handled || null
+  get handlers() {
+    return this.#handledColiders.handlers
   }
 
-  setHandler(handler: MouseControllable) {
-    const colider = new BoxColider(this.#radius, this.#norm, this.#radius, this.#direction.parentCoordinate)
-    const handledColider = {colider, handled: handler}
-    this.#handledColiders.setHandles([handledColider])
+  get colider() {
+    return this.#colider
+  }
 
-    return handledColider
+  setHandlers(handlers: MouseControllable[]) {
+    //const colider = new BoxColider(this.#radius, this.#norm, this.#radius, this.#direction.parentCoordinate)
+    const handles = handlers.map(handler => ({colider: this.#colider, handled: handler}))
+
+    this.#handledColiders.setHandles(handles)
+
+    return this.#colider
   }
 
   attach(raycaster: Raycaster, interactionHandler: MouseControlHandles) {

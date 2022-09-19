@@ -1,4 +1,4 @@
-import { BallColider } from "../Colider.js"
+import { BallColider, Colider } from "../Colider.js"
 import { Coordinate } from "../Coordinate.js"
 import { MouseControllable } from "../mouse/MouseControllable.js"
 import { Raycaster } from "../Raycaster.js"
@@ -13,12 +13,14 @@ export class CenterMarker implements Marker {
   #parentCoordinate: Coordinate
   #handledColiders: HandledColiders
   #radius: number
+  #colider: Colider
 
   constructor(radius: number) {
     this.#parentCoordinate = new Coordinate()
     this.setParentCoordinate(new Coordinate())
     this.#handledColiders= new HandledColiders()
     this.#radius = radius
+    this.#colider = new BallColider(this.#radius, this.#parentCoordinate)
   }
 
   get radius() {
@@ -29,17 +31,20 @@ export class CenterMarker implements Marker {
     return this.#parentCoordinate
   }
 
-  get handler() {
-    return this.#handledColiders.handlers[0]?.handled || null
+  get handlers() {
+    return this.#handledColiders.handlers
   }
 
-  setHandler(handler: MouseControllable) {
-    const colider = new BallColider(this.#radius, this.#parentCoordinate)
-    const handle = {colider, handled: handler}
+  get colider() {
+    return this.#colider
+  }
 
-    this.#handledColiders.setHandles([handle])
+  setHandlers(handlers: MouseControllable[]) {
+    const handles = handlers.map(handler => ({colider: this.#colider, handled: handler}))
 
-    return handle
+    this.#handledColiders.setHandles(handles)
+
+    return this.#colider
   }
 
   attach(raycaster: Raycaster, interactionHandler: MouseControlHandles) {
@@ -53,6 +58,7 @@ export class CenterMarker implements Marker {
   setParentCoordinate(coordinate: Coordinate) {
     if (coordinate) {
       this.#parentCoordinate = coordinate
+      this.#colider = new BallColider(this.#radius, this.#parentCoordinate)
     }
   }
 

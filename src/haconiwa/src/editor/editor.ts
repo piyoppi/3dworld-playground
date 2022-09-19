@@ -1,7 +1,13 @@
 import type { HaconiwaRenderer } from '../renderer'
 import type { MouseCapturer } from '../../../lib/mouse/MouseCapturer'
 import type { VectorArray3 } from '../../../lib/Matrix'
-import type { HaconiwaItemGeneratorFactory, HaconiwaItemGenerator, HaconiwaItemGeneratorClonedItem } from './itemGenerators/HaconiwaItemGenerator'
+import {
+  HaconiwaItemGeneratorFactory,
+  HaconiwaItemGenerator,
+  HaconiwaItemGeneratorClonedItem,
+  HaconiwaItemGeneratorLineConnectable,
+  isHaconiwaItemGeneratorLineConnectable
+} from './itemGenerators/HaconiwaItemGenerator.js'
 import type { Clonable } from "../clonable"
 import type { Camera } from '../../../lib/Camera'
 import type { RenderingObjectBuilder } from '../../../lib/RenderingObjectBuilder'
@@ -13,6 +19,8 @@ import { HaconiwaWorld } from '../world.js'
 import { ControlHandle, MouseControlHandles } from '../../../lib/mouse/MouseControlHandles.js'
 import { InfiniteColider } from '../../../lib/Colider.js'
 import { Raycasters } from '../../../lib/Raycasters.js'
+import { ColiderItemMap } from '../../../lib/ColiderItemMap.js'
+import type { LineItemConnection } from '../../../lib/LineItem'
 
 type Plane = {
   position: VectorArray3,
@@ -27,6 +35,7 @@ export class HaconiwaEditor<T extends Clonable<T>> {
   #renderer: HaconiwaRenderer<T>
   #mouseCapturer: MouseCapturer
   #raycasters = new Raycasters()
+  #coliderConnectionMap = new ColiderItemMap<LineItemConnection>()
 
   #currentItemGenerator: HaconiwaItemGenerator<T> | null = null
   #currentItemGeneratorHandler: ControlHandle | null = null
@@ -78,9 +87,15 @@ export class HaconiwaEditor<T extends Clonable<T>> {
       this.#renderingObjectBuilder
     )
 
+    if (isHaconiwaItemGeneratorLineConnectable(this.#currentItemGenerator)) {
+      this.#currentItemGenerator.setConnectorColiderMap(this.#coliderConnectionMap)
+    }
+
     this.#currentItemGenerator.registerOnGeneratedCallback(generates => {
       generates.forEach(item => {
-        item.markers.forEach(marker => marker.attach(this.#markerRaycaster, this.#mouseControlHandles))
+        item.markers.forEach(marker => {
+          marker.attach(this.#markerRaycaster, this.#mouseControlHandles)
+        })
         this.#world.addItem(item)
       })
     })

@@ -2,7 +2,7 @@ import { LookAtCameraHandler } from '../lib/LookAtCameraHandler.js'
 import { MouseCapturer } from '../lib/mouse/MouseCapturer.js'
 import { ThreeFactory as Factory } from '../lib/threeAdapter/ThreeFactory.js'
 import { Coordinate } from '../lib/Coordinate.js'
-import { Raycaster, ItemRaycaster } from '../lib/Raycaster.js'
+import { Raycaster } from '../lib/Raycaster.js'
 import { DirectionalMarker } from '../lib/markers/DirectionalMarker.js'
 import { ThreeRenderingObject } from '../lib/threeAdapter/ThreeRenderer.js'
 import { Item } from '../lib/Item.js'
@@ -26,7 +26,7 @@ const renderer = factory.makeRenderer({fov: 100, aspect: window.innerWidth / win
 const primitiveRenderingObjectBuilder = factory.makeRenderingObjectBuilder()
 renderer.initialize(window.innerWidth, window.innerHeight)
 
-const raycaster = new ItemRaycaster<Item>(new Raycaster(renderer.camera))
+const raycaster = new Raycaster(renderer.camera)
 const axesRaycaster = new Raycaster(renderer.camera)
 const raycasters = new Raycasters()
 raycasters.add(axesRaycaster)
@@ -46,7 +46,7 @@ for (let x = -3; x < 3; x+=0.2) {
     box.parentCoordinate.y = y
 
     renderer.addItem(box.parentCoordinate, boxRenderingObject)
-    raycaster.addTarget(colider, box)
+    raycaster.addTarget(colider)
   }
 }
 
@@ -65,17 +65,19 @@ function captureMouseClicked() {
   raycaster.check(pos[0], pos[1])
   axesRaycaster.check(pos[0], pos[1])
 
-  if (axesRaycaster.colidedColiders.length === 0 && raycaster.colidedItems.length > 0) {
-    const box = raycaster.colidedItems[0]
+  if (axesRaycaster.colidedColiders.length === 0 && raycaster.colidedColiders.length > 0) {
+    const box = raycaster.colidedColiders[0]
+    if (!box.parentCoordinate) return
+
     markerX.setParentCoordinate(box.parentCoordinate)
     markerY.setParentCoordinate(box.parentCoordinate)
     markerZ.setParentCoordinate(box.parentCoordinate)
     markerX.detach(axesRaycaster, mouseInteractionHandler)
     markerY.detach(axesRaycaster, mouseInteractionHandler)
     markerZ.detach(axesRaycaster, mouseInteractionHandler)
-    markerX.setHandler(new DirectionalMoveHandler(box.parentCoordinate, [1, 0, 0], 0.01))
-    markerY.setHandler(new DirectionalMoveHandler(box.parentCoordinate, [0, 1, 0], 0.01))
-    markerZ.setHandler(new DirectionalMoveHandler(box.parentCoordinate, [0, 0, 1], 0.01))
+    markerX.setHandlers([new DirectionalMoveHandler(box.parentCoordinate, [1, 0, 0], 0.01)])
+    markerY.setHandlers([new DirectionalMoveHandler(box.parentCoordinate, [0, 1, 0], 0.01)])
+    markerZ.setHandlers([new DirectionalMoveHandler(box.parentCoordinate, [0, 0, 1], 0.01)])
     markerX.attach(axesRaycaster, mouseInteractionHandler)
     markerY.attach(axesRaycaster, mouseInteractionHandler)
     markerZ.attach(axesRaycaster, mouseInteractionHandler)

@@ -1,6 +1,4 @@
-import { CursorTrackDifferentialCalculator } from "../../mouse/CursorTrackDifferenceCalculator.js"
 import type { MouseButton, MouseControllable, MouseControllableCallbackFunction } from "../../mouse/MouseControllable"
-import { CursorDirectionScreenToWorldConverter } from "./CursorDirectionScreenToWorldConverter.js"
 import { CursorNoneModifier } from "./cursorModifiers/CursorNoneModifier.js"
 import type { CursorModifier } from "./cursorModifiers/CursorModifier"
 import type { Coordinate } from "../../Coordinate.js"

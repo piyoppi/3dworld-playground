@@ -5,7 +5,7 @@ export class HandledColiders {
   #controlHandles: Array<ControlHandle> = []
 
   get handlers() {
-    return this.#controlHandles
+    return this.#controlHandles.map(item => item.handled)
   }
 
   setHandles(handles: Array<ControlHandle>) {

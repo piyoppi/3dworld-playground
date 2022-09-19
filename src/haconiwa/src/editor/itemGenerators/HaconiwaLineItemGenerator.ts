@@ -1,23 +1,25 @@
-import { Item } from "../../../../lib/Item.js"
+import { LineItem, LineItemConnection } from "../../../../lib/LineItem.js"
 import type { Raycaster } from "../../../../lib/Raycaster"
 import type { Renderer } from "../../../../lib/Renderer"
 import { LineRenderingItemGenerator } from '../../../../lib/itemGenerators/lineItemGenerator/LineRenderingItemGenerator.js'
 import { LineSegmentGenerator } from '../../../../lib/itemGenerators/lineItemGenerator/lineGenerator/LineSegmentGenerator.js'
 import type { Clonable } from "../../clonable"
-import type { HaconiwaItemGenerator, HaconiwaItemGeneratorFactory, HaconiwaItemGeneratorClonedItem, HaconiwaItemGeneratedCallback } from "./HaconiwaItemGenerator"
+import type { HaconiwaItemGenerator, HaconiwaItemGeneratorFactory, HaconiwaItemGeneratorClonedItem, HaconiwaItemGeneratedCallback, HaconiwaItemGeneratorLineConnectable } from "./HaconiwaItemGenerator"
 import { Coordinate } from "../../../../lib/Coordinate.js"
 import { HaconiwaWorldItem } from "../../world.js"
 import { CenterMarker } from "../../../../lib/markers/CenterMarker.js"
 import { PlaneMoveHandler } from "../../../../lib/mouse/handlers/PlaneMoveHandler.js"
-import { Vec3 } from "../../../../lib/Matrix.js"
 import { LineItemGenerator } from "../../../../lib/itemGenerators/lineItemGenerator/LineItemGenerator.js"
 import { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder.js"
-import { Marker } from "../../../../lib/markers/Marker.js"
-import { MouseButton, MouseControllableCallbackFunction } from "../../../../lib/mouse/MouseControllable.js"
+import { MouseButton, MouseControllable, MouseControllableCallbackFunction } from "../../../../lib/mouse/MouseControllable.js"
 import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
 import { CursorSnapColiderModifier } from "../../../../lib/mouse/handlers/cursorModifiers/CursorSnapColiderModifier.js"
+import { LineEdge } from "../../../../lib/lines/lineEdge.js"
+import { ColiderItemMap } from "../../../../lib/ColiderItemMap.js"
+import { JointHandler } from "../../../../lib/mouse/handlers/JointHandler.js"
+import { MouseControlHandles } from "../../../../lib/mouse/MouseControlHandles.js"
 
-export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements HaconiwaItemGenerator<T> {
+export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorLineConnectable {
   #onGeneratedCallbacks: Array<HaconiwaItemGeneratedCallback<T>> = []
   #raycaster: Raycaster
   #markerRaycaster: Raycaster
@@ -27,6 +29,7 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
   private original: HaconiwaItemGeneratorClonedItem<T> | null = null
   #isStarted = false
   #renderer
+  #coliderConnectionMap: ColiderItemMap<LineItemConnection> | null = null
 
   constructor(renderer: Renderer<T>, raycaster: Raycaster, markerRaycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) {
     this.#raycaster = raycaster
@@ -37,6 +40,10 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
 
   get isStart() {
     return this.#isStarted
+  }
+
+  setConnectorColiderMap(coliderConnectionMap: ColiderItemMap<LineItemConnection>) {
+    this.#coliderConnectionMap = coliderConnectionMap
   }
 
   setStartedCallback(func: MouseControllableCallbackFunction) {
@@ -67,15 +74,23 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
     lineGenerator.setEndPosition(this.#raycaster.colidedDetails[0].position)
 
     const lineItemGenerator = new LineItemGenerator<Coordinate, T>(() => this.itemFactory(), 1)
-    const item = new Item()
     const line = lineGenerator.getLine()
-
-    const markers = line.controlPoints.map((point, index) => {
+    const item = new LineItem(line)
+    const markers = item.connections.map((connection, index) => {
       const marker = new CenterMarker(0.5)
-      const handler = new PlaneMoveHandler(marker.parentCoordinate, this.#raycaster)
-      const controlHandle = marker.setHandler(handler)
-      handler.setCursorModifier(new CursorSnapColiderModifier(this.#markerRaycaster, [controlHandle.colider]))
-      marker.parentCoordinate.position = point
+      const moveHandler = new PlaneMoveHandler(marker.parentCoordinate, this.#raycaster)
+      const handlers: MouseControllable[] = []
+
+      if (this.#coliderConnectionMap) {
+        handlers.push(new JointHandler(connection.edge, item.connections, this.#markerRaycaster, this.#coliderConnectionMap))
+        this.#coliderConnectionMap.add(marker.colider, connection)
+      }
+      handlers.push(moveHandler)
+
+      marker.setHandlers(handlers)
+
+      moveHandler.setCursorModifier(new CursorSnapColiderModifier(this.#markerRaycaster, [marker.colider]))
+      marker.parentCoordinate.position = connection.edge.position
       marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, itemGenerator.renderer)
       marker.parentCoordinate.setUpdateCallback(() => {
         this.#isStarted = true
@@ -83,6 +98,7 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
         const generated = lineItemGenerator.update(line)
         itemGenerator.update(generated, item.parentCoordinate)
       })
+
       return marker
     }) || []
 
@@ -90,7 +106,8 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
 
     this.#startedCallbacks.call()
 
-    markers[1]?.handler?.start(x, y, button, cameraCoordinate)
+    markers[1]?.handlers[0].start(x, y, button, cameraCoordinate)
+    markers[1]?.handlers[1].start(x, y, button, cameraCoordinate)
 
     return true
   }

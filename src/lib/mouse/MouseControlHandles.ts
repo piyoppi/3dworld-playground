@@ -115,7 +115,8 @@ export class MouseControlHandles {
 
   private colidedHandleItems() {
     return this.#raycasters.colidedColiders
-      .map(colidedColider => this.#handleItems.find(handleItem => handleItem.controlHandle.colider === colidedColider))
+      .map(colidedColider => this.#handleItems.filter(handleItem => handleItem.controlHandle.colider === colidedColider))
+      .flat()
       .filter((item): item is HandleItem => !!item)
   }
 }

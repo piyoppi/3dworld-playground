@@ -1,14 +1,28 @@
 import { Coordinate } from './Coordinate.js'
 import { Vec3, Mat3, Mat4, VectorArray3 } from './Matrix.js'
 import { Ray } from './Ray.js'
+import { v4 as uuidv4 } from 'uuid'
 
 export interface Colider {
+  readonly uuid: string
   checkRay(ray: Ray): number
   checkColider(colider: Colider): VectorArray3
   readonly parentCoordinate?: Coordinate
 }
 
-export class InfiniteColider implements Colider {
+export class ColiderBase {
+  #uuid: string
+
+  constructor() {
+    this.#uuid = uuidv4()
+  }
+
+  get uuid() {
+    return this.#uuid
+  }
+}
+
+export class InfiniteColider extends ColiderBase implements Colider {
   checkRay(_ray: Ray): number {
     return 0.01
   }
@@ -18,11 +32,12 @@ export class InfiniteColider implements Colider {
   }
 }
 
-export class BallColider implements Colider {
+export class BallColider extends ColiderBase implements Colider {
   #radius = 0
   #parentCoordinate: Coordinate
 
   constructor(radius: number, parentCoordinate: Coordinate) {
+    super()
     this.#radius = radius  
     this.#parentCoordinate = parentCoordinate
   }
@@ -64,11 +79,12 @@ export class BallColider implements Colider {
   }
 }
 
-export class BoxColider implements Colider {
+export class BoxColider extends ColiderBase implements Colider {
   #halfDimensions: VectorArray3 = [0, 0, 0]
   #parentCoordinate: Coordinate
 
   constructor(width: number, height: number, depth: number, parentCoordinate: Coordinate) {
+    super()
     this.#halfDimensions = [
       width / 2.0,
       height / 2.0,
@@ -121,11 +137,12 @@ export class BoxColider implements Colider {
   }
 }
 
-export class PlaneColider implements Colider {
+export class PlaneColider extends ColiderBase implements Colider {
   #norm: VectorArray3
   #position: VectorArray3
 
   constructor(position: VectorArray3, norm: VectorArray3) {
+    super()
     this.#position = position
     this.#norm = norm
   }

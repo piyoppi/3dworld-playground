@@ -1,18 +1,27 @@
 import { Line } from "./line.js"
 import { Vec3, VectorArray3 } from "../Matrix.js"
+import { LineEdge } from "./lineEdge.js"
 
 export class LineSegment implements Line {
   #points: VectorArray3[]
+  #start: LineEdge 
+  #end: LineEdge
   #length = 0
   #direction: VectorArray3 = [0, 0, 0]
 
   constructor(start: VectorArray3, end: VectorArray3) {
     this.#points = [start, end]
+    this.#start = new LineEdge(start, this)
+    this.#end = new LineEdge(end, this)
     this.#setup()
   }
 
   get controlPoints() {
     return this.#points
+  }
+
+  get edges(): [LineEdge, LineEdge] {
+    return [this.#start, this.#end]
   }
 
   get length() {
