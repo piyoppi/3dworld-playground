@@ -36,6 +36,10 @@ export class LineItemConnection {
     return this.#edge
   }
 
+  isConnected(edge: LineEdge) {
+    return this.#connectedEdges.indexOf(edge) >= 0
+  }
+
   connect(edge: LineEdge) {
     this.#connectedEdges.push(edge)
   }

@@ -13,6 +13,7 @@ export class JointHandler implements MouseControllable {
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   #edge: LineEdge
   #ignoredConnections: LineItemConnection[]
+  #connecting: LineItemConnection[] = []
 
   constructor(edge: LineEdge, ignoredConnections: LineItemConnection[], raycaster: Raycaster, coliderItemMap: ColiderItemMap<LineItemConnection>) {
     this.#raycaster = raycaster
@@ -36,23 +37,37 @@ export class JointHandler implements MouseControllable {
   start(cursorX: number, cursorY: number, _button: MouseButton, cameraCoordinate: Coordinate) {
     this.#isStart = true
     this.#startedCallbacks.call()
-    console.log('start_joint')
   }
 
   move() {
     if (!this.#isStart) return
-    this.#raycaster.colidedColiders.forEach(colider => {
-      const item = this.#coliderItemMap.getItem(colider)
 
-      if (item && this.#ignoredConnections.indexOf(item) < 0) {
-        item?.connect(this.#edge)
-        console.log('connected', item, this.#edge);
+    const connections = this.#raycaster.colidedColiders.map(colider => {
+      const connection = this.#coliderItemMap.getItem(colider)
+
+      if (!connection) return null
+      if (this.#ignoredConnections.indexOf(connection) >= 0) return null
+
+      return connection
+    }).filter((item): item is LineItemConnection => !!item)
+
+    connections.forEach(connection => {
+      if (!connection.isConnected(this.#edge)) {
+        connection.connect(this.#edge)
+        this.#connecting.push(connection)
+        console.log('connect')
       }
+    })
+
+    this.#connecting.forEach(connection => {
+      if (connections.indexOf(connection) >= 0 || !connection.isConnected(this.#edge)) return
+
+      connection.disconnect(this.#edge)
+      console.log('disconnect')
     })
   }
 
   end() {
     this.#isStart = false
-    console.log('end_joint')
   }
 }
