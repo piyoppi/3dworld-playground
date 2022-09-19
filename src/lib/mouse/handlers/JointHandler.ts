@@ -11,14 +11,15 @@ export class JointHandler implements MouseControllable {
   #raycaster: Raycaster
   #coliderItemMap: ColiderItemMap<LineItemConnection>
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
-  #edge: LineEdge
+  #endedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
+  #connection: LineItemConnection
   #ignoredConnections: LineItemConnection[]
   #connecting: LineItemConnection[] = []
 
-  constructor(edge: LineEdge, ignoredConnections: LineItemConnection[], raycaster: Raycaster, coliderItemMap: ColiderItemMap<LineItemConnection>) {
+  constructor(connection: LineItemConnection, ignoredConnections: LineItemConnection[], raycaster: Raycaster, coliderItemMap: ColiderItemMap<LineItemConnection>) {
     this.#raycaster = raycaster
     this.#coliderItemMap = coliderItemMap
-    this.#edge = edge
+    this.#connection = connection
     this.#ignoredConnections = ignoredConnections
   }
 
@@ -32,6 +33,14 @@ export class JointHandler implements MouseControllable {
 
   removeStartedCallback(func: MouseControllableCallbackFunction) {
     this.#startedCallbacks.remove(func)
+  }
+
+  setEndedCallback(func: MouseControllableCallbackFunction) {
+    this.#endedCallbacks.add(func)
+  }
+
+  removeEndedCallback(func: MouseControllableCallbackFunction) {
+    this.#endedCallbacks.remove(func)
   }
 
   start(cursorX: number, cursorY: number, _button: MouseButton, cameraCoordinate: Coordinate) {
@@ -52,22 +61,23 @@ export class JointHandler implements MouseControllable {
     }).filter((item): item is LineItemConnection => !!item)
 
     connections.forEach(connection => {
-      if (!connection.isConnected(this.#edge)) {
-        connection.connect(this.#edge)
+      if (!connection.isConnected(this.#connection)) {
+        connection.connect(this.#connection)
         this.#connecting.push(connection)
         console.log('connect')
       }
     })
 
     this.#connecting.forEach(connection => {
-      if (connections.indexOf(connection) >= 0 || !connection.isConnected(this.#edge)) return
+      if (connections.indexOf(connection) >= 0 || !connection.isConnected(this.#connection)) return
 
-      connection.disconnect(this.#edge)
+      connection.disconnect(this.#connection)
       console.log('disconnect')
     })
   }
 
   end() {
     this.#isStart = false
+    this.#endedCallbacks.call()
   }
 }

@@ -14,10 +14,8 @@ import { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder.j
 import { MouseButton, MouseControllable, MouseControllableCallbackFunction } from "../../../../lib/mouse/MouseControllable.js"
 import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
 import { CursorSnapColiderModifier } from "../../../../lib/mouse/handlers/cursorModifiers/CursorSnapColiderModifier.js"
-import { LineEdge } from "../../../../lib/lines/lineEdge.js"
 import { ColiderItemMap } from "../../../../lib/ColiderItemMap.js"
 import { JointHandler } from "../../../../lib/mouse/handlers/JointHandler.js"
-import { MouseControlHandles } from "../../../../lib/mouse/MouseControlHandles.js"
 
 export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorLineConnectable {
   #onGeneratedCallbacks: Array<HaconiwaItemGeneratedCallback<T>> = []
@@ -79,17 +77,26 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
     const markers = item.connections.map((connection, index) => {
       const marker = new CenterMarker(0.5)
       const moveHandler = new PlaneMoveHandler(marker.parentCoordinate, this.#raycaster)
+      const snapModifier = new CursorSnapColiderModifier(this.#markerRaycaster, [marker.colider])
       const handlers: MouseControllable[] = []
 
       if (this.#coliderConnectionMap) {
-        handlers.push(new JointHandler(connection.edge, item.connections, this.#markerRaycaster, this.#coliderConnectionMap))
+        const jointHandler = new JointHandler(connection, item.connections, this.#markerRaycaster, this.#coliderConnectionMap)
+
+        jointHandler.setEndedCallback(() => {
+          if (connection.connections.length > 0) {
+            moveHandler.clearCursorModifier()
+          }
+        })
+
+        handlers.push(jointHandler)
         this.#coliderConnectionMap.add(marker.colider, connection)
       }
       handlers.push(moveHandler)
 
       marker.setHandlers(handlers)
 
-      moveHandler.setCursorModifier(new CursorSnapColiderModifier(this.#markerRaycaster, [marker.colider]))
+      moveHandler.setCursorModifier(snapModifier)
       marker.parentCoordinate.position = connection.edge.position
       marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, itemGenerator.renderer)
       marker.parentCoordinate.setUpdateCallback(() => {
@@ -106,8 +113,7 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
 
     this.#startedCallbacks.call()
 
-    markers[1]?.handlers[0].start(x, y, button, cameraCoordinate)
-    markers[1]?.handlers[1].start(x, y, button, cameraCoordinate)
+    markers[1]?.handlers.forEach(handler => handler.start(x, y, button, cameraCoordinate))
 
     return true
   }

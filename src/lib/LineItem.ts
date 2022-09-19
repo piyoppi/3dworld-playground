@@ -26,7 +26,7 @@ export class LineItem extends Item {
 
 export class LineItemConnection {
   #edge: LineEdge
-  #connectedEdges: LineEdge[] = []
+  protected _connections: LineItemConnection[] = []
 
   constructor(edge: LineEdge) {
     this.#edge = edge
@@ -36,19 +36,29 @@ export class LineItemConnection {
     return this.#edge
   }
 
-  isConnected(edge: LineEdge) {
-    return this.#connectedEdges.indexOf(edge) >= 0
+  get connections() {
+    return this._connections
   }
 
-  connect(edge: LineEdge) {
-    this.#connectedEdges.push(edge)
+  isConnected(connection: LineItemConnection) {
+    return this._connections.indexOf(connection) >= 0
   }
 
-  disconnect(edge: LineEdge) {
-    const itemIndex = this.#connectedEdges.indexOf(edge)
+  connect(connection: LineItemConnection) {
+    this._connections.push(connection)
+    connection._connections.push(this)
+  }
+
+  disconnect(connection: LineItemConnection) {
+    const itemIndex = this._connections.indexOf(connection)
 
     if (itemIndex < 0) return
 
-    this.#connectedEdges.splice(itemIndex, 1)
+    const pairItemIndex = this._connections[itemIndex]._connections.indexOf(this)
+    if (pairItemIndex >= 0) {
+      this._connections[itemIndex]._connections.splice(pairItemIndex, 1)
+    }
+
+    this._connections.splice(itemIndex, 1)
   }
 }
