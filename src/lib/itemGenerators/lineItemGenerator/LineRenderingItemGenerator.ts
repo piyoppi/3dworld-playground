@@ -15,7 +15,7 @@ export class LineRenderingItemGenerator<T> {
 
   update(lineItemGenerated: LineItemGenerated<Coordinate, T>, parentCoordinate: Coordinate) {
     lineItemGenerated.transformMatrixes.forEach((matrix, index) => {
-      lineItemGenerated.items[index].item.matrix = matrix
+      lineItemGenerated.items[index].item.setMatrix(matrix)
     })
 
     lineItemGenerated.generatedItems.forEach(generated => {

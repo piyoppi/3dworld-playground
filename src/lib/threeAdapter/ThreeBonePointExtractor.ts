@@ -27,7 +27,7 @@ const makeItemsFromTree = (tree: ObjectTree<Object3D>, parentCoordinate: Coordin
   material.depthTest = false
   const renderingObject = new ThreeRenderingObject(new ThreePrimitiveRenderingObject(geometry, material))
 
-  coordinate.matrix = tree.target.matrix.toArray()
+  coordinate.setMatrix(tree.target.matrix.toArray())
 
   const children = tree.children.map(child => makeItemsFromTree(child, coordinate)).flat()
 

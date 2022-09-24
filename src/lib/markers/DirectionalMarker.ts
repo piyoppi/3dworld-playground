@@ -2,7 +2,7 @@ import { BoxColider, Colider } from "../Colider.js"
 import { Coordinate } from "../Coordinate.js"
 import { Item } from "../Item.js"
 import { HandledColiders } from "./HandledColiders.js"
-import { Mat4, Vec3, VectorArray3 } from "../Matrix.js"
+import { Vec3, VectorArray3 } from "../Matrix.js"
 import type { MouseControllable } from "../mouse/MouseControllable.js"
 import type { MouseControlHandles } from "../mouse/MouseControlHandles"
 import type { Raycaster } from "../Raycaster.js"
@@ -24,7 +24,7 @@ export class DirectionalMarker implements Marker {
     this.#norm = norm
     this.#radius = radius
 
-    this.#direction.parentCoordinate.matrix = Mat4.transformYAxis(direction, Vec3.mulScale(direction, norm / 2))
+    this.#direction.parentCoordinate.setDirectionYAxis(direction, Vec3.mulScale(direction, norm / 2))
 
     this.#parentCoordinate = new Coordinate()
     this.#handledColiders = new HandledColiders()
@@ -44,7 +44,6 @@ export class DirectionalMarker implements Marker {
   }
 
   setHandlers(handlers: MouseControllable[]) {
-    //const colider = new BoxColider(this.#radius, this.#norm, this.#radius, this.#direction.parentCoordinate)
     const handles = handlers.map(handler => ({colider: this.#colider, handled: handler}))
 
     this.#handledColiders.setHandles(handles)

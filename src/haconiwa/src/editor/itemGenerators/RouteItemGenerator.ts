@@ -1,34 +1,25 @@
 import { LineItem, LineItemConnection } from "../../../../lib/LineItem.js"
 import type { Raycaster } from "../../../../lib/Raycaster"
 import type { Renderer } from "../../../../lib/Renderer"
-import { LineRenderingItemGenerator } from '../../../../lib/itemGenerators/lineItemGenerator/LineRenderingItemGenerator.js'
 import { LineSegmentGenerator } from '../../../../lib/itemGenerators/lineItemGenerator/lineGenerator/LineSegmentGenerator.js'
 import type { Clonable } from "../../clonable"
-import type {
-  HaconiwaItemGenerator,
-  HaconiwaItemGeneratorFactory,
-  HaconiwaItemGeneratorClonedItem,
-  HaconiwaItemGeneratedCallback,
-  HaconiwaItemGeneratorLineConnectable,
-  HaconiwaItemGeneratorItemClonable
-} from "./HaconiwaItemGenerator"
+import type { HaconiwaItemGenerator, HaconiwaItemGeneratorFactory, HaconiwaItemGeneratorClonedItem, HaconiwaItemGeneratedCallback, HaconiwaItemGeneratorLineConnectable } from "./HaconiwaItemGenerator"
 import { Coordinate } from "../../../../lib/Coordinate.js"
 import { HaconiwaWorldItem } from "../../world.js"
-import { LineItemGenerator } from "../../../../lib/itemGenerators/lineItemGenerator/LineItemGenerator.js"
-import type { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder.js"
+import { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder.js"
 import { MouseButton, MouseControllableCallbackFunction } from "../../../../lib/mouse/MouseControllable.js"
 import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
-import type { ColiderItemMap } from "../../../../lib/ColiderItemMap.js"
+import { ColiderItemMap } from "../../../../lib/ColiderItemMap.js"
 import { makeConnectionMarker } from './MakeConnectionMarker.js'
+import { Vec3 } from "../../../../lib/Matrix.js"
 
-export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorLineConnectable, HaconiwaItemGeneratorItemClonable<T>  {
+export class RouteItemGenerator<T extends Clonable<T>> implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorLineConnectable {
   #onGeneratedCallbacks: Array<HaconiwaItemGeneratedCallback<T>> = []
   #planeRaycaster: Raycaster
   #markerRaycaster: Raycaster
   #renderingObjectBuilder: RenderingObjectBuilder<T>
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   #endedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
-  private original: HaconiwaItemGeneratorClonedItem<T> | null = null
   #isStarted = false
   #renderer
   #coliderConnectionMap: ColiderItemMap<LineItemConnection> | null = null
@@ -48,10 +39,6 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
     this.#coliderConnectionMap = coliderConnectionMap
   }
 
-  setOriginal(original: HaconiwaItemGeneratorClonedItem<T>) {
-    this.original = original
-  }
-
   setStartedCallback(func: MouseControllableCallbackFunction) {
     this.#startedCallbacks.add(func)
   }
@@ -69,26 +56,26 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
 
     this.#isStarted = true
 
-    const itemGenerator = new LineRenderingItemGenerator(this.#renderer)
     const lineGenerator = new LineSegmentGenerator()
-    lineGenerator.setStartPosition(
-      this.#markerRaycaster.colidedDetails[0]?.colider.parentCoordinate?.position || this.#planeRaycaster.colidedDetails[0].position
-    )
-    lineGenerator.setEndPosition(this.#planeRaycaster.colidedDetails[0].position)
-
-    const lineItemGenerator = new LineItemGenerator<Coordinate, T>(() => this.itemFactory(), 1)
+    const startPosition = this.#markerRaycaster.colidedDetails[0]?.colider.parentCoordinate?.position || this.#planeRaycaster.colidedDetails[0].position
+    const endPosition = this.#planeRaycaster.colidedDetails[0].position
+    lineGenerator.setStartPosition(startPosition)
+    lineGenerator.setEndPosition(endPosition)
     const line = lineGenerator.getLine()
     const item = new LineItem(line)
-    const markers = makeConnectionMarker(item, this.#renderer, this.#renderingObjectBuilder, this.#markerRaycaster, this.#planeRaycaster, this.#coliderConnectionMap)
+    item.parentCoordinate.rotateX(-Math.PI / 2)
+    item.parentCoordinate.lookAt(startPosition)
 
+    const markers = makeConnectionMarker(item, this.#renderer, this.#renderingObjectBuilder, this.#markerRaycaster, this.#planeRaycaster, this.#coliderConnectionMap)
     markers.forEach((marker, index) => {
       marker.parentCoordinate.setUpdateCallback(() => {
         item.line.setEdge(index, marker.parentCoordinate.position)
-        const generated = lineItemGenerator.update(item.line)
-        itemGenerator.update(generated, item.parentCoordinate)
-        console.log(item.parentCoordinate.position, item.connections[0].edge.position, item.connections[1].edge.position)
+        this.updateRenderingObject(item)
       })
     })
+
+    const renderingObject = this.makeRenderingObject()
+    this.#renderer.addItem(item.parentCoordinate, renderingObject)
 
     this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], markers)]))
 
@@ -108,18 +95,26 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
     this.#endedCallbacks.call()
   }
 
-  private itemFactory() {
-    if (!this.original) throw new Error('Item and RenderingObject is not set.')
+  private makeRenderingObject() {
+    return this.#renderingObjectBuilder.makePlane(1, 1, {r: 255, g: 255, b: 255})
+  }
 
-    const renderingObject = this.original.renderingObject.clone()
-  
-    return {item: new Coordinate(), renderingObject}
+  private updateRenderingObject(lineItem: LineItem) {
+    lineItem.parentCoordinate.scale([1, lineItem.line.length, 1])
+
+    const direction = lineItem.line.getDirection(0)
+    const position = Vec3.add(lineItem.connections[0].edge.position, Vec3.mulScale(Vec3.subtract(lineItem.connections[1].edge.position, lineItem.connections[0].edge.position), 0.5))
+    lineItem.parentCoordinate.setDirectionYAxis(direction, position)
+
+    if (Vec3.dotprod(lineItem.parentCoordinate.zAxis, [0, 1, 0]) < 0) {
+      lineItem.parentCoordinate.rotateX(Math.PI)
+    }
   }
 }
 
-export class HaconiwaLineItemGeneratorFactory<T extends Clonable<T>> implements HaconiwaItemGeneratorFactory<T> {
+export class RouteItemGeneratorFactory<T extends Clonable<T>> implements HaconiwaItemGeneratorFactory<T> {
   create(renderer: Renderer<T>, raycaster: Raycaster, markerRaycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) {
-    const generator = new HaconiwaLineItemGenerator(renderer, raycaster, markerRaycaster, renderingObjectBuilder)
+    const generator = new RouteItemGenerator(renderer, raycaster, markerRaycaster, renderingObjectBuilder)
 
     return generator
   }

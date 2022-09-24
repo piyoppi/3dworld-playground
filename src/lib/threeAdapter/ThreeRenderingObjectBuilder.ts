@@ -8,7 +8,8 @@ import {
   MeshBasicMaterial,
   Mesh,
   Group,
-  Color
+  Color,
+  PlaneGeometry
 } from 'three'
 import { RGBColor, convertRgbToHex } from '../helpers/color.js'
 
@@ -41,15 +42,22 @@ export class ThreeRenderingObjectBuilder implements RenderingObjectBuilder<Three
   }
 
   makeBox(width: number, height: number, depth: number, color: RGBColor) {
-    const geometry = new BoxGeometry(width, height, depth);
-    const material = new MeshBasicMaterial( {color: convertRgbToHex(color)} );
+    const geometry = new BoxGeometry(width, height, depth)
+    const material = new MeshBasicMaterial( {color: convertRgbToHex(color)} )
 
     return new ThreeRenderingObject(new ThreePrimitiveRenderingObject(geometry, material))
   }
 
   makeSphere(radius: number, color: RGBColor) {
-    const geometry = new SphereGeometry(radius, 16, 16);
-    const material = new MeshBasicMaterial( {color: convertRgbToHex(color)} );
+    const geometry = new SphereGeometry(radius, 16, 16)
+    const material = new MeshBasicMaterial( {color: convertRgbToHex(color)} )
+
+    return new ThreeRenderingObject(new ThreePrimitiveRenderingObject(geometry, material))
+  }
+
+  makePlane(width: number, height: number, color: RGBColor) {
+    const geometry = new PlaneGeometry(width, height)
+    const material = new MeshBasicMaterial( {color: convertRgbToHex(color)} )
 
     return new ThreeRenderingObject(new ThreePrimitiveRenderingObject(geometry, material))
   }

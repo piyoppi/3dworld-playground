@@ -9,7 +9,6 @@ import type { ColiderItemMap } from "../../../../lib/ColiderItemMap"
 import type { LineItemConnection } from "../../../../lib/LineItem"
 
 export interface HaconiwaItemGenerator<T> extends MouseControllable {
-  setOriginal: (original: HaconiwaItemGeneratorClonedItem<T>) => void
   registerOnGeneratedCallback: (callback: HaconiwaItemGeneratedCallback<T>) => void
 }
 
@@ -21,13 +20,20 @@ export type HaconiwaItemGeneratorClonedItem<T> = {
 }
 
 export interface HaconiwaItemGeneratorFactory<T extends Clonable<T>> {
-  create: (renderer: Renderer<T>, raycaster: Raycaster, markerRaycaster: Raycaster, initialClonedItem: HaconiwaItemGeneratorClonedItem<T>, renderingObjectBuilder: RenderingObjectBuilder<T>) => HaconiwaItemGenerator<T>
+  create: (renderer: Renderer<T>, raycaster: Raycaster, markerRaycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) => HaconiwaItemGenerator<T>
 }
 
 export interface HaconiwaItemGeneratorLineConnectable {
   setConnectorColiderMap: (coliderConnectionMap: ColiderItemMap<LineItemConnection>) => void
 }
 
+export interface HaconiwaItemGeneratorItemClonable<T> {
+  setOriginal: (orignal: HaconiwaItemGeneratorClonedItem<T>) => void
+}
+
 export function isHaconiwaItemGeneratorLineConnectable(arg: any): arg is HaconiwaItemGeneratorLineConnectable {
   return 'setConnectorColiderMap' in arg
+}
+export function isHaconiwaItemGeneratorItemClonable<T>(arg: any): arg is HaconiwaItemGeneratorItemClonable<T> {
+  return 'setOriginal' in arg
 }

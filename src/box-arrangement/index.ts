@@ -86,7 +86,7 @@ function captureMouseClicked() {
 
 renderer.setRenderingLoop(() => {
   if (lookAtCameraHandler.changed) {
-    renderer.camera.coordinate.matrix = lookAtCameraHandler.getLookAtMatrix()
+    renderer.camera.coordinate.setMatrix(lookAtCameraHandler.getLookAtMatrix())
   }
 
   renderer.render()

@@ -14,6 +14,10 @@ export class LineEdge {
     return this.#position
   }
 
+  set position(value: VectorArray3) {
+    this.#position = value
+  }
+
   get parent() {
     return this.#parent
   }

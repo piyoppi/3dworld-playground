@@ -6,7 +6,8 @@ import {
   HaconiwaItemGenerator,
   HaconiwaItemGeneratorClonedItem,
   HaconiwaItemGeneratorLineConnectable,
-  isHaconiwaItemGeneratorLineConnectable
+  isHaconiwaItemGeneratorLineConnectable,
+  isHaconiwaItemGeneratorItemClonable
 } from './itemGenerators/HaconiwaItemGenerator.js'
 import type { Clonable } from "../clonable"
 import type { Camera } from '../../../lib/Camera'
@@ -78,17 +79,24 @@ export class HaconiwaEditor<T extends Clonable<T>> {
     this.#mouseControlHandles.captureMouseEvent()
   }
 
-  setItemGeneratorFactory(generator: HaconiwaItemGeneratorFactory<T>, original: HaconiwaItemGeneratorClonedItem<T>) {
+  setItemGeneratorFactory(generator: HaconiwaItemGeneratorFactory<T>, original: HaconiwaItemGeneratorClonedItem<T> | undefined = undefined) {
     this.#currentItemGenerator = generator.create(
       this.#renderer.renderer,
       this.#editingPlane.raycaster,
       this.#markerRaycaster,
-      original,
       this.#renderingObjectBuilder
     )
 
     if (isHaconiwaItemGeneratorLineConnectable(this.#currentItemGenerator)) {
       this.#currentItemGenerator.setConnectorColiderMap(this.#coliderConnectionMap)
+    }
+
+    if (isHaconiwaItemGeneratorItemClonable(this.#currentItemGenerator)) {
+      if (!original) {
+        throw new Error('Original-item is required')
+      }
+
+      this.#currentItemGenerator.setOriginal(original)
     }
 
     this.#currentItemGenerator.registerOnGeneratedCallback(generates => {
@@ -136,7 +144,7 @@ export class HaconiwaEditor<T extends Clonable<T>> {
 
   #renderingLoop() {
     if (this.#cameraController.changed) {
-      this.#renderer.renderer.camera.coordinate.matrix = this.#cameraController.getLookAtMatrix()
+      this.#renderer.renderer.camera.coordinate.setMatrix(this.#cameraController.getLookAtMatrix())
     }
   }
 }

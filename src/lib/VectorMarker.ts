@@ -7,9 +7,7 @@ import { Item } from './Item.js'
 export function makeMarker(position: VectorArray3, direction: VectorArray3): Item {
   const item = makeItem()
 
-  item.parentCoordinate.matrix = Mat4.mulAll([
-    Mat4.transformYAxis(direction, position)
-  ])
+  item.parentCoordinate.setDirectionYAxis(direction, position)
 
   return item
 }
