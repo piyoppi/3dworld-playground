@@ -10,6 +10,7 @@ import type { Renderer } from "../Renderer.js"
 import type { RenderingObjectBuilder } from '../RenderingObjectBuilder.js'
 import type { RGBColor } from "../helpers/color.js"
 import type { Marker } from "./Marker"
+import { RenderingObject } from "../RenderingObject.js"
 
 export class DirectionalMarker implements Marker {
   #direction
@@ -69,7 +70,7 @@ export class DirectionalMarker implements Marker {
     this.#parentCoordinate.addChild(this.#direction.parentCoordinate)
   }
 
-  attachRenderingObject<T>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
+  attachRenderingObject<T extends RenderingObject<T>>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
     renderer.addItem(this.#direction.parentCoordinate, builder.makeVector(this.#norm, this.#radius, color))
   }
 }

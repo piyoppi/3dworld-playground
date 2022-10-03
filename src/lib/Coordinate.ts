@@ -161,6 +161,11 @@ export class Coordinate {
     this.#updatedCallbacks.call()
   }
 
+  setDirectionZAxis(direction: VectorArray3, position: VectorArray3) {
+    this.#matrix = Mat4.transformZAxis(direction, position)
+    this.#updatedCallbacks.call()
+  }
+
   scale(a: VectorArray3) {
     this.#scaleMatrix = Mat4.scale(a[0], a[1], a[2])
     this.#updatedCallbacks.call()

@@ -1,7 +1,8 @@
 import { Coordinate } from "../../lib/Coordinate.js"
 import { Renderer } from "../../lib/Renderer.js"
+import { RenderingObject } from "../../lib/RenderingObject.js"
 
-export class HaconiwaRenderer<T> {
+export class HaconiwaRenderer<T extends RenderingObject<T>> {
   #renderer: Renderer<T>
   #beforeRenderCallback: (() => void) | null = null
 

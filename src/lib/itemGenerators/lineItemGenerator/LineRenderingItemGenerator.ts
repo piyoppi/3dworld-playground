@@ -1,8 +1,9 @@
 import type { Renderer } from "../../Renderer"
 import type { Coordinate } from "../../Coordinate"
 import type { LineItemGenerated } from "./LineItemGenerator"
+import { RenderingObject } from "../../RenderingObject"
 
-export class LineRenderingItemGenerator<T> {
+export class LineRenderingItemGenerator<T extends RenderingObject<T>> {
   #renderer: Renderer<T>
 
   constructor(renderer: Renderer<T>) {

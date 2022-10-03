@@ -22,13 +22,14 @@ import { InfiniteColider } from '../../../lib/Colider.js'
 import { Raycasters } from '../../../lib/Raycasters.js'
 import { ColiderItemMap } from '../../../lib/ColiderItemMap.js'
 import type { LineItemConnection } from '../../../lib/LineItem'
+import { RenderingObject } from '../../../lib/RenderingObject'
 
 type Plane = {
   position: VectorArray3,
   normal: VectorArray3
 }
 
-export class HaconiwaEditor<T extends Clonable<T>> {
+export class HaconiwaEditor<T extends RenderingObject<T>> {
   #cameraController: CameraController
   #mouseControlHandles: MouseControlHandles
   #editingPlane: EditingPlane

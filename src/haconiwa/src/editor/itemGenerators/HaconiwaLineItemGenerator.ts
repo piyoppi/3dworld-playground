@@ -20,8 +20,9 @@ import { MouseButton, MouseControllableCallbackFunction } from "../../../../lib/
 import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
 import type { ColiderItemMap } from "../../../../lib/ColiderItemMap.js"
 import { makeConnectionMarker } from './MakeConnectionMarker.js'
+import { RenderingObject } from "../../../../lib/RenderingObject.js"
 
-export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorLineConnectable, HaconiwaItemGeneratorItemClonable<T>  {
+export class HaconiwaLineItemGenerator<T extends RenderingObject<T>> implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorLineConnectable, HaconiwaItemGeneratorItemClonable<T>  {
   #onGeneratedCallbacks: Array<HaconiwaItemGeneratedCallback<T>> = []
   #planeRaycaster: Raycaster
   #markerRaycaster: Raycaster
@@ -117,7 +118,7 @@ export class HaconiwaLineItemGenerator<T extends Clonable<T>> implements Haconiw
   }
 }
 
-export class HaconiwaLineItemGeneratorFactory<T extends Clonable<T>> implements HaconiwaItemGeneratorFactory<T> {
+export class HaconiwaLineItemGeneratorFactory<T extends RenderingObject<T>> implements HaconiwaItemGeneratorFactory<T> {
   create(renderer: Renderer<T>, raycaster: Raycaster, markerRaycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) {
     const generator = new HaconiwaLineItemGenerator(renderer, raycaster, markerRaycaster, renderingObjectBuilder)
 

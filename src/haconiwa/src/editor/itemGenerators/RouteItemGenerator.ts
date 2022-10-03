@@ -12,8 +12,12 @@ import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
 import { ColiderItemMap } from "../../../../lib/ColiderItemMap.js"
 import { makeConnectionMarker } from './MakeConnectionMarker.js'
 import { Vec3 } from "../../../../lib/Matrix.js"
+import { loadGlb } from '../../../../lib/threeAdapter/ThreeLoaderHelper.js'
+import { ThreeRenderingObject } from "../../../../lib/threeAdapter/ThreeRenderer.js"
+import { Group, Mesh, Scene } from "three"
+import { RenderingObject } from "../../../../lib/RenderingObject.js"
 
-export class RouteItemGenerator<T extends Clonable<T>> implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorLineConnectable {
+export class RouteItemGenerator<T extends RenderingObject<T>> implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorLineConnectable {
   #onGeneratedCallbacks: Array<HaconiwaItemGeneratedCallback<T>> = []
   #planeRaycaster: Raycaster
   #markerRaycaster: Raycaster
@@ -63,7 +67,8 @@ export class RouteItemGenerator<T extends Clonable<T>> implements HaconiwaItemGe
     lineGenerator.setEndPosition(endPosition)
     const line = lineGenerator.getLine()
     const item = new LineItem(line)
-    item.parentCoordinate.rotateX(-Math.PI / 2)
+    //item.parentCoordinate.rotateX(-Math.PI / 2)
+    //item.parentCoordinate.rotateZ(-Math.PI / 2)
     item.parentCoordinate.lookAt(startPosition)
 
     const markers = makeConnectionMarker(item, this.#renderer, this.#renderingObjectBuilder, this.#markerRaycaster, this.#planeRaycaster, this.#coliderConnectionMap)
@@ -74,14 +79,15 @@ export class RouteItemGenerator<T extends Clonable<T>> implements HaconiwaItemGe
       })
     })
 
-    const renderingObject = this.makeRenderingObject()
-    this.#renderer.addItem(item.parentCoordinate, renderingObject)
+    const renderingObject = this.makeRenderingObject().then(renderingObject => {
+    this.#renderer.addItem(item.parentCoordinate, renderingObject as any)
 
     this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], markers)]))
 
     this.#startedCallbacks.call()
 
     markers[1]?.handlers.forEach(handler => handler.start(x, y, button, cameraCoordinate))
+    })
 
     return true
   }
@@ -95,16 +101,21 @@ export class RouteItemGenerator<T extends Clonable<T>> implements HaconiwaItemGe
     this.#endedCallbacks.call()
   }
 
-  private makeRenderingObject() {
+  private async makeRenderingObject() {
+    const gltf = new ThreeRenderingObject(await loadGlb('./assets/road.glb'))
+    const hoge = gltf.item as Group
+    hoge.children.forEach(item => item instanceof Mesh && (item.material.map.repeat.x = 10))
+    return gltf
     return this.#renderingObjectBuilder.makePlane(1, 1, {r: 255, g: 255, b: 255})
   }
 
   private updateRenderingObject(lineItem: LineItem) {
-    lineItem.parentCoordinate.scale([1, lineItem.line.length, 1])
+    //lineItem.parentCoordinate.scale([1, lineItem.line.length, 1])
+    lineItem.parentCoordinate.scale([1, 1, lineItem.line.length])
 
     const direction = lineItem.line.getDirection(0)
     const position = Vec3.add(lineItem.connections[0].edge.position, Vec3.mulScale(Vec3.subtract(lineItem.connections[1].edge.position, lineItem.connections[0].edge.position), 0.5))
-    lineItem.parentCoordinate.setDirectionYAxis(direction, position)
+    lineItem.parentCoordinate.setDirectionZAxis(direction, position)
 
     if (Vec3.dotprod(lineItem.parentCoordinate.zAxis, [0, 1, 0]) < 0) {
       lineItem.parentCoordinate.rotateX(Math.PI)
@@ -112,7 +123,7 @@ export class RouteItemGenerator<T extends Clonable<T>> implements HaconiwaItemGe
   }
 }
 
-export class RouteItemGeneratorFactory<T extends Clonable<T>> implements HaconiwaItemGeneratorFactory<T> {
+export class RouteItemGeneratorFactory<T extends RenderingObject<T>> implements HaconiwaItemGeneratorFactory<T> {
   create(renderer: Renderer<T>, raycaster: Raycaster, markerRaycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) {
     const generator = new RouteItemGenerator(renderer, raycaster, markerRaycaster, renderingObjectBuilder)
 

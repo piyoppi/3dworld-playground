@@ -4,8 +4,9 @@ import type { Renderer } from "../../lib/Renderer"
 import type { Raycaster } from "../../lib/Raycaster"
 import type { MouseControlHandles } from "../../lib/mouse/MouseControlHandles"
 import type { Marker } from "../../lib/markers/Marker"
+import { RenderingObject } from "../../lib/RenderingObject.js"
 
-export class HaconiwaWorld<T> {
+export class HaconiwaWorld<T extends RenderingObject<T>> {
   #items: Array<HaconiwaWorldItem<T>> = []
   
   constructor() {
@@ -21,7 +22,7 @@ export class HaconiwaWorld<T> {
   }
 }
 
-export class HaconiwaWorldItem<T> {
+export class HaconiwaWorldItem<T extends RenderingObject<T>> {
   #coliders: Array<Colider>
   #markers: Array<Marker>
   #item: Item

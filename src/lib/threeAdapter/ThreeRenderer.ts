@@ -1,10 +1,12 @@
-import { WebGLRenderer, Scene, BufferGeometry, Material, Mesh, AmbientLight, Group, GridHelper, Color } from 'three'
+import { WebGLRenderer, Scene, BufferGeometry, Material, Mesh, AmbientLight, Group, GridHelper, Color, Box3 } from 'three'
 import { Renderer } from '../Renderer.js'
 import { ThreeCamera } from './ThreeCamera.js'
 import { syncCoordinate } from './ThreeSyncCoordinate.js'
 import { RGBColor, convertRgbToHex } from '../helpers/color.js'
 import type { Coordinate } from '../Coordinate.js'
 import { MeshBasicMaterial } from 'three'
+import { RenderingObject } from '../RenderingObject.js'
+import { VectorArray3 } from '../Matrix.js'
 
 export class ThreePrimitiveRenderingObject {
   #geometry: BufferGeometry
@@ -29,15 +31,32 @@ export class ThreePrimitiveRenderingObject {
 }
 
 type ThreeRenderingObjectRaw = ThreePrimitiveRenderingObject | Scene | Group
-export class ThreeRenderingObject {
+export class ThreeRenderingObject implements RenderingObject<ThreeRenderingObject> {
   #item: ThreeRenderingObjectRaw
+  #size: VectorArray3 = [0, 0, 0]
 
   constructor(item: ThreeRenderingObjectRaw) {
     this.#item = item
+
+    const boundingBox =
+      (item instanceof ThreePrimitiveRenderingObject) ? item.geometry.boundingBox :
+      new Box3().setFromObject(item)
+
+    if (boundingBox) {
+      this.#size = [
+        boundingBox.max.x - boundingBox.min.x,
+        boundingBox.max.y - boundingBox.min.y,
+        boundingBox.max.z - boundingBox.min.z
+      ]
+    }
   }
 
   get item() {
     return this.#item
+  }
+
+  get size() {
+    return this.#size
   }
 
   clone() {
