@@ -118,12 +118,13 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
   }
 
   private updateRenderingObject(lineItem: LineItem) {
-    lineItem.parentCoordinate.scale([1, 1, lineItem.line.length])
+    const itemScale = lineItem.line.length / (this.original?.renderingObject.size[0] || 1)
+    lineItem.parentCoordinate.scale([1, 1, itemScale])
 
     const renderingItem = this.#renderer.renderingObjectFromCoordinate(lineItem.parentCoordinate)
 
     if (renderingItem) {
-      renderingItem.material.repeat(lineItem.line.length, 1)
+      renderingItem.material.repeat(itemScale, 1)
     }
 
     const direction = lineItem.line.getDirection(0)
