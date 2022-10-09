@@ -1,6 +1,6 @@
 import type { VectorArray3 } from '../Matrix.js'
 import type { RenderingObject } from '../RenderingObject.js'
-import { Scene, BufferGeometry, Material as ThreeMaterialRaw, Mesh, Group, Box3, Material } from 'three'
+import { BufferGeometry, Material as ThreeMaterialRaw, Mesh, Group, Box3 } from 'three'
 import { ThreeMaterial } from './ThreeMaterial.js'
 
 
@@ -25,7 +25,7 @@ export class ThreePrimitiveRenderingObject implements ThreeRenderingObjectRaw {
   }
 
   get material() {
-    return this.#material.raw
+    return this.#materialRaw
   }
 
   get wrappedMaterial() {
@@ -47,7 +47,7 @@ export class ThreeGroup implements ThreeRenderingObjectRaw {
   getMaterials() {
     return this.#group.children
       .map(item => item instanceof Mesh ? item.material : null)
-      .filter((item): item is Material => !!item)
+      .filter((item): item is ThreeMaterialRaw => !!item)
   }
 
   get group() {
@@ -99,4 +99,3 @@ export class ThreeRenderingObject implements RenderingObject<ThreeRenderingObjec
     return new ThreeRenderingObject(this.#item.clone())
   }
 }
-

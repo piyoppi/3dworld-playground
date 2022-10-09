@@ -5,11 +5,9 @@ import {
   HaconiwaItemGeneratorFactory,
   HaconiwaItemGenerator,
   HaconiwaItemGeneratorClonedItem,
-  HaconiwaItemGeneratorLineConnectable,
   isHaconiwaItemGeneratorLineConnectable,
   isHaconiwaItemGeneratorItemClonable
 } from './itemGenerators/HaconiwaItemGenerator.js'
-import type { Clonable } from "../clonable"
 import type { Camera } from '../../../lib/Camera'
 import type { RenderingObjectBuilder } from '../../../lib/RenderingObjectBuilder'
 import type { MouseButton } from '../../../lib/mouse/MouseControllable'
@@ -81,6 +79,8 @@ export class HaconiwaEditor<T extends RenderingObject<T>> {
   }
 
   setItemGeneratorFactory(generator: HaconiwaItemGeneratorFactory<T>, original: HaconiwaItemGeneratorClonedItem<T> | undefined = undefined) {
+    this.clearItemGenerator()
+
     this.#currentItemGenerator = generator.create(
       this.#renderer.renderer,
       this.#editingPlane.raycaster,

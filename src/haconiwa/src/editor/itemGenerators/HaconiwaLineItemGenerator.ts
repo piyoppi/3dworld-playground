@@ -65,6 +65,7 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject<T>> implements 
   }
 
   start(x: number, y: number, button: MouseButton, cameraCoordinate: Coordinate) {
+    if (!this.original) throw new Error('Item and RenderingObject is not set.')
     if (!this.#planeRaycaster.hasColided || this.#isStarted) return
 
     this.#isStarted = true
@@ -76,7 +77,7 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject<T>> implements 
     )
     lineGenerator.setEndPosition(this.#planeRaycaster.colidedDetails[0].position)
 
-    const lineItemGenerator = new LineItemGenerator<Coordinate, T>(() => this.itemFactory(), 1)
+    const lineItemGenerator = new LineItemGenerator<Coordinate, T>(() => this.itemFactory(), this.original.renderingObject.size[0])
     const line = lineGenerator.getLine()
     const item = new LineItem(line)
     const markers = makeConnectionMarker(item, this.#renderer, this.#renderingObjectBuilder, this.#markerRaycaster, this.#planeRaycaster, this.#coliderConnectionMap)

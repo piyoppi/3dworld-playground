@@ -10,6 +10,7 @@ export interface Renderer<T extends RenderingObject<T>> {
   removeItem: (coordinate: Coordinate) => void,
   setColor: (coordinate: Coordinate, color: RGBColor) => void,
   addLight: (coordinate: Coordinate) => void
+  renderingObjectFromCoordinate: (coordinate: Coordinate) => RenderingObject<T> | null
   readonly camera: Camera
   render: () => void,
   mount: () => void,
