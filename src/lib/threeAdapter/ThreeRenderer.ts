@@ -1,68 +1,11 @@
-import { WebGLRenderer, Scene, BufferGeometry, Material, Mesh, AmbientLight, Group, GridHelper, Color, Box3 } from 'three'
+import { WebGLRenderer, Scene, Mesh, AmbientLight, Group, GridHelper, Color } from 'three'
 import { Renderer } from '../Renderer.js'
 import { ThreeCamera } from './ThreeCamera.js'
 import { syncCoordinate } from './ThreeSyncCoordinate.js'
 import { RGBColor, convertRgbToHex } from '../helpers/color.js'
 import type { Coordinate } from '../Coordinate.js'
 import { MeshBasicMaterial } from 'three'
-import { RenderingObject } from '../RenderingObject.js'
-import { VectorArray3 } from '../Matrix.js'
-
-export class ThreePrimitiveRenderingObject {
-  #geometry: BufferGeometry
-  #material: Material
-
-  constructor(geometry: BufferGeometry, material: Material) {
-    this.#geometry = geometry
-    this.#material = material
-  }
-
-  get geometry() {
-    return this.#geometry
-  }
-
-  get material() {
-    return this.#material
-  }
-
-  clone() {
-    return new ThreePrimitiveRenderingObject(this.#geometry.clone(), this.#material.clone())
-  }
-}
-
-type ThreeRenderingObjectRaw = ThreePrimitiveRenderingObject | Scene | Group
-export class ThreeRenderingObject implements RenderingObject<ThreeRenderingObject> {
-  #item: ThreeRenderingObjectRaw
-  #size: VectorArray3 = [0, 0, 0]
-
-  constructor(item: ThreeRenderingObjectRaw) {
-    this.#item = item
-
-    const boundingBox =
-      (item instanceof ThreePrimitiveRenderingObject) ? item.geometry.boundingBox :
-      new Box3().setFromObject(item)
-
-    if (boundingBox) {
-      this.#size = [
-        boundingBox.max.x - boundingBox.min.x,
-        boundingBox.max.y - boundingBox.min.y,
-        boundingBox.max.z - boundingBox.min.z
-      ]
-    }
-  }
-
-  get item() {
-    return this.#item
-  }
-
-  get size() {
-    return this.#size
-  }
-
-  clone() {
-    return new ThreeRenderingObject(this.#item.clone())
-  }
-}
+import { ThreeGroup, ThreePrimitiveRenderingObject, ThreeRenderingObject } from './ThreeRenderingObject.js'
 
 export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
   #renderer: WebGLRenderer
@@ -90,7 +33,13 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
   }
 
   addItem(coordinate: Coordinate, renderingObject: ThreeRenderingObject) {
-    const mesh = (renderingObject.item instanceof Scene || renderingObject.item instanceof Group) ? renderingObject.item : new Mesh(renderingObject.item.geometry, renderingObject.item.material)
+    const mesh = (renderingObject.item instanceof ThreeGroup) ? renderingObject.item.group :
+      (renderingObject.item instanceof ThreePrimitiveRenderingObject) ? new Mesh(renderingObject.item.geometry, renderingObject.item.material) :
+      null
+
+    if (!mesh) {
+      throw new Error('RenderingObject is invalid.')
+    }
 
     if (coordinate.parent) {
       const parentMesh = this.#mapCoordinateIdToRenderingItem.get(coordinate.parent.uuid)

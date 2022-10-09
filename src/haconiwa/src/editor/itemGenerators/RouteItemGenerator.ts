@@ -3,7 +3,14 @@ import type { Raycaster } from "../../../../lib/Raycaster"
 import type { Renderer } from "../../../../lib/Renderer"
 import { LineSegmentGenerator } from '../../../../lib/itemGenerators/lineItemGenerator/lineGenerator/LineSegmentGenerator.js'
 import type { Clonable } from "../../clonable"
-import type { HaconiwaItemGenerator, HaconiwaItemGeneratorFactory, HaconiwaItemGeneratorClonedItem, HaconiwaItemGeneratedCallback, HaconiwaItemGeneratorLineConnectable } from "./HaconiwaItemGenerator"
+import type {
+  HaconiwaItemGenerator,
+  HaconiwaItemGeneratorFactory,
+  HaconiwaItemGeneratorClonedItem,
+  HaconiwaItemGeneratedCallback,
+  HaconiwaItemGeneratorLineConnectable,
+  HaconiwaItemGeneratorItemClonable
+} from "./HaconiwaItemGenerator"
 import { Coordinate } from "../../../../lib/Coordinate.js"
 import { HaconiwaWorldItem } from "../../world.js"
 import { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder.js"
@@ -12,12 +19,10 @@ import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
 import { ColiderItemMap } from "../../../../lib/ColiderItemMap.js"
 import { makeConnectionMarker } from './MakeConnectionMarker.js'
 import { Vec3 } from "../../../../lib/Matrix.js"
-import { loadGlb } from '../../../../lib/threeAdapter/ThreeLoaderHelper.js'
-import { ThreeRenderingObject } from "../../../../lib/threeAdapter/ThreeRenderer.js"
 import { Group, Mesh, Scene } from "three"
 import { RenderingObject } from "../../../../lib/RenderingObject.js"
 
-export class RouteItemGenerator<T extends RenderingObject<T>> implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorLineConnectable {
+export class RouteItemGenerator<T extends RenderingObject<T>> implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorLineConnectable, HaconiwaItemGeneratorItemClonable<T> {
   #onGeneratedCallbacks: Array<HaconiwaItemGeneratedCallback<T>> = []
   #planeRaycaster: Raycaster
   #markerRaycaster: Raycaster
@@ -27,6 +32,7 @@ export class RouteItemGenerator<T extends RenderingObject<T>> implements Haconiw
   #isStarted = false
   #renderer
   #coliderConnectionMap: ColiderItemMap<LineItemConnection> | null = null
+  private original: HaconiwaItemGeneratorClonedItem<T> | null = null
 
   constructor(renderer: Renderer<T>, planeRaycaster: Raycaster, markerRaycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) {
     this.#planeRaycaster = planeRaycaster
@@ -37,6 +43,10 @@ export class RouteItemGenerator<T extends RenderingObject<T>> implements Haconiw
 
   get isStart() {
     return this.#isStarted
+  }
+
+  setOriginal(original: HaconiwaItemGeneratorClonedItem<T>) {
+    this.original = original
   }
 
   setConnectorColiderMap(coliderConnectionMap: ColiderItemMap<LineItemConnection>) {
@@ -102,11 +112,13 @@ export class RouteItemGenerator<T extends RenderingObject<T>> implements Haconiw
   }
 
   private async makeRenderingObject() {
-    const gltf = new ThreeRenderingObject(await loadGlb('./assets/road.glb'))
-    const hoge = gltf.item as Group
-    hoge.children.forEach(item => item instanceof Mesh && (item.material.map.repeat.x = 10))
-    return gltf
-    return this.#renderingObjectBuilder.makePlane(1, 1, {r: 255, g: 255, b: 255})
+    if (!this.original) throw new Error('Item and RenderingObject is not set.')
+
+    const cloned = this.original.renderingObject.clone()
+
+    cloned.material.repeat(cloned.size[0], 1)
+    
+    return cloned
   }
 
   private updateRenderingObject(lineItem: LineItem) {

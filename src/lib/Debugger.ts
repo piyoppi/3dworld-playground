@@ -2,7 +2,7 @@ import { Item } from "./Item.js"
 import { VectorArray3 } from "./Matrix.js"
 import { Renderer } from './Renderer.js'
 import { BoxGeometry, MeshBasicMaterial, Mesh, Object3D, Group } from 'three'
-import { ThreePrimitiveRenderingObject, ThreeRenderingObject } from "./threeAdapter/ThreeRenderer.js"
+import { ThreePrimitiveRenderingObject, ThreeRenderingObject } from "./threeAdapter/ThreeRenderingObject.js"
 
 let commonRenderer: Renderer<ThreeRenderingObject> | null = null
 

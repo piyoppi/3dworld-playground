@@ -1,8 +1,8 @@
-import { ThreeRenderer, ThreeRenderingObject } from './ThreeRenderer.js'
+import { ThreeRenderer } from './ThreeRenderer.js'
+import type { ThreeRenderingObject } from './ThreeRenderingObject.js'
 import { ThreeCamera } from './ThreeCamera.js'
 import { Scene } from 'three'
 import { CameraSetupParameter, ObjectFactory } from '../ObjectFactory.js'
-import { RenderingObjectBuilder } from '../RenderingObjectBuilder.js'
 import { ThreeRenderingObjectBuilder } from './ThreeRenderingObjectBuilder.js'
 
 export class ThreeFactory implements ObjectFactory<ThreeRenderingObject> {

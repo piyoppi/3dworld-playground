@@ -3,7 +3,6 @@ import type { Raycaster } from "../../../../lib/Raycaster"
 import type { Renderer } from "../../../../lib/Renderer"
 import { LineRenderingItemGenerator } from '../../../../lib/itemGenerators/lineItemGenerator/LineRenderingItemGenerator.js'
 import { LineSegmentGenerator } from '../../../../lib/itemGenerators/lineItemGenerator/lineGenerator/LineSegmentGenerator.js'
-import type { Clonable } from "../../clonable"
 import type {
   HaconiwaItemGenerator,
   HaconiwaItemGeneratorFactory,
@@ -87,7 +86,6 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject<T>> implements 
         item.line.setEdge(index, marker.parentCoordinate.position)
         const generated = lineItemGenerator.update(item.line)
         itemGenerator.update(generated, item.parentCoordinate)
-        console.log(item.parentCoordinate.position, item.connections[0].edge.position, item.connections[1].edge.position)
       })
     })
 

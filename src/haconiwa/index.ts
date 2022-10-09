@@ -3,7 +3,7 @@ import { HaconiwaEditor } from "./src/editor/editor.js"
 import { ThreeFactory as Factory } from '../lib/threeAdapter/ThreeFactory.js'
 import { MouseCapturer } from '../lib/mouse/MouseCapturer.js'
 import { HaconiwaWorld } from './src/world.js'
-import { ThreeRenderingObject } from "../lib/threeAdapter/ThreeRenderer.js"
+import { ThreeGroup, ThreeRenderingObject } from "../lib/threeAdapter/ThreeRenderingObject.js"
 import { loadGlb } from '../lib/threeAdapter/ThreeLoaderHelper.js'
 import { Item } from '../lib/Item.js'
 import { ThreeRenderingObjectBuilder } from "../lib/threeAdapter/ThreeRenderingObjectBuilder.js"
@@ -29,13 +29,20 @@ window.addEventListener('keydown', async (e) => {
     case '2':
       editor.setItemGeneratorFactory(
         new HaconiwaLineItemGeneratorFactory(),
-        {item: new Item(), renderingObject: new ThreeRenderingObject(await loadGlb('./assets/road.glb'))}
+        {
+          item: new Item(),
+          renderingObject: new ThreeRenderingObject(new ThreeGroup(await loadGlb('./assets/road.glb')))
+        }
       )
       break
 
     case '3':
       editor.setItemGeneratorFactory(
-        new RouteItemGeneratorFactory()
+        new RouteItemGeneratorFactory(),
+        {
+          item: new Item(),
+          renderingObject: new ThreeRenderingObject(new ThreeGroup(await loadGlb('./assets/road.glb')))
+        }
       )
   }
 })

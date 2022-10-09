@@ -2,7 +2,7 @@ import { getBonesTree, ObjectTree } from './ThreeObjectSelectorHelper.js'
 import { Item } from '../Item.js'
 import { BoxGeometry, MeshBasicMaterial, Object3D, Group } from 'three'
 import { Coordinate } from '../Coordinate.js'
-import { ThreePrimitiveRenderingObject, ThreeRenderingObject } from './ThreeRenderer.js'
+import { ThreePrimitiveRenderingObject, ThreeRenderingObject } from './ThreeRenderingObject.js'
 
 export const extractItemsFromThreeBones = (group: Group, rootItem: Item) => {
   const treeRoots = getBonesTree(group)

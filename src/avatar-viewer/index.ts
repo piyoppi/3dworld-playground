@@ -9,7 +9,7 @@ import { Raycaster } from '../lib/Raycaster.js'
 import { BoxColider } from '../lib/Colider.js'
 import { setRenderer } from '../lib/Debugger.js'
 import { DirectionalMarker } from '../lib/markers/DirectionalMarker.js'
-import { ThreeRenderingObject } from '../lib/threeAdapter/ThreeRenderer.js'
+import { ThreeGroup, ThreeRenderingObject } from '../lib/threeAdapter/ThreeRenderingObject.js'
 import { Item } from '../lib/Item.js'
 import { convertButtonNumberToMouseButtonsType } from '../lib/mouse/ConvertMouseButtonIdToMouseButtonType.js'
 
@@ -33,7 +33,7 @@ async function run() {
   const avatar = makeItem()
   avatar.parentCoordinate.z = 0
   avatar.parentCoordinate.y = -1
-  renderer.addItem(avatar.parentCoordinate, new ThreeRenderingObject(avatarRenderingObject))
+  renderer.addItem(avatar.parentCoordinate, new ThreeRenderingObject(new ThreeGroup(avatarRenderingObject)))
 
   const markerX = new DirectionalMarker(0.1, 0.01, [1, 0, 0])
   const markerY = new DirectionalMarker(0.1, 0.01, [0, 1, 0])
