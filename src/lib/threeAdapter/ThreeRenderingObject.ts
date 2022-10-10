@@ -1,6 +1,6 @@
 import type { VectorArray3 } from '../Matrix.js'
 import type { RenderingObject } from '../RenderingObject.js'
-import { BufferGeometry, Material as ThreeMaterialRaw, Mesh, Group, Box3 } from 'three'
+import { BufferGeometry, Material as ThreeMaterialRaw, Mesh, Group, Box3, Texture, Source } from 'three'
 import { ThreeMaterial } from './ThreeMaterial.js'
 
 
@@ -59,7 +59,24 @@ export class ThreeGroup implements ThreeRenderingObjectRaw {
   }
 
   clone() {
-    return new ThreeGroup(this.#group.clone())
+    const cloned = new ThreeGroup(this.#group.clone())
+
+    cloned.group.children = cloned.group.children.map((item) => {
+      if (item instanceof Mesh) {
+        const originalMaterial = item.material
+        item.material = item.material.clone()
+        if (originalMaterial.map) {
+          const originalTexture = originalMaterial.map
+          item.material.map = originalTexture.clone()
+          item.material.map.source = new Source(originalTexture.image)
+          item.material.map.needsUpdate = true
+        }
+      }
+
+      return item
+    })
+
+    return cloned
   }
 }
 

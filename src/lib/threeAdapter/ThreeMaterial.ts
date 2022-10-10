@@ -8,7 +8,7 @@ export class ThreeMaterial implements Material {
     this.#materialsRaw = materials
   }
 
-  get raw() {
+  get rawMaterials() {
     return this.#materialsRaw
   }
 

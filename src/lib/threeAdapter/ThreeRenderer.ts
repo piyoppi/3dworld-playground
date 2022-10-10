@@ -6,7 +6,6 @@ import { RGBColor, convertRgbToHex } from '../helpers/color.js'
 import type { Coordinate } from '../Coordinate.js'
 import { MeshBasicMaterial } from 'three'
 import { ThreeGroup, ThreePrimitiveRenderingObject, ThreeRenderingObject } from './ThreeRenderingObject.js'
-import { RenderingObject } from '../RenderingObject.js'
 
 export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
   #renderer: WebGLRenderer
