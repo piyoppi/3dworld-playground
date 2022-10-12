@@ -10,7 +10,14 @@ import type { Raycaster } from "../../../../lib/Raycaster"
 import type { ColiderItemMap } from "../../../../lib/ColiderItemMap"
 import { RenderingObject } from "../../../../lib/RenderingObject.js"
 
-export function makeConnectionMarker<T extends RenderingObject<T>>(item: LineItem, renderer: Renderer<T>, renderingObjectBuilder: RenderingObjectBuilder<T>, markerRaycaster: Raycaster, planeRaycaster: Raycaster, coliderConnectionMap: ColiderItemMap<LineItemConnection> | null) {
+export function makeConnectionMarker<T extends RenderingObject<T>>(
+  item: LineItem,
+  renderer: Renderer<T>,
+  renderingObjectBuilder: RenderingObjectBuilder<T>,
+  markerRaycaster: Raycaster,
+  planeRaycaster: Raycaster,
+  coliderConnectionMap: ColiderItemMap<LineItemConnection> | null
+) {
   return item.connections.map(connection => {
     const marker = new CenterMarker(0.5)
     const moveHandler = new PlaneMoveHandler(marker.parentCoordinate, planeRaycaster)
