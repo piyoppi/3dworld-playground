@@ -1,6 +1,6 @@
 import { Line } from "./lines/line.js"
-import { Item } from "./Item.js";
-import { LineEdge } from "./lines/lineEdge.js";
+import { Item } from "./Item.js"
+import { LineEdge } from "./lines/lineEdge.js"
 
 export class LineItem extends Item {
   #line: Line

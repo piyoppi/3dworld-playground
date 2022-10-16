@@ -8,8 +8,8 @@ export class HandledColiders {
     return this.#controlHandles.map(item => item.handled)
   }
 
-  setHandles(handles: Array<ControlHandle>) {
-    this.#controlHandles = handles
+  addHandler(handler: ControlHandle) {
+    this.#controlHandles.push(handler)
   }
 
   attach(raycaster: Raycaster, mouseHandlers: MouseControlHandles) {

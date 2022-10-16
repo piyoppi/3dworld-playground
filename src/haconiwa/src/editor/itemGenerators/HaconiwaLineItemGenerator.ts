@@ -18,7 +18,7 @@ import type { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuil
 import { MouseButton, MouseControllableCallbackFunction } from "../../../../lib/mouse/MouseControllable.js"
 import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
 import type { ColiderItemMap } from "../../../../lib/ColiderItemMap.js"
-import { makeConnectionMarker } from './MakeConnectionMarker.js'
+import { makeConnectionMarker } from './Helpers/MakeConnectionMarker.js'
 import { RenderingObject } from "../../../../lib/RenderingObject.js"
 
 export class HaconiwaLineItemGenerator<T extends RenderingObject<T>> implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorLineConnectable, HaconiwaItemGeneratorItemClonable<T>  {
@@ -66,7 +66,7 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject<T>> implements 
 
   start(x: number, y: number, button: MouseButton, cameraCoordinate: Coordinate) {
     if (!this.original) throw new Error('Item and RenderingObject is not set.')
-    if (!this.#planeRaycaster.hasColided || this.#isStarted) return
+    if (!this.#planeRaycaster.hasColided || !this.#coliderConnectionMap || this.#isStarted) return
 
     this.#isStarted = true
 
@@ -80,9 +80,11 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject<T>> implements 
     const lineItemGenerator = new LineItemGenerator<Coordinate, T>(() => this.itemFactory(), this.original.renderingObject.size[0])
     const line = lineGenerator.getLine()
     const item = new LineItem(line)
-    const markers = makeConnectionMarker(item, this.#renderer, this.#renderingObjectBuilder, this.#markerRaycaster, this.#planeRaycaster, this.#coliderConnectionMap)
+    const markers = makeConnectionMarker(item, this.#markerRaycaster, this.#planeRaycaster, this.#coliderConnectionMap)
 
     markers.forEach((marker, index) => {
+      marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder,this.#renderer)
+
       marker.parentCoordinate.setUpdateCallback(() => {
         item.line.setEdge(index, marker.parentCoordinate.position)
         const generated = lineItemGenerator.update(item.line)

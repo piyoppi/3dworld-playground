@@ -3,11 +3,11 @@ import type { Line } from "./line"
 
 export class LineEdge {
   #position: VectorArray3
-  #parent: Line
+  #tValue: number
 
-  constructor(position: VectorArray3, parentLine: Line) {
+  constructor(position: VectorArray3, t: number) {
     this.#position = position
-    this.#parent = parentLine
+    this.#tValue = t
   }
 
   get position() {
@@ -18,7 +18,7 @@ export class LineEdge {
     this.#position = value
   }
 
-  get parent() {
-    return this.#parent
+  get t() {
+    return this.#tValue
   }
 }

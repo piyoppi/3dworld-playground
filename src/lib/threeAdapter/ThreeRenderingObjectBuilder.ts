@@ -5,6 +5,7 @@ import {
   TetrahedronGeometry,
   SphereGeometry,
   BoxGeometry,
+  CircleGeometry,
   MeshBasicMaterial,
   Mesh,
   Group,
@@ -58,6 +59,13 @@ export class ThreeRenderingObjectBuilder implements RenderingObjectBuilder<Three
   makePlane(width: number, height: number, color: RGBColor) {
     const geometry = new PlaneGeometry(width, height)
     const material = new MeshBasicMaterial( {color: convertRgbToHex(color)} )
+
+    return new ThreeRenderingObject(new ThreePrimitiveRenderingObject(geometry, material))
+  }
+
+  makeCircle(radius: number, angle: number, color: RGBColor) {
+    const geometry = new CircleGeometry( 5, 32 );
+    const material = new MeshBasicMaterial( { color: 0xffff00 } );
 
     return new ThreeRenderingObject(new ThreePrimitiveRenderingObject(geometry, material))
   }

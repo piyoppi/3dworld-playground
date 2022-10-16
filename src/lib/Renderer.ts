@@ -5,14 +5,14 @@ import { RenderingObject } from './RenderingObject.js'
 
 export interface Renderer<T extends RenderingObject<T>> {
   initialize: (width: number, height: number) => void
-  setRenderingLoop: (callable: () => void) => void,
-  addItem: (coordinate: Coordinate, renderingObject: T) => void,
-  removeItem: (coordinate: Coordinate) => void,
-  setColor: (coordinate: Coordinate, color: RGBColor) => void,
+  setRenderingLoop: (callable: () => void) => void
+  addItem: (coordinate: Coordinate, renderingObject: T) => void
+  removeItem: (coordinate: Coordinate) => void
+  setColor: (coordinate: Coordinate, color: RGBColor) => void
   addLight: (coordinate: Coordinate) => void
-  renderingObjectFromCoordinate: (coordinate: Coordinate) => RenderingObject<T> | null
+  renderingObjectFromCoordinate: (coordinate: Coordinate) => T | null
   readonly camera: Camera
-  render: () => void,
-  mount: () => void,
+  render: () => void
+  mount: () => void
   resize: (width: number, height: number) => void
 }

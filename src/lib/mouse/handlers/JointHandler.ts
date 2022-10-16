@@ -12,15 +12,17 @@ export class JointHandler implements MouseControllable {
   #coliderItemMap: ColiderItemMap<LineItemConnection>
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   #endedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
+  #connectedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
+  #disconnectedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   #connection: LineItemConnection
   #ignoredConnections: LineItemConnection[]
   #connecting: LineItemConnection[] = []
 
-  constructor(connection: LineItemConnection, ignoredConnections: LineItemConnection[], raycaster: Raycaster, coliderItemMap: ColiderItemMap<LineItemConnection>) {
+  constructor(connection: LineItemConnection, raycaster: Raycaster, coliderItemMap: ColiderItemMap<LineItemConnection>) {
     this.#raycaster = raycaster
     this.#coliderItemMap = coliderItemMap
     this.#connection = connection
-    this.#ignoredConnections = ignoredConnections
+    this.#ignoredConnections = [connection]
   }
 
   get isStart() {
@@ -43,7 +45,23 @@ export class JointHandler implements MouseControllable {
     this.#endedCallbacks.remove(func)
   }
 
-  start(cursorX: number, cursorY: number, _button: MouseButton, cameraCoordinate: Coordinate) {
+  setConnectedCallbacks(func: MouseControllableCallbackFunction) {
+    this.#connectedCallbacks.add(func)
+  }
+
+  removeConnectedCallbacks(func: MouseControllableCallbackFunction) {
+    this.#connectedCallbacks.remove(func)
+  }
+
+  setDisconnectedCallbacks(func: MouseControllableCallbackFunction) {
+    this.#disconnectedCallbacks.add(func)
+  }
+
+  removeDisconnectedCallbacks(func: MouseControllableCallbackFunction) {
+    this.#disconnectedCallbacks.remove(func)
+  }
+
+  start(_cursorX: number, _cursorY: number, _button: MouseButton, _cameraCoordinate: Coordinate) {
     this.#isStart = true
     this.#startedCallbacks.call()
   }
@@ -64,7 +82,7 @@ export class JointHandler implements MouseControllable {
       if (!connection.isConnected(this.#connection)) {
         connection.connect(this.#connection)
         this.#connecting.push(connection)
-        console.log('connect')
+        this.#connectedCallbacks.call()
       }
     })
 
@@ -72,7 +90,7 @@ export class JointHandler implements MouseControllable {
       if (connections.indexOf(connection) >= 0 || !connection.isConnected(this.#connection)) return
 
       connection.disconnect(this.#connection)
-      console.log('disconnect')
+      this.#disconnectedCallbacks.call()
     })
   }
 

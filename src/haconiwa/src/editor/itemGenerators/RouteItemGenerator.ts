@@ -17,10 +17,11 @@ import { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder.j
 import { MouseButton, MouseControllableCallbackFunction } from "../../../../lib/mouse/MouseControllable.js"
 import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
 import { ColiderItemMap } from "../../../../lib/ColiderItemMap.js"
-import { makeConnectionMarker } from './MakeConnectionMarker.js'
+import { makeConnectionMarker } from './Helpers/MakeConnectionMarker.js'
 import { Vec3 } from "../../../../lib/Matrix.js"
-import { Group, Mesh, Scene } from "three"
 import { RenderingObject } from "../../../../lib/RenderingObject.js"
+import { JointableMarker } from "../Markers/JointableMarker.js"
+import { createJoint } from "./Joints/JointFactory.js"
 
 export class RouteItemGenerator<T extends RenderingObject<T>>
   implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorLineConnectable, HaconiwaItemGeneratorItemClonable<T> {
@@ -67,10 +68,11 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
   }
 
   start(x: number, y: number, button: MouseButton, cameraCoordinate: Coordinate) {
-    if (!this.#planeRaycaster.hasColided || this.#isStarted) return
+    if (!this.#planeRaycaster.hasColided || !this.#coliderConnectionMap || this.#isStarted) return
 
     this.#isStarted = true
 
+    const coliderConnectionMap = this.#coliderConnectionMap
     const lineGenerator = new LineSegmentGenerator()
     const startPosition = this.#markerRaycaster.colidedDetails[0]?.colider.parentCoordinate?.position || this.#planeRaycaster.colidedDetails[0].position
     const endPosition = this.#planeRaycaster.colidedDetails[0].position
@@ -81,23 +83,47 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
     const item = new LineItem(line)
     item.parentCoordinate.lookAt(startPosition)
 
-    const markers = makeConnectionMarker(item, this.#renderer, this.#renderingObjectBuilder, this.#markerRaycaster, this.#planeRaycaster, this.#coliderConnectionMap)
-    markers.forEach((marker, index) => {
-      marker.parentCoordinate.setUpdateCallback(() => {
-        item.line.setEdge(index, marker.parentCoordinate.position)
-        this.updateRenderingObject(item)
+    const jointableMarkers = item.connections.map(connection => new JointableMarker(connection, this.#markerRaycaster, this.#planeRaycaster, coliderConnectionMap))
+
+    jointableMarkers.forEach((jointableMarker, index) => {
+      jointableMarker.marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder,this.#renderer)
+
+      jointableMarker.jointHandler.setConnectedCallbacks(() => {
+        console.log('jointed', jointableMarker.connection.connections.length)
+        const joint = createJoint(jointableMarker.connection.connections.length)
+        if (!joint) return
+
+        const directions = jointableMarker.connection.connections.map(connection => line.getDirection(connection.edge.t))
+        
+        joint.setConnectedDirections(directions)
+        joint.setWidth(1)
+
+        const coordinate = new Coordinate()
+        coordinate.position = jointableMarker.connection.edge.position
+        item.parentCoordinate.addChild(coordinate)
+        this.#renderer.addItem(coordinate, joint.makeRenderingObject(this.#renderingObjectBuilder))
+
+        const offset = joint.getOffset()
+      })
+
+      jointableMarker.jointHandler.setDisconnectedCallbacks(() => {
+
+      })
+
+      jointableMarker.marker.parentCoordinate.setUpdateCallback(() => {
+        item.line.setEdge(index, jointableMarker.marker.parentCoordinate.position)
+        this.updateRenderingObject(item, item.line.length, 0)
       })
     })
 
-    const renderingObject = this.makeRenderingObject().then(renderingObject => {
-      this.#renderer.addItem(item.parentCoordinate, renderingObject)
+    const renderingObject = this.makeRenderingObject()
+    this.#renderer.addItem(item.parentCoordinate, renderingObject)
 
-      this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], markers)]))
+    this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], jointableMarkers.map(item => item.marker))]))
 
-      this.#startedCallbacks.call()
+    this.#startedCallbacks.call()
 
-      markers[1]?.handlers.forEach(handler => handler.start(x, y, button, cameraCoordinate))
-    })
+    jointableMarkers[1].marker.handlers.forEach(handler => handler.start(x, y, button, cameraCoordinate))
 
     return true
   }
@@ -111,14 +137,18 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
     this.#endedCallbacks.call()
   }
 
-  private async makeRenderingObject() {
+  private buildRenderingSection() {
+
+  }
+
+  private makeRenderingObject() {
     if (!this.original) throw new Error('Item and RenderingObject is not set.')
 
     return this.original.renderingObject.clone()
   }
 
-  private updateRenderingObject(lineItem: LineItem) {
-    const itemScale = lineItem.line.length / (this.original?.renderingObject.size[0] || 1)
+  private updateRenderingObject(lineItem: LineItem, length: number, offset: number) {
+    const itemScale = length / (this.original?.renderingObject.size[0] || 1)
     lineItem.parentCoordinate.scale([1, 1, itemScale])
 
     const renderingItem = this.#renderer.renderingObjectFromCoordinate(lineItem.parentCoordinate)

@@ -40,10 +40,8 @@ export class CenterMarker implements Marker {
     return this.#colider
   }
 
-  setHandlers(handlers: MouseControllable[]) {
-    const handles = handlers.map(handler => ({colider: this.#colider, handled: handler}))
-
-    this.#handledColiders.setHandles(handles)
+  addHandler(handler: MouseControllable) {
+    this.#handledColiders.addHandler({colider: this.#colider, handled: handler})
 
     return this.#colider
   }

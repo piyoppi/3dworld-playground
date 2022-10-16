@@ -8,7 +8,7 @@ export interface Marker {
   readonly parentCoordinate: Coordinate
   readonly handlers: MouseControllable[]
   readonly colider: Colider | null
-  setHandlers: (handlers: MouseControllable[]) => Colider
+  addHandler: (handler: MouseControllable) => Colider
   attach: (raycaster: Raycaster, mouseHandlers: MouseControlHandles) => void
   detach: (raycaster: Raycaster, mouseHandlers: MouseControlHandles) => void
   setParentCoordinate: (coordinate: Coordinate) => void
