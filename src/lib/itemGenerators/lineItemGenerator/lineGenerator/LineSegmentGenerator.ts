@@ -1,5 +1,5 @@
-import type { VectorArray3 } from "../../../Matrix"
 import type { LineGenerator } from "./LineGenerator"
+import { VectorArray3 } from "../../../Matrix.js"
 import { LineSegment } from "../../../lines/lineSegment.js"
 
 export class LineSegmentGenerator implements LineGenerator {

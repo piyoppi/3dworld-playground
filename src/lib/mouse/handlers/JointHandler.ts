@@ -61,6 +61,11 @@ export class JointHandler implements MouseControllable {
     this.#disconnectedCallbacks.remove(func)
   }
 
+  addIgnoredConnection(connection: LineItemConnection) {
+    console.log(connection)
+    this.#ignoredConnections.push(connection)
+  }
+
   start(_cursorX: number, _cursorY: number, _button: MouseButton, _cameraCoordinate: Coordinate) {
     this.#isStart = true
     this.#startedCallbacks.call()
@@ -80,6 +85,7 @@ export class JointHandler implements MouseControllable {
 
     connections.forEach(connection => {
       if (!connection.isConnected(this.#connection)) {
+        console.log('connected')
         connection.connect(this.#connection)
         this.#connecting.push(connection)
         this.#connectedCallbacks.call()

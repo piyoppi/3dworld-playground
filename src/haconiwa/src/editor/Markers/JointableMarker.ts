@@ -1,4 +1,4 @@
-import type { LineItemConnection } from "../../../../lib/LineItem"
+import type { LineItem, LineItemConnection } from "../../../../lib/LineItem"
 import type { Raycaster } from "../../../../lib/Raycaster"
 import { CenterMarker } from "../../../../lib/markers/CenterMarker.js"
 import { PlaneMoveHandler } from "../../../../lib/mouse/handlers/PlaneMoveHandler.js"
@@ -36,6 +36,10 @@ export class JointableMarker {
 
     this.#moveHandler.setCursorModifier(snapModifier)
     this.#marker.parentCoordinate.position = connection.edge.position
+  }
+
+  setIgnoredConnection(connection: LineItemConnection) {
+    this.#jointHandler.addIgnoredConnection(connection)
   }
 
   get moveHandler() {

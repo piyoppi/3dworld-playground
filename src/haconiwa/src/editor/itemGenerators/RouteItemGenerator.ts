@@ -83,17 +83,24 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
     const item = new LineItem(line)
     item.parentCoordinate.lookAt(startPosition)
 
-    const jointableMarkers = item.connections.map(connection => new JointableMarker(connection, this.#markerRaycaster, this.#planeRaycaster, coliderConnectionMap))
+    const jointableMarkers = item.connections.map(connection => {
+      const marker = new JointableMarker(connection, this.#markerRaycaster, this.#planeRaycaster, coliderConnectionMap)
+      item.connections.filter(conn => conn !== connection).forEach(conn => marker.setIgnoredConnection(conn))
+
+      return marker
+    })
 
     jointableMarkers.forEach((jointableMarker, index) => {
       jointableMarker.marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder,this.#renderer)
 
       jointableMarker.jointHandler.setConnectedCallbacks(() => {
-        console.log('jointed', jointableMarker.connection.connections.length)
         const joint = createJoint(jointableMarker.connection.connections.length)
         if (!joint) return
 
-        const directions = jointableMarker.connection.connections.map(connection => line.getDirection(connection.edge.t))
+        const directions = [
+          line.getDirection(jointableMarker.connection.edge.t),
+          ...jointableMarker.connection.connections.map(connection => line.getDirection(connection.edge.t))
+        ]
         
         joint.setConnectedDirections(directions)
         joint.setWidth(1)
@@ -118,6 +125,7 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
 
     const renderingObject = this.makeRenderingObject()
     this.#renderer.addItem(item.parentCoordinate, renderingObject)
+    this.updateRenderingObject(item, item.line.length, 0)
 
     this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], jointableMarkers.map(item => item.marker))]))
 

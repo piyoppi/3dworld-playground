@@ -7,7 +7,7 @@ export class Corner implements Joint {
   #width = 1
 
   setConnectedDirections(directions: VectorArray3[]) {
-    if (directions.length > 1) {
+    if (directions.length > 2) {
       throw new Error('Too many connections.')
     }
 
