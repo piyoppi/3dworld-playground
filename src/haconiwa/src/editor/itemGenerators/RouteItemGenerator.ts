@@ -90,6 +90,9 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
       return marker
     })
 
+    const coordinateForRendering = new Coordinate()
+    item.parentCoordinate.addChild(coordinateForRendering)
+
     jointableMarkers.forEach((jointableMarker, index) => {
       jointableMarker.marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder,this.#renderer)
 
@@ -107,6 +110,7 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
 
         const coordinate = new Coordinate()
         coordinate.position = jointableMarker.connection.edge.position
+        console.log(coordinate.position)
         item.parentCoordinate.addChild(coordinate)
         this.#renderer.addItem(coordinate, joint.makeRenderingObject(this.#renderingObjectBuilder))
 
@@ -119,13 +123,13 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
 
       jointableMarker.marker.parentCoordinate.setUpdateCallback(() => {
         item.line.setEdge(index, jointableMarker.marker.parentCoordinate.position)
-        this.updateRenderingObject(item, item.line.length, 0)
+        this.updateRenderingObject(coordinateForRendering, item, item.line.length, 0)
       })
     })
 
     const renderingObject = this.makeRenderingObject()
-    this.#renderer.addItem(item.parentCoordinate, renderingObject)
-    this.updateRenderingObject(item, item.line.length, 0)
+    this.#renderer.addItem(coordinateForRendering, renderingObject)
+    this.updateRenderingObject(coordinateForRendering, item, item.line.length, 0)
 
     this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], jointableMarkers.map(item => item.marker))]))
 
@@ -155,11 +159,11 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
     return this.original.renderingObject.clone()
   }
 
-  private updateRenderingObject(lineItem: LineItem, length: number, offset: number) {
+  private updateRenderingObject(coordinate: Coordinate, lineItem: LineItem, length: number, offset: number) {
     const itemScale = length / (this.original?.renderingObject.size[0] || 1)
-    lineItem.parentCoordinate.scale([1, 1, itemScale])
+    coordinate.scale([1, 1, itemScale])
 
-    const renderingItem = this.#renderer.renderingObjectFromCoordinate(lineItem.parentCoordinate)
+    const renderingItem = this.#renderer.renderingObjectFromCoordinate(coordinate)
 
     if (renderingItem) {
       renderingItem.material.repeat(itemScale, 1)
@@ -167,10 +171,10 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
 
     const direction = lineItem.line.getDirection(0)
     const position = Vec3.add(lineItem.connections[0].edge.position, Vec3.mulScale(Vec3.subtract(lineItem.connections[1].edge.position, lineItem.connections[0].edge.position), 0.5))
-    lineItem.parentCoordinate.setDirectionZAxis(direction, position)
+    coordinate.setDirectionZAxis(direction, position)
 
-    if (Vec3.dotprod(lineItem.parentCoordinate.zAxis, [0, 1, 0]) < 0) {
-      lineItem.parentCoordinate.rotateX(Math.PI)
+    if (Vec3.dotprod(coordinate.zAxis, [0, 1, 0]) < 0) {
+      coordinate.rotateX(Math.PI)
     }
   }
 }

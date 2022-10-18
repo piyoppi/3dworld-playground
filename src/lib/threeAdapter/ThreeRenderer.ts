@@ -12,7 +12,6 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
   #scene: Scene
   #camera: ThreeCamera
   #mapCoordinateIdToThreeItem: Map<string, Mesh | Group>
-  #pendingItems: Array<{mesh: Mesh | Group, coordinate: Coordinate}>
 
   #mapCoordinateIdToRenderingObject : Map<string, ThreeRenderingObject> = new Map()
 
@@ -21,7 +20,6 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
     this.#scene = scene
     this.#camera = camera
     this.#mapCoordinateIdToThreeItem = new Map()
-    this.#pendingItems = []
     this.debug()
   }
 
@@ -57,21 +55,17 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
           syncCoordinate(coordinate.parent, group)
         }
       } else if (!parentMesh) {
-        this.#pendingItems.push({coordinate, mesh})
+        const group = this.makeEmptyGroupsRecursive(coordinate.parent)
+        if (group) {
+          group.add(mesh)
+          this.#mapCoordinateIdToThreeItem.set(coordinate.uuid, mesh)
+        }
       } else {
         parentMesh.add(mesh)
       }
     } else {
       this.#scene.add(mesh)
     }
-
-    this.#pendingItems.forEach(props => {
-      if (!coordinate.parent) return
-      const parentMesh = this.#mapCoordinateIdToThreeItem.get(coordinate.parent.uuid)
-      if (!parentMesh) return
-
-      parentMesh.add(props.mesh)
-    })
 
     this.#mapCoordinateIdToThreeItem.set(coordinate.uuid, mesh)
 
@@ -96,6 +90,58 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
     return this.#mapCoordinateIdToRenderingObject.get(coordinate.uuid) || null
   }
 
+  setColor(coordinate: Coordinate, color: RGBColor) {
+    const renderingItem = this.#mapCoordinateIdToThreeItem.get(coordinate.uuid)
+    if (!renderingItem) return
+    if (!(renderingItem instanceof Mesh)) return
+
+    if (renderingItem.material instanceof MeshBasicMaterial) {
+      renderingItem.material.color = new Color(convertRgbToHex(color))
+    }
+  }
+
+  private makeEmptyGroupsRecursive(target: Coordinate) {
+    const to = this.getAllocatedRootCoordinate(target)
+
+    const coordinates: Coordinate[] = []
+    const proc = (coord: Coordinate) => {
+      if (coord === to) return
+
+      coordinates.push(coord)
+    }
+    proc(target)
+
+    coordinates.reverse()
+
+    let prev = to
+    return coordinates.map(coord => {
+      const group = new Group()
+      if (prev) {
+        const parentRenderingObj = this.#mapCoordinateIdToThreeItem.get(prev.uuid)
+
+        if (parentRenderingObj) parentRenderingObj.add(group)
+      } else {
+        this.#scene.add(group)
+      }
+
+      this.#mapCoordinateIdToThreeItem.set(coord.uuid, group)
+
+      prev = coord
+
+      return group
+    }).at(-1)
+  }
+
+  private getAllocatedRootCoordinate(coordinate: Coordinate): Coordinate | null {
+    const target = coordinate.parent
+    if (!target) return null
+
+    const renderingObj = this.#mapCoordinateIdToThreeItem.get(target.uuid)
+    if (renderingObj) return target
+
+    return this.getAllocatedRootCoordinate(target)
+  }
+
   private coordinateSetChildCallbackHandler(parent: Coordinate, child: Coordinate) {
     const parentMesh = this.#mapCoordinateIdToThreeItem.get(parent.uuid)
     const childMesh = this.#mapCoordinateIdToThreeItem.get(child.uuid)
@@ -114,16 +160,6 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
 
     parentMesh.remove(childMesh)
     syncCoordinate(child, childMesh)
-  }
-
-  setColor(coordinate: Coordinate, color: RGBColor) {
-    const renderingItem = this.#mapCoordinateIdToThreeItem.get(coordinate.uuid)
-    if (!renderingItem) return
-    if (!(renderingItem instanceof Mesh)) return
-
-    if (renderingItem.material instanceof MeshBasicMaterial) {
-      renderingItem.material.color = new Color(convertRgbToHex(color))  
-    }
   }
 
   private debug() {
