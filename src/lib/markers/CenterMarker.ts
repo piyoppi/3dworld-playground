@@ -61,7 +61,7 @@ export class CenterMarker implements Marker {
     }
   }
 
-  attachRenderingObject<T extends RenderingObject<T>>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
+  attachRenderingObject<T extends RenderingObject<unknown>>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
     renderer.addItem(this.#parentCoordinate, builder.makeSphere(this.#radius, color))
   }
 }

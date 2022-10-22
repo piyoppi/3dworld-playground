@@ -22,6 +22,8 @@ import { Vec3 } from "../../../../lib/Matrix.js"
 import { RenderingObject } from "../../../../lib/RenderingObject.js"
 import { JointableMarker } from "../Markers/JointableMarker.js"
 import { createJoint } from "./Joints/JointFactory.js"
+import { Joint } from "./Joints/Joint.js"
+import { NoneJoint } from "./Joints/NoneJoint.js"
 
 export class RouteItemGenerator<T extends RenderingObject<T>>
   implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorLineConnectable, HaconiwaItemGeneratorItemClonable<T> {
@@ -90,6 +92,9 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
       return marker
     })
 
+    const joints = new Map<JointableMarker, Joint<T>>()
+    jointableMarkers.forEach(marker => joints.set(marker, new NoneJoint()))
+
     const coordinateForRendering = new Coordinate()
     item.parentCoordinate.addChild(coordinateForRendering)
 
@@ -97,33 +102,29 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
       jointableMarker.marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder,this.#renderer)
 
       jointableMarker.jointHandler.setConnectedCallbacks(() => {
-        const joint = createJoint(jointableMarker.connection.connections.length)
+        const joint = joints.get(jointableMarker)
         if (!joint) return
 
-        const directions = [
-          line.getDirection(jointableMarker.connection.edge.t),
-          ...jointableMarker.connection.connections.map(connection => line.getDirection(connection.edge.t))
-        ]
-        
-        joint.setConnectedDirections(directions)
-        joint.setWidth(1)
-
-        const coordinate = new Coordinate()
-        coordinate.position = jointableMarker.connection.edge.position
-        console.log(coordinate.position)
-        item.parentCoordinate.addChild(coordinate)
-        this.#renderer.addItem(coordinate, joint.makeRenderingObject(this.#renderingObjectBuilder))
-
-        const offset = joint.getOffset()
+        const recreatedJoint = this.createJoint(joint, jointableMarker.connection)
+        this.updateJoint(recreatedJoint, item, jointableMarker.connection)
+        joints.set(jointableMarker, recreatedJoint)
       })
 
       jointableMarker.jointHandler.setDisconnectedCallbacks(() => {
-
+        const joint = joints.get(jointableMarker)
+        if (joint) {
+          joint.dispose(this.#renderer)
+        }
       })
 
       jointableMarker.marker.parentCoordinate.setUpdateCallback(() => {
         item.line.setEdge(index, jointableMarker.marker.parentCoordinate.position)
         this.updateRenderingObject(coordinateForRendering, item, item.line.length, 0)
+
+        const joint = joints.get(jointableMarker)
+        if (joint) {
+          this.updateJoint(joint, item, jointableMarker.connection)
+        }
       })
     })
 
@@ -149,8 +150,26 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
     this.#endedCallbacks.call()
   }
 
-  private buildRenderingSection() {
+  private createJoint(givenJoint: Joint<T>, connection: LineItemConnection) {
+    return givenJoint.directionLength !== connection.connections.length ?
+      createJoint<T>(connection.connections.length) :
+      givenJoint
+  }
 
+  private updateJoint(joint: Joint<T>, item: LineItem, connection: LineItemConnection) {
+    const directions = [
+      item.line.getDirection(connection.edge.t),
+      ...connection.connections.map(connection => item.line.getDirection(connection.edge.t))
+    ]
+
+    joint.setConnectedDirections(directions)
+    joint.setPosition(connection.edge.position)
+    joint.setWidth(4)
+
+    if(!item.parentCoordinate.has(joint.coordinate)) {
+      item.parentCoordinate.addChild(joint.coordinate)
+    }
+    joint.updateRenderingObject(this.#renderingObjectBuilder, this.#renderer)
   }
 
   private makeRenderingObject() {

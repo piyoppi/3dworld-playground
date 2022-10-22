@@ -120,6 +120,10 @@ export class Coordinate {
     this.#setChildCallback(this, child)
   }
 
+  has(coordinate: Coordinate) {
+    return coordinate.parent === this
+  }
+
   removeChild(child: Coordinate) {
     const removed = this.#children.remove(child)
     if (!removed) return
