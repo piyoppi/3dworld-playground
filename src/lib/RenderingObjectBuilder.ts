@@ -6,5 +6,5 @@ export interface RenderingObjectBuilder<T extends RenderingObject<unknown>> {
   makeBox: (width: number, height: number, depth: number, color: RGBColor) => T
   makeSphere: (radius: number, color: RGBColor) => T
   makePlane: (width: number, height: number, color: RGBColor) => T
-  makeCircle: (radius: number, angle: number, color: RGBColor) => T
+  makeCircle: (radius: number, angle: number, angleOffset: number, color: RGBColor) => T
 }

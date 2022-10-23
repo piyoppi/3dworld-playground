@@ -158,13 +158,13 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
 
   private updateJoint(joint: Joint<T>, item: LineItem, connection: LineItemConnection) {
     const directions = [
-      item.line.getDirection(connection.edge.t),
-      ...connection.connections.map(connection => item.line.getDirection(connection.edge.t))
+      connection.edge.getTangentVector(),
+      ...connection.connections.map(connection => connection.edge.getTangentVector())
     ]
 
     joint.setConnectedDirections(directions)
     joint.setPosition(connection.edge.position)
-    joint.setWidth(4)
+    joint.setWidth(6)
 
     if(!item.parentCoordinate.has(joint.coordinate)) {
       item.parentCoordinate.addChild(joint.coordinate)

@@ -82,8 +82,14 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
     const renderingItem = this.#mapCoordinateIdToThreeItem.get(coordinate.uuid)
     if (!renderingItem) return
 
-    this.#scene.remove(renderingItem)
+    if (renderingItem.parent) {
+      renderingItem.parent.remove(renderingItem)
+    } else {
+      this.#scene.remove(renderingItem)
+    }
+
     this.#mapCoordinateIdToThreeItem.delete(coordinate.uuid)
+    this.#mapCoordinateIdToRenderingObject.delete(coordinate.uuid)
   }
 
   renderingObjectFromCoordinate(coordinate: Coordinate) {

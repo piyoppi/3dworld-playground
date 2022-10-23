@@ -10,8 +10,8 @@ export class LineSegment implements Line {
   #direction: VectorArray3 = [0, 0, 0]
 
   constructor(start: VectorArray3, end: VectorArray3) {
-    this.#start = new LineEdge(start, 0)
-    this.#end = new LineEdge(end, 1)
+    this.#start = new LineEdge(start, 0, this)
+    this.#end = new LineEdge(end, 1, this)
     this.#edges = [this.#start, this.#end]
     this.#setup()
   }
