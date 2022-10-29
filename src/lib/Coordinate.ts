@@ -7,7 +7,7 @@ import { CallbackFunctions } from './CallbackFunctions.js'
 export class InvalidParentCoordinateError extends Error {}
 
 export class Coordinate {
-  #items: Array<Item>
+  //#items: Array<Item>
   protected _parent: Coordinate | null
   #children: Coordinates = new Coordinates()
   #matrix:  MatrixArray4
@@ -20,7 +20,7 @@ export class Coordinate {
   constructor() {
     this._parent = null
     this.#uuid = uuidv4()
-    this.#items = []
+    //this.#items = []
     this.#matrix = Mat4.getIdentityMatrix()
     this.#scaleMatrix = Mat4.getIdentityMatrix()
     this.#setChildCallback = (_parent, _child) => {}
@@ -100,14 +100,14 @@ export class Coordinate {
     this.#removeChildCallback = func
   }
 
-  addItem(item: Item) {
-    if (this.#items.find(has => has.uuid === item.uuid)) return
+  //addItem(item: Item) {
+  //  if (this.#items.find(has => has.uuid === item.uuid)) return
 
-    this.#items.push(item)
-    if (!item.parentCoordinate || item.parentCoordinate.uuid !== this.uuid) {
-      item.parentCoordinate = this
-    }
-  }
+  //  this.#items.push(item)
+  //  if (!item.parentCoordinate || item.parentCoordinate.uuid !== this.uuid) {
+  //    item.parentCoordinate = this
+  //  }
+  //}
 
   addChild(child: Coordinate) {
     if (child.parent) {
@@ -133,13 +133,13 @@ export class Coordinate {
     this.#removeChildCallback(this, child)
   }
 
-  static create(items: Array<Item>): Coordinate {
-    const coordinate = new Coordinate()
+  //static create(items: Array<Item>): Coordinate {
+  //  const coordinate = new Coordinate()
 
-    items.forEach(item => coordinate.addItem(item))
+  //  items.forEach(item => coordinate.addItem(item))
 
-    return coordinate
-  }
+  //  return coordinate
+  //}
 
   lookAt(targetPoint: VectorArray3) {
     this.#matrix = Mat4.lookAt(targetPoint, this.position)  
@@ -199,7 +199,7 @@ export class Coordinate {
     this.#updatedCallbacks.call()
   }
 
-  get items() { return this.#items }
+  //get items() { return this.#items }
   get x() { return this.#matrix[12] }
   get y() { return this.#matrix[13] }
   get z() { return this.#matrix[14] }

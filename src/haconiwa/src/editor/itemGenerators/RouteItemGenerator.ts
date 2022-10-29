@@ -24,6 +24,7 @@ import { JointableMarker } from "../Markers/JointableMarker.js"
 import { createJoint } from "./Joints/JointFactory.js"
 import { Joint } from "./Joints/Joint.js"
 import { NoneJoint } from "./Joints/NoneJoint.js"
+import { attachCoordinateRenderingItem } from "../../../../lib/CoordinateRenderingObject.js"
 
 export class RouteItemGenerator<T extends RenderingObject<T>>
   implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorLineConnectable, HaconiwaItemGeneratorItemClonable<T> {
@@ -118,7 +119,6 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
       })
 
       jointableMarker.marker.parentCoordinate.setUpdateCallback(() => {
-        item.line.setEdge(index, jointableMarker.marker.parentCoordinate.position)
         this.updateRenderingObject(coordinateForRendering, item, item.line.length, 0)
 
         const joint = joints.get(jointableMarker)
@@ -168,6 +168,7 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
 
     if(!item.parentCoordinate.has(joint.coordinate)) {
       item.parentCoordinate.addChild(joint.coordinate)
+      attachCoordinateRenderingItem(joint.coordinate, this.#renderingObjectBuilder, this.#renderer)
     }
     joint.updateRenderingObject(this.#renderingObjectBuilder, this.#renderer)
   }

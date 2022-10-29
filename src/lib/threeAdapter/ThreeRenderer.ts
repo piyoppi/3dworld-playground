@@ -44,21 +44,22 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
     if (coordinate.parent) {
       const parentMesh = this.#mapCoordinateIdToThreeItem.get(coordinate.parent.uuid)
 
-      if (coordinate.parent.items.length === 0) {
-        if (parentMesh && parentMesh instanceof Group) {
-          parentMesh.add(mesh)
-        } else {
-          const group = new Group()
-          group.add(mesh)
-          this.#scene.add(group)
-          this.#mapCoordinateIdToThreeItem.set(coordinate.parent.uuid, group)
-          syncCoordinate(coordinate.parent, group)
-        }
-      } else if (!parentMesh) {
+      //if (coordinate.parent.items.length === 0) {
+      //  if (parentMesh && parentMesh instanceof Group) {
+      //    parentMesh.add(mesh)
+      //  } else {
+      //    const group = new Group()
+      //    group.add(mesh)
+      //    this.#scene.add(group)
+      //    this.#mapCoordinateIdToThreeItem.set(coordinate.parent.uuid, group)
+      //    syncCoordinate(coordinate.parent, group)
+      //  }
+      if (!parentMesh) {
         const group = this.makeEmptyGroupsRecursive(coordinate.parent)
         if (group) {
           group.add(mesh)
           this.#mapCoordinateIdToThreeItem.set(coordinate.uuid, mesh)
+          syncCoordinate(coordinate.parent, group)
         }
       } else {
         parentMesh.add(mesh)

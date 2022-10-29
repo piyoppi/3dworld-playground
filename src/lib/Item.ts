@@ -7,7 +7,7 @@ export class Item {
 
   constructor() {
     this.#uuid = uuidv4()
-    this.#parentCoordinate = Coordinate.create([this])
+    this.#parentCoordinate = new Coordinate()
   }
 
   get uuid() {
@@ -16,7 +16,6 @@ export class Item {
 
   set parentCoordinate(value) {
     this.#parentCoordinate = value
-    value.addItem(this)
   }
 
   get parentCoordinate() {

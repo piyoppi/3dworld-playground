@@ -359,6 +359,10 @@ export class Vec3 {
     return [a[0] * scale, a[1] * scale, a[2] * scale]
   }
 
+  static reverse(a: VectorArray3): VectorArray3 {
+    return Vec3.mulScale(a, -1)
+  }
+
   static norm(vec: VectorArray3): number {
     return Math.sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2])
   }

@@ -17,9 +17,8 @@ export const extractItemsFromThreeBones = (group: Group, rootItem: Item) => {
 }
 
 const makeItemsFromTree = (tree: ObjectTree<Object3D>, parentCoordinate: Coordinate | null = null): Array<{item: Item, renderingObject: ThreeRenderingObject}> => {
-  const coordinate = new Coordinate
   const item = new Item()
-  coordinate.addItem(item)
+  const coordinate = item.parentCoordinate
   if (parentCoordinate) parentCoordinate.addChild(coordinate)
 
   const geometry = new BoxGeometry(0.02, 0.02, 0.02)

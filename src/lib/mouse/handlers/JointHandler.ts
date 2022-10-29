@@ -62,7 +62,6 @@ export class JointHandler implements MouseControllable {
   }
 
   addIgnoredConnection(connection: LineItemConnection) {
-    console.log(connection)
     this.#ignoredConnections.push(connection)
   }
 
@@ -85,7 +84,6 @@ export class JointHandler implements MouseControllable {
 
     connections.forEach(connection => {
       if (!connection.isConnected(this.#connection)) {
-        console.log('connected')
         connection.connect(this.#connection)
         this.#connecting.push(connection)
         this.#connectedCallbacks.call()

@@ -12,6 +12,8 @@ export class LineSegment implements Line {
   constructor(start: VectorArray3, end: VectorArray3) {
     this.#start = new LineEdge(start, 0, this)
     this.#end = new LineEdge(end, 1, this)
+    this.#start.setUpdateCallback(() => this.#setup())
+    this.#end.setUpdateCallback(() => this.#setup())
     this.#edges = [this.#start, this.#end]
     this.#setup()
   }
