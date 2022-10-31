@@ -11,7 +11,7 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
   #renderer: WebGLRenderer
   #scene: Scene
   #camera: ThreeCamera
-  #mapCoordinateIdToThreeItem: Map<string, Mesh | Group>
+  #mapCoordinateIdToThreeItems: Map<string, Array<Mesh | Group>>
 
   #mapCoordinateIdToRenderingObject : Map<string, ThreeRenderingObject> = new Map()
 
@@ -19,7 +19,7 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
     this.#renderer = new WebGLRenderer({ antialias: true })
     this.#scene = scene
     this.#camera = camera
-    this.#mapCoordinateIdToThreeItem = new Map()
+    this.#mapCoordinateIdToThreeItems = new Map()
     this.debug()
   }
 
@@ -42,33 +42,23 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
     }
 
     if (coordinate.parent) {
-      const parentMesh = this.#mapCoordinateIdToThreeItem.get(coordinate.parent.uuid)
+      const parentMeshes = this.threeItemFromCoordinate(coordinate.parent)
 
-      //if (coordinate.parent.items.length === 0) {
-      //  if (parentMesh && parentMesh instanceof Group) {
-      //    parentMesh.add(mesh)
-      //  } else {
-      //    const group = new Group()
-      //    group.add(mesh)
-      //    this.#scene.add(group)
-      //    this.#mapCoordinateIdToThreeItem.set(coordinate.parent.uuid, group)
-      //    syncCoordinate(coordinate.parent, group)
-      //  }
-      if (!parentMesh) {
+      if (parentMeshes.length === 0) {
         const group = this.makeEmptyGroupsRecursive(coordinate.parent)
         if (group) {
           group.add(mesh)
-          this.#mapCoordinateIdToThreeItem.set(coordinate.uuid, mesh)
+          this.registerThreeItem(coordinate, mesh)
           syncCoordinate(coordinate.parent, group)
         }
       } else {
-        parentMesh.add(mesh)
+        parentMeshes[0].add(mesh)
       }
     } else {
       this.#scene.add(mesh)
     }
 
-    this.#mapCoordinateIdToThreeItem.set(coordinate.uuid, mesh)
+    this.registerThreeItem(coordinate, mesh)
 
     coordinate.setSetChildCallback((parent, child) => this.coordinateSetChildCallbackHandler(parent, child))
     coordinate.setRemoveChildCallback((parent, child) => this.coordinateRemoveChildCallbackHandler(parent, child))
@@ -80,17 +70,16 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
   }
 
   removeItem(coordinate: Coordinate) {
-    const renderingItem = this.#mapCoordinateIdToThreeItem.get(coordinate.uuid)
-    if (!renderingItem) return
+    this.threeItemFromCoordinate(coordinate).forEach(item => {
+      if (item.parent) {
+        item.parent.remove(item)
+      } else {
+        this.#scene.remove(item)
+      }
 
-    if (renderingItem.parent) {
-      renderingItem.parent.remove(renderingItem)
-    } else {
-      this.#scene.remove(renderingItem)
-    }
-
-    this.#mapCoordinateIdToThreeItem.delete(coordinate.uuid)
-    this.#mapCoordinateIdToRenderingObject.delete(coordinate.uuid)
+      this.#mapCoordinateIdToThreeItems.delete(coordinate.uuid)
+      this.#mapCoordinateIdToRenderingObject.delete(coordinate.uuid)
+    })
   }
 
   renderingObjectFromCoordinate(coordinate: Coordinate) {
@@ -98,13 +87,13 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
   }
 
   setColor(coordinate: Coordinate, color: RGBColor) {
-    const renderingItem = this.#mapCoordinateIdToThreeItem.get(coordinate.uuid)
-    if (!renderingItem) return
-    if (!(renderingItem instanceof Mesh)) return
+    this.threeItemFromCoordinate(coordinate).forEach(item => {
+      if (!(item instanceof Mesh)) return
 
-    if (renderingItem.material instanceof MeshBasicMaterial) {
-      renderingItem.material.color = new Color(convertRgbToHex(color))
-    }
+      if (item.material instanceof MeshBasicMaterial) {
+        item.material.color = new Color(convertRgbToHex(color))
+      }
+    })
   }
 
   private makeEmptyGroupsRecursive(target: Coordinate) {
@@ -124,14 +113,14 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
     return coordinates.map(coord => {
       const group = new Group()
       if (prev) {
-        const parentRenderingObj = this.#mapCoordinateIdToThreeItem.get(prev.uuid)
+        const parentRenderingObjects = this.threeItemFromCoordinate(prev)
 
-        if (parentRenderingObj) parentRenderingObj.add(group)
+        if (parentRenderingObjects.length > 0) parentRenderingObjects[0].add(group)
       } else {
         this.#scene.add(group)
       }
 
-      this.#mapCoordinateIdToThreeItem.set(coord.uuid, group)
+      this.registerThreeItem(coord, group)
 
       prev = coord
 
@@ -143,30 +132,40 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
     const target = coordinate.parent
     if (!target) return null
 
-    const renderingObj = this.#mapCoordinateIdToThreeItem.get(target.uuid)
-    if (renderingObj) return target
+    const renderingObjects = this.threeItemFromCoordinate(target)
+    if (renderingObjects.length > 0) return target
 
     return this.getAllocatedRootCoordinate(target)
   }
 
   private coordinateSetChildCallbackHandler(parent: Coordinate, child: Coordinate) {
-    const parentMesh = this.#mapCoordinateIdToThreeItem.get(parent.uuid)
-    const childMesh = this.#mapCoordinateIdToThreeItem.get(child.uuid)
+    const parentMeshes = this.threeItemFromCoordinate(parent)
+    const childMeshes = this.threeItemFromCoordinate(child)
 
-    if (!parentMesh || !childMesh) return
-
-    parentMesh.add(childMesh)
-    syncCoordinate(child, childMesh)
+    childMeshes.forEach(mesh => {
+      parentMeshes[0].add(mesh)
+      syncCoordinate(child, mesh)
+    })
   }
 
   private coordinateRemoveChildCallbackHandler(parent: Coordinate, child: Coordinate) {
-    const parentMesh = this.#mapCoordinateIdToThreeItem.get(parent.uuid)
-    const childMesh = this.#mapCoordinateIdToThreeItem.get(child.uuid)
+    const parentMeshes = this.threeItemFromCoordinate(parent)
+    const childMeshes = this.threeItemFromCoordinate(child)
 
-    if (!parentMesh || !childMesh) return
+    childMeshes.forEach(mesh => mesh.parent?.remove(mesh))
 
-    parentMesh.remove(childMesh)
-    syncCoordinate(child, childMesh)
+    //syncCoordinate(child, childMesh)
+  }
+
+  private threeItemFromCoordinate(coordinate: Coordinate) {
+    return this.#mapCoordinateIdToThreeItems.get(coordinate.uuid) || []
+  }
+
+  private registerThreeItem(coordinate: Coordinate, item: Mesh | Group) {
+    const registered = this.threeItemFromCoordinate(coordinate)
+    registered.push(item)
+
+    this.#mapCoordinateIdToThreeItems.set(coordinate.uuid, registered)
   }
 
   private debug() {

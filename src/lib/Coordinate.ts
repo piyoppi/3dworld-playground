@@ -1,4 +1,3 @@
-import { Item } from './Item.js'
 import { Mat4, MatrixArray4, Vec3, VectorArray3 } from './Matrix.js'
 import { v4 as uuidv4 } from 'uuid'
 import { Coordinates } from './Coordinates.js'
@@ -7,11 +6,11 @@ import { CallbackFunctions } from './CallbackFunctions.js'
 export class InvalidParentCoordinateError extends Error {}
 
 export class Coordinate {
-  //#items: Array<Item>
   protected _parent: Coordinate | null
   #children: Coordinates = new Coordinates()
   #matrix:  MatrixArray4
   #scaleMatrix: MatrixArray4
+  #beforeUpdateCallbacks = new CallbackFunctions<() => void>()
   #updatedCallbacks = new CallbackFunctions<() => void>()
   #setChildCallback: (parent: Coordinate, child: Coordinate) => void
   #removeChildCallback: (parent: Coordinate, child: Coordinate) => void
@@ -20,7 +19,6 @@ export class Coordinate {
   constructor() {
     this._parent = null
     this.#uuid = uuidv4()
-    //this.#items = []
     this.#matrix = Mat4.getIdentityMatrix()
     this.#scaleMatrix = Mat4.getIdentityMatrix()
     this.#setChildCallback = (_parent, _child) => {}
@@ -88,6 +86,10 @@ export class Coordinate {
     return Mat4.mulGlVec3(this.getTransformMatrixToWorld(), position)
   }
 
+  setBeforeUpdateCallback(func: () => void) {
+    this.#beforeUpdateCallbacks.add(func)
+  }
+
   setUpdateCallback(func: () => void) {
     this.#updatedCallbacks.add(func)
   }
@@ -99,15 +101,6 @@ export class Coordinate {
   setRemoveChildCallback(func: (parent: Coordinate, child: Coordinate) => void) {
     this.#removeChildCallback = func
   }
-
-  //addItem(item: Item) {
-  //  if (this.#items.find(has => has.uuid === item.uuid)) return
-
-  //  this.#items.push(item)
-  //  if (!item.parentCoordinate || item.parentCoordinate.uuid !== this.uuid) {
-  //    item.parentCoordinate = this
-  //  }
-  //}
 
   addChild(child: Coordinate) {
     if (child.parent) {
@@ -132,14 +125,6 @@ export class Coordinate {
 
     this.#removeChildCallback(this, child)
   }
-
-  //static create(items: Array<Item>): Coordinate {
-  //  const coordinate = new Coordinate()
-
-  //  items.forEach(item => coordinate.addItem(item))
-
-  //  return coordinate
-  //}
 
   lookAt(targetPoint: VectorArray3) {
     this.#matrix = Mat4.lookAt(targetPoint, this.position)  

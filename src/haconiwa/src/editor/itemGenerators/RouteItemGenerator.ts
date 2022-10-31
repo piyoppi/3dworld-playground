@@ -18,7 +18,7 @@ import { MouseButton, MouseControllableCallbackFunction } from "../../../../lib/
 import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
 import { ColiderItemMap } from "../../../../lib/ColiderItemMap.js"
 import { makeConnectionMarker } from './Helpers/MakeConnectionMarker.js'
-import { Vec3 } from "../../../../lib/Matrix.js"
+import { Vec3, VectorArray3 } from "../../../../lib/Matrix.js"
 import { RenderingObject } from "../../../../lib/RenderingObject.js"
 import { JointableMarker } from "../Markers/JointableMarker.js"
 import { createJoint } from "./Joints/JointFactory.js"
@@ -84,7 +84,6 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
 
     const line = lineGenerator.getLine()
     const item = new LineItem(line)
-    item.parentCoordinate.lookAt(startPosition)
 
     const jointableMarkers = item.connections.map(connection => {
       const marker = new JointableMarker(connection, this.#markerRaycaster, this.#planeRaycaster, coliderConnectionMap)
@@ -100,7 +99,7 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
     item.parentCoordinate.addChild(coordinateForRendering)
 
     jointableMarkers.forEach((jointableMarker, index) => {
-      jointableMarker.marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder,this.#renderer)
+      jointableMarker.marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#renderer)
 
       jointableMarker.jointHandler.setConnectedCallbacks(() => {
         const joint = joints.get(jointableMarker)
@@ -168,7 +167,7 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
 
     if(!item.parentCoordinate.has(joint.coordinate)) {
       item.parentCoordinate.addChild(joint.coordinate)
-      attachCoordinateRenderingItem(joint.coordinate, this.#renderingObjectBuilder, this.#renderer)
+      //attachCoordinateRenderingItem(joint.coordinate, this.#renderingObjectBuilder, this.#renderer)
     }
     joint.updateRenderingObject(this.#renderingObjectBuilder, this.#renderer)
   }

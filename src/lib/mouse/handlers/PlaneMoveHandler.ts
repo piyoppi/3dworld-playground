@@ -4,13 +4,18 @@ import type { CursorModifier } from "./cursorModifiers/CursorModifier"
 import type { Coordinate } from "../../Coordinate.js"
 import { CallbackFunctions } from "../../CallbackFunctions.js"
 import type { Raycaster } from "../../Raycaster"
+import { VectorArray3 } from "../../Matrix"
+
+export type PlaneMoveHandlerApplyer = (coordinate: Coordinate, position: VectorArray3) => void
 
 export class PlaneMoveHandler implements MouseControllable {
   manipulateCoordinate: Coordinate
   #cursorModifier: CursorModifier
+  #beforeUpdateCallbacks = new CallbackFunctions<() => void>()
   #updatedCallbacks: Array<() => void> = []
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   #raycaster
+  #applyer: PlaneMoveHandlerApplyer = (coordinate: Coordinate, position: VectorArray3) => coordinate.position = position
   #isStart = false
 
   constructor(manipulateCoordinate: Coordinate, raycaster: Raycaster) {
@@ -31,12 +36,20 @@ export class PlaneMoveHandler implements MouseControllable {
     this.#startedCallbacks.remove(func)
   }
 
+  addBeforeUpdateCallback(callback: () => void) {
+    this.#beforeUpdateCallbacks.add(callback)
+  }
+
   addUpdatedCallback(callback: () => void) {
     this.#updatedCallbacks.push(callback)
   }
 
   setCursorModifier(modifier: CursorModifier) {
     this.#cursorModifier = modifier
+  }
+
+  setApplyer(applyer: PlaneMoveHandlerApplyer) {
+    this.#applyer = applyer
   }
 
   clearCursorModifier() {
@@ -61,9 +74,7 @@ export class PlaneMoveHandler implements MouseControllable {
       this.manipulateCoordinate.z !== this.#cursorModifier.alignedPosition[2]
 
     if (isChanged) {
-      this.manipulateCoordinate.x = this.#cursorModifier.alignedPosition[0]
-      this.manipulateCoordinate.y = this.#cursorModifier.alignedPosition[1]
-      this.manipulateCoordinate.z = this.#cursorModifier.alignedPosition[2]
+      this.#applyer(this.manipulateCoordinate, this.#cursorModifier.alignedPosition)
 
       this.#updatedCallbacks.forEach(callback => callback())
     }

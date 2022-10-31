@@ -11,7 +11,6 @@ export class LineEdge {
 
   constructor(position: VectorArray3, t: 0 | 1, parent: Line) {
     this.#coordinate = new Coordinate()
-    this.#coordinate.setUpdateCallback(() => this.handleCoordinateUpdated())
     this.#tValue = t
     this.#parent = parent
 
@@ -24,10 +23,6 @@ export class LineEdge {
 
   get coordinate() {
     return this.#coordinate
-  }
-
-  set position(value: VectorArray3) {
-    this.updateCoordinate(value)
   }
 
   get t() {
@@ -46,13 +41,10 @@ export class LineEdge {
     this.#updatedCallbacks.add(func)
   }
 
-  private handleCoordinateUpdated() {
-    this.#updatedCallbacks.call()
-  }
-
-  private updateCoordinate(position: VectorArray3) {
-    const direction = this.#tValue === 0 ? Vec3.reverse(this.#parent.getDirection(this.#tValue)) : this.#parent.getDirection(this.#tValue)
+  updateCoordinate(position: VectorArray3) {
+    const direction = [1, 0, 0] as VectorArray3 //this.#tValue === 0 ? Vec3.reverse(this.#parent.getDirection(this.#tValue)) : this.#parent.getDirection(this.#tValue)
 
     this.#coordinate.setDirectionYAxis(direction, position)
+    this.#updatedCallbacks.call()
   }
 }

@@ -86,7 +86,7 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject<T>> implements 
       marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder,this.#renderer)
 
       marker.parentCoordinate.setUpdateCallback(() => {
-        item.line.setEdge(index, marker.parentCoordinate.position)
+        //item.line.setEdge(index, marker.parentCoordinate.position)
         const generated = lineItemGenerator.update(item.line)
         itemGenerator.update(generated, item.parentCoordinate)
       })

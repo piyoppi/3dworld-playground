@@ -11,14 +11,13 @@ import type { Marker } from "./Marker"
 import { RenderingObject } from "../RenderingObject.js"
 
 export class CenterMarker implements Marker {
-  #parentCoordinate: Coordinate
+  #parentCoordinate: Coordinate = new Coordinate()
   #handledColiders: HandledColiders
   #radius: number
   #colider: Colider
+  #attachedRenderingItem = false
 
   constructor(radius: number) {
-    this.#parentCoordinate = new Coordinate()
-    this.setParentCoordinate(new Coordinate())
     this.#handledColiders= new HandledColiders()
     this.#radius = radius
     this.#colider = new BallColider(this.#radius, this.#parentCoordinate)
@@ -55,13 +54,16 @@ export class CenterMarker implements Marker {
   }
 
   setParentCoordinate(coordinate: Coordinate) {
-    if (coordinate) {
-      this.#parentCoordinate = coordinate
-      this.#colider = new BallColider(this.#radius, this.#parentCoordinate)
+    if (this.#attachedRenderingItem) {
+      throw new Error('RenderingItem is already attached')
     }
+
+    this.#parentCoordinate = coordinate
+    this.#colider = new BallColider(this.#radius, this.#parentCoordinate)
   }
 
   attachRenderingObject<T extends RenderingObject<unknown>>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
     renderer.addItem(this.#parentCoordinate, builder.makeSphere(this.#radius, color))
+    this.#attachedRenderingItem = true
   }
 }

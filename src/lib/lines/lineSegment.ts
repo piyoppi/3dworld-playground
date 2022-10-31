@@ -34,11 +34,6 @@ export class LineSegment implements Line {
     // noop
   }
 
-  setEdge(index: number, val: VectorArray3) {
-    this.#edges[index].position = val
-    this.#setup()
-  }
-
   getPosition(t: number) {
     return Vec3.add(Vec3.mulScale(this.#edges[0].position, (1 - t)), Vec3.mulScale(this.#edges[1].position, t))
   }

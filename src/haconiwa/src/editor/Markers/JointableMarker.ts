@@ -5,6 +5,8 @@ import { PlaneMoveHandler } from "../../../../lib/mouse/handlers/PlaneMoveHandle
 import { JointHandler } from "../../../../lib/mouse/handlers/JointHandler.js"
 import { CursorSnapColiderModifier } from "../../../../lib/mouse/handlers/cursorModifiers/CursorSnapColiderModifier.js"
 import type { ColiderItemMap } from "../../../../lib/ColiderItemMap"
+import { Coordinate } from "../../../../lib/Coordinate"
+import { VectorArray3 } from "../../../../lib/Matrix"
 
 export class JointableMarker {
   #marker = new CenterMarker(0.5)
@@ -22,6 +24,7 @@ export class JointableMarker {
     const snapModifier = new CursorSnapColiderModifier(markerRaycaster, [this.#marker.colider])
     this.#connection = connection
     this.#moveHandler = new PlaneMoveHandler(this.#marker.parentCoordinate, planeRaycaster)
+    this.#moveHandler.setApplyer((coordinate: Coordinate, position: VectorArray3) => connection.edge.updateCoordinate(position))
     this.#jointHandler = new JointHandler(connection, markerRaycaster, coliderConnectionMap)
 
     this.#jointHandler.setEndedCallback(() => {
