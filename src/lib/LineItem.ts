@@ -40,6 +40,10 @@ export class LineItemConnection {
     return this._connections
   }
 
+  hasConnections() {
+    return this._connections.length > 0
+  }
+
   isConnected(connection: LineItemConnection) {
     return this._connections.indexOf(connection) >= 0
   }

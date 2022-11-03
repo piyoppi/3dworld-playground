@@ -13,6 +13,7 @@ export const attachCoordinateRenderingItem = <T extends RenderingObject<unknown>
     {direction: [0, 1, 0] as VectorArray3, color: {r: 0, g: 255, b: 0}},
     {direction: [0, 0, 1] as VectorArray3, color: {r: 0, g: 0, b: 255}}
   ].forEach(params => {
+    console.log(params)
     const coord = new Coordinate()
     coordinate.addChild(coord)
 

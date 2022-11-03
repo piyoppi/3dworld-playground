@@ -65,7 +65,8 @@ export class Corner<T extends RenderingObject<unknown>> implements Joint<T> {
   }
 
   private removeRenderingItem(renderer: Renderer<T>) {
-    if (renderer.renderingObjectFromCoordinate(this.#coordinate)) {
+    const renderingObj = renderer.renderingObjectFromCoordinate(this.#coordinate)
+    if (renderingObj) {
       renderer.removeItem(this.#coordinate)
     }
   }

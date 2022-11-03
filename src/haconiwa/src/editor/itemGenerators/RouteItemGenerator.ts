@@ -156,6 +156,8 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
   }
 
   private updateJoint(joint: Joint<T>, item: LineItem, connection: LineItemConnection) {
+    if (!connection.hasConnections()) return
+
     const directions = [
       connection.edge.getTangentVector(),
       ...connection.connections.map(connection => connection.edge.getTangentVector())
@@ -167,7 +169,7 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
 
     if(!item.parentCoordinate.has(joint.coordinate)) {
       item.parentCoordinate.addChild(joint.coordinate)
-      //attachCoordinateRenderingItem(joint.coordinate, this.#renderingObjectBuilder, this.#renderer)
+      attachCoordinateRenderingItem(connection.edge.coordinate, this.#renderingObjectBuilder, this.#renderer)
     }
     joint.updateRenderingObject(this.#renderingObjectBuilder, this.#renderer)
   }
