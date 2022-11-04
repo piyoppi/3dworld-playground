@@ -2,7 +2,6 @@ import { LineItem, LineItemConnection } from "../../../../lib/LineItem.js"
 import type { Raycaster } from "../../../../lib/Raycaster"
 import type { Renderer } from "../../../../lib/Renderer"
 import { LineSegmentGenerator } from '../../../../lib/itemGenerators/lineItemGenerator/lineGenerator/LineSegmentGenerator.js'
-import type { Clonable } from "../../clonable"
 import type {
   HaconiwaItemGenerator,
   HaconiwaItemGeneratorFactory,
@@ -17,7 +16,6 @@ import { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder.j
 import { MouseButton, MouseControllableCallbackFunction } from "../../../../lib/mouse/MouseControllable.js"
 import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
 import { ColiderItemMap } from "../../../../lib/ColiderItemMap.js"
-import { makeConnectionMarker } from './Helpers/MakeConnectionMarker.js'
 import { Vec3, VectorArray3 } from "../../../../lib/Matrix.js"
 import { RenderingObject } from "../../../../lib/RenderingObject.js"
 import { JointableMarker } from "../Markers/JointableMarker.js"
@@ -169,7 +167,9 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
 
     if(!item.parentCoordinate.has(joint.coordinate)) {
       item.parentCoordinate.addChild(joint.coordinate)
-      attachCoordinateRenderingItem(connection.edge.coordinate, this.#renderingObjectBuilder, this.#renderer)
+
+      // [FIXME] for debug.
+      attachCoordinateRenderingItem(connection.edge.coordinate, this.#renderingObjectBuilder, this.#renderer, 1, 0.2)
     }
     joint.updateRenderingObject(this.#renderingObjectBuilder, this.#renderer)
   }

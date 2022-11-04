@@ -42,7 +42,13 @@ export class LineEdge {
   }
 
   updateCoordinate(position: VectorArray3) {
-    const direction = [1, 0, 0] as VectorArray3 //this.#tValue === 0 ? Vec3.reverse(this.#parent.getDirection(this.#tValue)) : this.#parent.getDirection(this.#tValue)
+    let direction = this.#parent.getDirection(this.#tValue)
+
+    if (Vec3.norm(direction) < 0.1) {
+      direction = [1, 0, 0]
+    }
+
+    const yAxis = this.#tValue === 0 ? Vec3.reverse(direction) : direction
 
     this.#coordinate.setDirectionYAxis(direction, position)
     this.#updatedCallbacks.call()
