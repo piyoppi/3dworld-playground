@@ -1,4 +1,5 @@
 import { Coordinate } from "../../../../../lib/Coordinate.js"
+import { LineEdge } from "../../../../../lib/lines/lineEdge.js"
 import { Vec3, VectorArray3 } from "../../../../../lib/Matrix.js"
 import { Renderer } from "../../../../../lib/Renderer.js"
 import { RenderingObject } from "../../../../../lib/RenderingObject.js"
@@ -6,7 +7,7 @@ import type { RenderingObjectBuilder } from "../../../../../lib/RenderingObjectB
 import type { Joint } from "./Joint"
 
 export class Corner<T extends RenderingObject<unknown>> implements Joint<T> {
-  #directions: VectorArray3[] = []
+  #edges: LineEdge[] = []
   #width = 1
   #coordinate: Coordinate = new Coordinate()
   #originalPosition: VectorArray3 = [0, 0, 0]
@@ -19,16 +20,16 @@ export class Corner<T extends RenderingObject<unknown>> implements Joint<T> {
     return this.#coordinate
   }
 
-  get directionLength() {
-    return this.#directions.length
+  get edgeCount() {
+    return this.#edges.length
   }
 
-  setConnectedDirections(directions: VectorArray3[]) {
-    if (directions.length > 2) {
+  setEdges(edges: LineEdge[]) {
+    if (edges.length > 2) {
       throw new Error('Too many connections.')
     }
 
-    this.#directions = directions
+    this.#edges = edges
   }
 
   setPosition(position: VectorArray3) {
@@ -72,9 +73,14 @@ export class Corner<T extends RenderingObject<unknown>> implements Joint<T> {
   }
 
   private makeRenderingObject(builder: RenderingObjectBuilder<T>) {
-    const angle = (Math.PI) - Math.acos(Vec3.dotprod(this.#directions[0], this.#directions[1]))
+    const angle = Math.PI - Math.acos(Vec3.dotprod(this.#edges[0].xAxis, this.#edges[1].xAxis))
+    let startAngle = Math.acos(Vec3.dotprod(this.#edges[1].xAxis, [1, 0, 0])) - angle
 
-    const obj = builder.makeCircle(this.#width / 4, angle, (Math.PI / 2), {r: 255, g: 0, b: 0})
+    if (Vec3.dotprod(this.#edges[1].xAxis, this.#edges[0].zAxis) < 0) {
+      startAngle += Math.PI + angle
+    }
+
+    const obj = builder.makeCircle(this.#width / 2, angle, startAngle, {r: 255, g: 0, b: 0})
 
     return obj
   }

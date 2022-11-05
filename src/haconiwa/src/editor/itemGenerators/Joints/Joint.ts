@@ -1,4 +1,5 @@
 import { Coordinate } from "../../../../../lib/Coordinate"
+import { LineEdge } from "../../../../../lib/lines/lineEdge"
 import { VectorArray3 } from "../../../../../lib/Matrix"
 import { Renderer } from "../../../../../lib/Renderer"
 import { RenderingObject } from "../../../../../lib/RenderingObject"
@@ -6,9 +7,9 @@ import { RenderingObjectBuilder } from "../../../../../lib/RenderingObjectBuilde
 
 export interface Joint<T extends RenderingObject<unknown>> {
   readonly coordinate: Coordinate
-  readonly directionLength: number
+  readonly edgeCount: number
   setPosition: (position: VectorArray3) => void
-  setConnectedDirections: (directions: VectorArray3[]) => void
+  setEdges: (edges: LineEdge[]) => void
   setWidth: (width: number) => void
   getOffset: () => number
   updateRenderingObject: (builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) => void

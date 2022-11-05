@@ -33,6 +33,18 @@ export class LineEdge {
     return this.#parent
   }
 
+  get xAxis() {
+    return this.#coordinate.xAxis
+  }
+
+  get yAxis() {
+    return this.#coordinate.yAxis
+  }
+
+  get zAxis() {
+    return this.#coordinate.zAxis
+  }
+
   getTangentVector() {
     return this.#parent.getDirection(this.#tValue)
   }
@@ -45,12 +57,12 @@ export class LineEdge {
     let direction = this.#parent.getDirection(this.#tValue)
 
     if (Vec3.norm(direction) < 0.1) {
-      direction = [1, 0, 0]
+      direction = [0, 0, 1]
     }
 
-    const yAxis = this.#tValue === 0 ? Vec3.reverse(direction) : direction
+    const zAxis = this.#tValue === 0 ? Vec3.reverse(direction) : direction
 
-    this.#coordinate.setDirectionYAxis(direction, position)
+    this.#coordinate.setDirectionZAxis(direction, position)
     this.#updatedCallbacks.call()
   }
 }

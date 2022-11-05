@@ -148,7 +148,7 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
   }
 
   private createJoint(givenJoint: Joint<T>, connection: LineItemConnection) {
-    return givenJoint.directionLength !== connection.connections.length ?
+    return givenJoint.edgeCount !== connection.connections.length ?
       createJoint<T>(connection.connections.length) :
       givenJoint
   }
@@ -156,12 +156,12 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
   private updateJoint(joint: Joint<T>, item: LineItem, connection: LineItemConnection) {
     if (!connection.hasConnections()) return
 
-    const directions = [
-      connection.edge.getTangentVector(),
-      ...connection.connections.map(connection => connection.edge.getTangentVector())
+    const edges = [
+      connection.edge,
+      ...connection.connections.map(connection => connection.edge)
     ]
 
-    joint.setConnectedDirections(directions)
+    joint.setEdges(edges)
     joint.setPosition(connection.edge.position)
     joint.setWidth(6)
 

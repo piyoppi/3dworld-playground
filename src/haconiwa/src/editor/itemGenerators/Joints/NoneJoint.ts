@@ -1,4 +1,5 @@
 import { Coordinate } from "../../../../../lib/Coordinate.js"
+import { LineEdge } from "../../../../../lib/lines/lineEdge.js"
 import { VectorArray3 } from "../../../../../lib/Matrix.js"
 import { Renderer } from "../../../../../lib/Renderer.js"
 import { RenderingObject } from "../../../../../lib/RenderingObject.js"
@@ -12,7 +13,7 @@ export class NoneJoint<T extends RenderingObject<unknown>> implements Joint<T> {
     return this.#coordinate
   }
 
-  get directionLength() {
+  get edgeCount() {
     return 0
   }
 
@@ -20,7 +21,7 @@ export class NoneJoint<T extends RenderingObject<unknown>> implements Joint<T> {
 
   }
 
-  setConnectedDirections(_: VectorArray3[]) {
+  setEdges(_: LineEdge[]) {
 
   }
 

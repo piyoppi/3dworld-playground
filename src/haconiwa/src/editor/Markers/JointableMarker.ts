@@ -1,4 +1,4 @@
-import type { LineItem, LineItemConnection } from "../../../../lib/LineItem"
+import type { LineItemConnection } from "../../../../lib/LineItem"
 import type { Raycaster } from "../../../../lib/Raycaster"
 import { CenterMarker } from "../../../../lib/markers/CenterMarker.js"
 import { PlaneMoveHandler } from "../../../../lib/mouse/handlers/PlaneMoveHandler.js"
