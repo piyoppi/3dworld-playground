@@ -1,6 +1,8 @@
 import { Line } from "./lines/line.js"
 import { Item } from "./Item.js"
 import { LineEdge } from "./lines/lineEdge.js"
+import { CallbackFunctions } from "./CallbackFunctions.js"
+import { MouseControllableCallbackFunction } from "./mouse/MouseControllable.js"
 
 export class LineItem extends Item {
   #line: Line
@@ -26,6 +28,9 @@ export class LineItem extends Item {
 
 export class LineItemConnection {
   #edge: LineEdge
+  #connectedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
+  #disconnectedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
+
   protected _connections: LineItemConnection[] = []
 
   constructor(edge: LineEdge) {
@@ -44,6 +49,22 @@ export class LineItemConnection {
     return this.#edge.position
   }
 
+  setConnectedCallbacks(func: MouseControllableCallbackFunction) {
+    this.#connectedCallbacks.add(func)
+  }
+
+  removeConnectedCallbacks(func: MouseControllableCallbackFunction) {
+    this.#connectedCallbacks.remove(func)
+  }
+
+  setDisconnectedCallbacks(func: MouseControllableCallbackFunction) {
+    this.#disconnectedCallbacks.add(func)
+  }
+
+  removeDisconnectedCallbacks(func: MouseControllableCallbackFunction) {
+    this.#disconnectedCallbacks.remove(func)
+  }
+
   hasConnections() {
     return this._connections.length > 0
   }
@@ -55,6 +76,9 @@ export class LineItemConnection {
   connect(connection: LineItemConnection) {
     this._connections.push(connection)
     connection._connections.push(this)
+
+    this.#connectedCallbacks.call()
+    connection.#connectedCallbacks.call()
   }
 
   disconnect(connection: LineItemConnection) {
@@ -68,5 +92,7 @@ export class LineItemConnection {
     }
 
     this._connections.splice(itemIndex, 1)
+
+    this.#disconnectedCallbacks.call()
   }
 }

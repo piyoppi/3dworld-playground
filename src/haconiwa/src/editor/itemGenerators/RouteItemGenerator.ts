@@ -90,40 +90,38 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
       return marker
     })
 
-    const joints = new Map<JointableMarker, Joint<T>>()
-    jointableMarkers.forEach(marker => joints.set(marker, new NoneJoint()))
+    const joints = new Map<LineItemConnection, Joint<T>>()
+    item.connections.forEach(connection => joints.set(connection, new NoneJoint()))
 
     const coordinateForRendering = new Coordinate()
     item.parentCoordinate.addChild(coordinateForRendering)
 
-    jointableMarkers.forEach((jointableMarker, index) => {
-      jointableMarker.marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#renderer)
-
-      jointableMarker.jointHandler.setConnectedCallbacks(() => {
-        const joint = joints.get(jointableMarker)
-        if (!joint) return
-
-        const recreatedJoint = this.createJoint(joint, jointableMarker.connection)
-        this.updateJoint(recreatedJoint, item, jointableMarker.connection)
-        joints.set(jointableMarker, recreatedJoint)
+    item.connections.forEach(connection => {
+      connection.setConnectedCallbacks(() => {
+        const joint = joints.get(connection)
+        if (joint) {
+          const recreatedJoint = this.createJoint(joint, connection)
+          this.updateJoint(recreatedJoint, item, connection)
+          joints.set(connection, recreatedJoint)
+        }
       })
 
-      jointableMarker.jointHandler.setDisconnectedCallbacks(() => {
-        const joint = joints.get(jointableMarker)
+      connection.setDisconnectedCallbacks(() => {
+        const joint = joints.get(connection)
         if (joint) {
           joint.dispose(this.#renderer)
         }
       })
+    })
 
-      jointableMarker.marker.parentCoordinate.setUpdateCallback(() => {
-        const joint = joints.get(jointableMarker)
-        console.log(joint)
+    jointableMarkers.forEach(jointableMarker => {
+      jointableMarker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#renderer)
 
-        this.updateRenderingObject(coordinateForRendering, item, item.line.length, Array.from(joints.values()))
+      jointableMarker.setUpdatedCoordinateCallback(() => {
+        const jointsArray = Array.from(joints.values())
+        this.updateRenderingObject(coordinateForRendering, item, item.line.length, jointsArray)
 
-        if (joint) {
-          this.updateJoint(joint, item, jointableMarker.connection)
-        }
+        jointsArray.forEach(joint => this.updateJoint(joint, item, jointableMarker.connection))
       })
     })
 

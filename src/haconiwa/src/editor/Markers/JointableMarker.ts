@@ -7,6 +7,11 @@ import { CursorSnapColiderModifier } from "../../../../lib/mouse/handlers/cursor
 import type { ColiderItemMap } from "../../../../lib/ColiderItemMap"
 import { Coordinate } from "../../../../lib/Coordinate"
 import { VectorArray3 } from "../../../../lib/Matrix"
+import { RGBColor } from "../../../../lib/helpers/color"
+import { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder"
+import { RenderingObject } from "../../../../lib/RenderingObject"
+import { Renderer } from "../../../../lib/Renderer"
+import { MouseControllableCallbackFunction } from "../../../../lib/mouse/MouseControllable"
 
 export class JointableMarker {
   #marker = new CenterMarker(0.5)
@@ -44,6 +49,14 @@ export class JointableMarker {
 
   setIgnoredConnection(connection: LineItemConnection) {
     this.#jointHandler.addIgnoredConnection(connection)
+  }
+
+  attachRenderingObject<T extends RenderingObject<unknown>>(color: RGBColor, renderingObjectBuilder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
+    this.#marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, renderingObjectBuilder, renderer)
+  }
+
+  setUpdatedCoordinateCallback(fn: MouseControllableCallbackFunction) {
+    this.#marker.parentCoordinate.setUpdateCallback(fn)
   }
 
   get moveHandler() {

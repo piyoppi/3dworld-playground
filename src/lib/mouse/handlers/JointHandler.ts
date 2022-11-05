@@ -1,7 +1,6 @@
 import type { ColiderItemMap } from "../../ColiderItemMap"
 import type { Coordinate } from "../../Coordinate"
 import { LineItemConnection } from "../../LineItem"
-import { LineEdge } from "../../lines/lineEdge"
 import type { MouseButton, MouseControllable, MouseControllableCallbackFunction } from "../../mouse/MouseControllable"
 import { CallbackFunctions } from "../../CallbackFunctions.js"
 import type { Raycaster } from "../../Raycaster"
@@ -85,6 +84,7 @@ export class JointHandler implements MouseControllable {
     connections.forEach(connection => {
       if (!connection.isConnected(this.#connection)) {
         connection.connect(this.#connection)
+
         this.#connecting.push(connection)
         this.#connectedCallbacks.call()
       }

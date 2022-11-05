@@ -61,7 +61,7 @@ export class Corner<T extends RenderingObject<unknown>> implements Joint<T> {
   }
 
   private getAngle() {
-    return (Math.PI - Math.acos(Vec3.dotprod(this.#edges[0].xAxis, this.#edges[1].xAxis))
+    return (Math.PI - Math.acos(Vec3.dotprod(this.#edges[0].xAxis, this.#edges[1].xAxis)))
   }
 
   private adjustPosition() {
