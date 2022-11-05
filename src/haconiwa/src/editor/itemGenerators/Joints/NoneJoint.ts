@@ -17,10 +17,6 @@ export class NoneJoint<T extends RenderingObject<unknown>> implements Joint<T> {
     return 0
   }
 
-  setPosition(position: VectorArray3) {
-
-  }
-
   setEdges(_: LineEdge[]) {
 
   }

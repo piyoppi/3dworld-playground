@@ -16,7 +16,7 @@ import { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder.j
 import { MouseButton, MouseControllableCallbackFunction } from "../../../../lib/mouse/MouseControllable.js"
 import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
 import { ColiderItemMap } from "../../../../lib/ColiderItemMap.js"
-import { Vec3, VectorArray3 } from "../../../../lib/Matrix.js"
+import { Vec3 } from "../../../../lib/Matrix.js"
 import { RenderingObject } from "../../../../lib/RenderingObject.js"
 import { JointableMarker } from "../Markers/JointableMarker.js"
 import { createJoint } from "./Joints/JointFactory.js"
@@ -102,6 +102,10 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
         if (joint) {
           const recreatedJoint = this.createJoint(joint, connection)
           this.updateJoint(recreatedJoint, item, connection)
+
+          // [FIXME] for debug.
+          attachCoordinateRenderingItem(connection.edge.coordinate, this.#renderingObjectBuilder, this.#renderer, 1, 0.2)
+
           joints.set(connection, recreatedJoint)
         }
       })
@@ -162,15 +166,8 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
     ]
 
     joint.setEdges(edges)
-    joint.setPosition(connection.edge.position)
     joint.setWidth(6)
 
-    if(!item.parentCoordinate.has(joint.coordinate)) {
-      item.parentCoordinate.addChild(joint.coordinate)
-
-      // [FIXME] for debug.
-      attachCoordinateRenderingItem(connection.edge.coordinate, this.#renderingObjectBuilder, this.#renderer, 1, 0.2)
-    }
     joint.updateRenderingObject(this.#renderingObjectBuilder, this.#renderer)
   }
 
@@ -181,7 +178,7 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
   }
 
   private updateRenderingObject(coordinate: Coordinate, lineItem: LineItem, length: number, joints: Joint<T>[]) {
-    const offset = joints.reduce((acc, joint) => joint.getOffset(), 0)
+    const offset = joints.reduce((acc, joint) => acc + joint.getOffset(), 0)
     const itemScale = (length - offset) / (this.original?.renderingObject.size[0] || 1)
     coordinate.scale([1, 1, itemScale])
 

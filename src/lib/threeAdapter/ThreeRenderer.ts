@@ -86,6 +86,10 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
     return this.#mapCoordinateIdToRenderingObject.get(coordinate.uuid) || null
   }
 
+  hasRenderingObject(coordinate: Coordinate) {
+    return !!this.renderingObjectFromCoordinate(coordinate) || false
+  }
+
   setColor(coordinate: Coordinate, color: RGBColor) {
     this.threeItemFromCoordinate(coordinate).forEach(item => {
       if (!(item instanceof Mesh)) return

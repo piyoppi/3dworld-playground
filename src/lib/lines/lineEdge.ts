@@ -45,6 +45,10 @@ export class LineEdge {
     return this.#coordinate.zAxis
   }
 
+  addChildCoordinate(coordinate: Coordinate) {
+    this.#coordinate.addChild(coordinate)
+  }
+
   getTangentVector() {
     return this.#parent.getDirection(this.#tValue)
   }

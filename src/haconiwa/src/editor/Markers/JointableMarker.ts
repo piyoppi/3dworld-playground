@@ -52,7 +52,7 @@ export class JointableMarker {
   }
 
   attachRenderingObject<T extends RenderingObject<unknown>>(color: RGBColor, renderingObjectBuilder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
-    this.#marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, renderingObjectBuilder, renderer)
+    this.#marker.attachRenderingObject<T>(color, renderingObjectBuilder, renderer)
   }
 
   setUpdatedCoordinateCallback(fn: MouseControllableCallbackFunction) {

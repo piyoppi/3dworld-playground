@@ -11,6 +11,7 @@ export interface Renderer<T extends RenderingObject<unknown>> {
   setColor: (coordinate: Coordinate, color: RGBColor) => void
   addLight: (coordinate: Coordinate) => void
   renderingObjectFromCoordinate: (coordinate: Coordinate) => T | null
+  hasRenderingObject: (coordinate: Coordinate) => boolean
   readonly camera: Camera
   render: () => void
   mount: () => void

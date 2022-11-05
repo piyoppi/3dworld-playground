@@ -10,7 +10,6 @@ export class Corner<T extends RenderingObject<unknown>> implements Joint<T> {
   #edges: LineEdge[] = []
   #width = 1
   #coordinate: Coordinate = new Coordinate()
-  #originalPosition: VectorArray3 = [0, 0, 0]
 
   constructor() {
     this.#coordinate.rotateX(-Math.PI / 2)
@@ -30,22 +29,18 @@ export class Corner<T extends RenderingObject<unknown>> implements Joint<T> {
     }
 
     this.#edges = edges
-  }
 
-  setPosition(position: VectorArray3) {
-    this.#originalPosition = position
-
-    this.adjustPosition()
+    if (!this.#coordinate.parent) {
+      this.#edges[0].addChildCoordinate(this.#coordinate)
+    }
   }
 
   setWidth(width: number) {
     this.#width = width
-
-    this.adjustPosition()
   }
 
   getOffset() {
-    return (this.#width / 2) * Math.sin(this.getAngle())
+    return (this.#width / 2) * Math.tan(this.getAngle() / 2)
   }
 
   updateRenderingObject(builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
@@ -64,11 +59,6 @@ export class Corner<T extends RenderingObject<unknown>> implements Joint<T> {
     return (Math.PI - Math.acos(Vec3.dotprod(this.#edges[0].xAxis, this.#edges[1].xAxis)))
   }
 
-  private adjustPosition() {
-    this.#coordinate.position = this.#originalPosition
-    this.#coordinate.y = 0.1
-  }
-
   private removeRenderingItem(renderer: Renderer<T>) {
     const renderingObj = renderer.renderingObjectFromCoordinate(this.#coordinate)
     if (renderingObj) {
@@ -78,13 +68,13 @@ export class Corner<T extends RenderingObject<unknown>> implements Joint<T> {
 
   private makeRenderingObject(builder: RenderingObjectBuilder<T>) {
     const angle = this.getAngle()
-    let startAngle = Math.acos(Vec3.dotprod(this.#edges[1].xAxis, [1, 0, 0])) - angle / 2
+    let startAngle = -angle
 
-    if (Vec3.dotprod(this.#edges[1].xAxis, this.#edges[0].zAxis) < 0) {
+    if (Vec3.dotprod(this.#edges[0].xAxis, this.#edges[1].zAxis) < 0) {
       startAngle += Math.PI + angle
     }
 
-    const obj = builder.makeCircle(this.#width / 2, angle / 2, startAngle, {r: 255, g: 0, b: 0})
+    const obj = builder.makeCircle(this.#width / 2, angle, startAngle, {r: 255, g: 0, b: 0})
 
     return obj
   }
