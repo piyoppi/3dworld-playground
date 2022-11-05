@@ -45,7 +45,7 @@ export class Corner<T extends RenderingObject<unknown>> implements Joint<T> {
   }
 
   getOffset() {
-    return 0
+    return (this.#width / 2) * Math.sin(this.getAngle())
   }
 
   updateRenderingObject(builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
@@ -58,6 +58,10 @@ export class Corner<T extends RenderingObject<unknown>> implements Joint<T> {
 
   dispose(renderer: Renderer<T>) {
     this.removeRenderingItem(renderer)
+  }
+
+  private getAngle() {
+    return Math.PI - Math.acos(Vec3.dotprod(this.#edges[0].xAxis, this.#edges[1].xAxis))
   }
 
   private adjustPosition() {
@@ -73,7 +77,7 @@ export class Corner<T extends RenderingObject<unknown>> implements Joint<T> {
   }
 
   private makeRenderingObject(builder: RenderingObjectBuilder<T>) {
-    const angle = Math.PI - Math.acos(Vec3.dotprod(this.#edges[0].xAxis, this.#edges[1].xAxis))
+    const angle = this.getAngle()
     let startAngle = Math.acos(Vec3.dotprod(this.#edges[1].xAxis, [1, 0, 0])) - angle
 
     if (Vec3.dotprod(this.#edges[1].xAxis, this.#edges[0].zAxis) < 0) {

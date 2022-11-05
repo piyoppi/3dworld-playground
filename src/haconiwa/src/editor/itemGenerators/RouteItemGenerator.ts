@@ -116,9 +116,10 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
       })
 
       jointableMarker.marker.parentCoordinate.setUpdateCallback(() => {
-        this.updateRenderingObject(coordinateForRendering, item, item.line.length, 0)
-
         const joint = joints.get(jointableMarker)
+
+        this.updateRenderingObject(coordinateForRendering, item, item.line.length, Array.from(joints.values()))
+
         if (joint) {
           this.updateJoint(joint, item, jointableMarker.connection)
         }
@@ -127,7 +128,7 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
 
     const renderingObject = this.makeRenderingObject()
     this.#renderer.addItem(coordinateForRendering, renderingObject)
-    this.updateRenderingObject(coordinateForRendering, item, item.line.length, 0)
+    this.updateRenderingObject(coordinateForRendering, item, item.line.length, Array.from(joints.values()))
 
     this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], jointableMarkers.map(item => item.marker))]))
 
@@ -180,8 +181,9 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
     return this.original.renderingObject.clone()
   }
 
-  private updateRenderingObject(coordinate: Coordinate, lineItem: LineItem, length: number, offset: number) {
-    const itemScale = length / (this.original?.renderingObject.size[0] || 1)
+  private updateRenderingObject(coordinate: Coordinate, lineItem: LineItem, length: number, joints: Joint<T>[]) {
+    const offset = joints.reduce((acc, joint) => joint.getOffset(), 0)
+    const itemScale = (length - offset) / (this.original?.renderingObject.size[0] || 1)
     coordinate.scale([1, 1, itemScale])
 
     const renderingItem = this.#renderer.renderingObjectFromCoordinate(coordinate)
@@ -190,8 +192,18 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
       renderingItem.material.repeat(itemScale, 1)
     }
 
-    const direction = lineItem.line.getDirection(0)
-    const position = Vec3.add(lineItem.connections[0].edge.position, Vec3.mulScale(Vec3.subtract(lineItem.connections[1].edge.position, lineItem.connections[0].edge.position), 0.5))
+    const direction = Vec3.normalize(Vec3.subtract(lineItem.connections[1].position, lineItem.connections[0].position))
+    const position =
+      Vec3.add(
+        lineItem.connections[0].edge.position,
+        Vec3.mulScale(
+          Vec3.subtract(
+            Vec3.subtract(lineItem.connections[1].position, Vec3.mulScale(direction, joints[1].getOffset())),
+            Vec3.add(lineItem.connections[0].position, Vec3.mulScale(direction, joints[0].getOffset()))
+          ),
+          0.5
+        )
+      )
     coordinate.setDirectionZAxis(direction, position)
 
     if (Vec3.dotprod(coordinate.zAxis, [0, 1, 0]) < 0) {

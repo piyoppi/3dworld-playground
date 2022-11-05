@@ -40,6 +40,10 @@ export class LineItemConnection {
     return this._connections
   }
 
+  get position() {
+    return this.#edge.position
+  }
+
   hasConnections() {
     return this._connections.length > 0
   }
