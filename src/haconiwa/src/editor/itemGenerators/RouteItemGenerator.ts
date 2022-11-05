@@ -117,6 +117,7 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
 
       jointableMarker.marker.parentCoordinate.setUpdateCallback(() => {
         const joint = joints.get(jointableMarker)
+        console.log(joint)
 
         this.updateRenderingObject(coordinateForRendering, item, item.line.length, Array.from(joints.values()))
 

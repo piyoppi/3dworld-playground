@@ -61,7 +61,7 @@ export class Corner<T extends RenderingObject<unknown>> implements Joint<T> {
   }
 
   private getAngle() {
-    return Math.PI - Math.acos(Vec3.dotprod(this.#edges[0].xAxis, this.#edges[1].xAxis))
+    return (Math.PI - Math.acos(Vec3.dotprod(this.#edges[0].xAxis, this.#edges[1].xAxis))
   }
 
   private adjustPosition() {
@@ -78,13 +78,13 @@ export class Corner<T extends RenderingObject<unknown>> implements Joint<T> {
 
   private makeRenderingObject(builder: RenderingObjectBuilder<T>) {
     const angle = this.getAngle()
-    let startAngle = Math.acos(Vec3.dotprod(this.#edges[1].xAxis, [1, 0, 0])) - angle
+    let startAngle = Math.acos(Vec3.dotprod(this.#edges[1].xAxis, [1, 0, 0])) - angle / 2
 
     if (Vec3.dotprod(this.#edges[1].xAxis, this.#edges[0].zAxis) < 0) {
       startAngle += Math.PI + angle
     }
 
-    const obj = builder.makeCircle(this.#width / 2, angle, startAngle, {r: 255, g: 0, b: 0})
+    const obj = builder.makeCircle(this.#width / 2, angle / 2, startAngle, {r: 255, g: 0, b: 0})
 
     return obj
   }
