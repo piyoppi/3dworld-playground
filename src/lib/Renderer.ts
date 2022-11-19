@@ -3,7 +3,7 @@ import { Coordinate } from './Coordinate.js'
 import { RGBColor } from './helpers/color.js'
 import { RenderingObject } from './RenderingObject.js'
 
-export interface Renderer<T extends RenderingObject<unknown>> {
+export interface Renderer<T> {
   initialize: (width: number, height: number) => void
   setRenderingLoop: (callable: () => void) => void
   addItem: (coordinate: Coordinate, renderingObject: T) => void

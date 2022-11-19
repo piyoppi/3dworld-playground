@@ -1,18 +1,23 @@
 import { Coordinate } from "../../../../../lib/Coordinate.js"
 import { LineEdge } from "../../../../../lib/lines/lineEdge.js"
-import { Vec3, VectorArray3 } from "../../../../../lib/Matrix.js"
+import { Vec3 } from "../../../../../lib/Matrix.js"
 import { Renderer } from "../../../../../lib/Renderer.js"
 import { RenderingObject } from "../../../../../lib/RenderingObject.js"
 import type { RenderingObjectBuilder } from "../../../../../lib/RenderingObjectBuilder"
+import { Clonable } from "../../../clonable.js"
 import type { Joint } from "./Joint"
 
-export class Corner<T extends RenderingObject<unknown>> implements Joint<T> {
+export class Corner<T extends RenderingObject> implements Joint<T> {
   #edges: LineEdge[] = []
   #width = 1
   #coordinate: Coordinate = new Coordinate()
+  #fragmentCoordinate: Coordinate = new Coordinate()
+  #fragmentRenderingObject: T | null = null
+  #original: T
 
-  constructor() {
+  constructor(renderingObj: T) {
     this.#coordinate.rotateX(-Math.PI / 2)
+    this.#original = renderingObj
   }
 
   get coordinate() {
@@ -32,6 +37,7 @@ export class Corner<T extends RenderingObject<unknown>> implements Joint<T> {
 
     if (!this.#coordinate.parent) {
       this.#edges[0].addChildCoordinate(this.#coordinate)
+      this.#edges[0].addChildCoordinate(this.#fragmentCoordinate)
     }
   }
 
@@ -44,22 +50,30 @@ export class Corner<T extends RenderingObject<unknown>> implements Joint<T> {
   }
 
   updateRenderingObject(builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
-    this.removeRenderingItem(renderer)
+    this.removeCornerRenderingItem(renderer)
 
-    const renderingObj = this.makeRenderingObject(builder)
+    if (!this.#fragmentRenderingObject) {
+      const renderingObj = this.#original.clone() as T
+      this.#fragmentRenderingObject = renderingObj
+      renderer.addItem(this.#fragmentCoordinate, renderingObj)
+    }
 
-    renderer.addItem(this.#coordinate, renderingObj)
+    const itemScale = this.getOffset() / (this.#original?.size[0] || 1)
+    this.#fragmentCoordinate.scale([1, 1, itemScale])
+
+    const cornerRenderingObj = this.makeRenderingObject(builder)
+    renderer.addItem(this.#coordinate, cornerRenderingObj)
   }
 
   dispose(renderer: Renderer<T>) {
-    this.removeRenderingItem(renderer)
+    this.removeCornerRenderingItem(renderer)
   }
 
   private getAngle() {
     return (Math.PI - Math.acos(Vec3.dotprod(this.#edges[0].xAxis, this.#edges[1].xAxis)))
   }
 
-  private removeRenderingItem(renderer: Renderer<T>) {
+  private removeCornerRenderingItem(renderer: Renderer<T>) {
     const renderingObj = renderer.renderingObjectFromCoordinate(this.#coordinate)
     if (renderingObj) {
       renderer.removeItem(this.#coordinate)

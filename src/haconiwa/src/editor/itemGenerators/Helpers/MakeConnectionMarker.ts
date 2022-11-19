@@ -7,7 +7,7 @@ import type { Raycaster } from "../../../../../lib/Raycaster"
 import type { ColiderItemMap } from "../../../../../lib/ColiderItemMap"
 import { RenderingObject } from "../../../../../lib/RenderingObject.js"
 
-export function makeConnectionMarker<T extends RenderingObject<T>>(
+export function makeConnectionMarker<T>(
   item: LineItem,
   markerRaycaster: Raycaster,
   planeRaycaster: Raycaster,

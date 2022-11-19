@@ -21,7 +21,7 @@ import type { ColiderItemMap } from "../../../../lib/ColiderItemMap.js"
 import { makeConnectionMarker } from './Helpers/MakeConnectionMarker.js'
 import { RenderingObject } from "../../../../lib/RenderingObject.js"
 
-export class HaconiwaLineItemGenerator<T extends RenderingObject<T>> implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorLineConnectable, HaconiwaItemGeneratorItemClonable<T>  {
+export class HaconiwaLineItemGenerator<T extends RenderingObject> implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorLineConnectable, HaconiwaItemGeneratorItemClonable<T>  {
   #onGeneratedCallbacks: Array<HaconiwaItemGeneratedCallback<T>> = []
   #planeRaycaster: Raycaster
   #markerRaycaster: Raycaster
@@ -113,13 +113,13 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject<T>> implements 
   private itemFactory() {
     if (!this.original) throw new Error('Item and RenderingObject is not set.')
 
-    const renderingObject = this.original.renderingObject.clone()
+    const renderingObject = this.original.renderingObject.clone() as T
   
     return {item: new Coordinate(), renderingObject}
   }
 }
 
-export class HaconiwaLineItemGeneratorFactory<T extends RenderingObject<T>> implements HaconiwaItemGeneratorFactory<T> {
+export class HaconiwaLineItemGeneratorFactory<T extends RenderingObject> implements HaconiwaItemGeneratorFactory<T> {
   create(renderer: Renderer<T>, raycaster: Raycaster, markerRaycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) {
     const generator = new HaconiwaLineItemGenerator(renderer, raycaster, markerRaycaster, renderingObjectBuilder)
 

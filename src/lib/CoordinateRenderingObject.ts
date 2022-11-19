@@ -1,10 +1,9 @@
 import type { RenderingObjectBuilder } from './RenderingObjectBuilder'
 import type { Renderer } from "./Renderer"
 import { Vec3, VectorArray3 } from "./Matrix.js"
-import { RenderingObject } from "./RenderingObject.js"
 import { Coordinate } from './Coordinate.js'
 
-export const attachCoordinateRenderingItem = <T extends RenderingObject<unknown>>(
+export const attachCoordinateRenderingItem = <T>(
   coordinate: Coordinate,
   builder: RenderingObjectBuilder<T>,
   renderer: Renderer<T>,

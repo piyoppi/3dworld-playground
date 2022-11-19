@@ -10,7 +10,6 @@ import { BoxColider } from '../lib/Colider.js'
 import { setRenderer } from '../lib/Debugger.js'
 import { DirectionalMarker } from '../lib/markers/DirectionalMarker.js'
 import { ThreeGroup, ThreeRenderingObject } from '../lib/threeAdapter/ThreeRenderingObject.js'
-import { Item } from '../lib/Item.js'
 import { convertButtonNumberToMouseButtonsType } from '../lib/mouse/ConvertMouseButtonIdToMouseButtonType.js'
 
 const lookAtCameraHandler = new LookAtCameraHandler()

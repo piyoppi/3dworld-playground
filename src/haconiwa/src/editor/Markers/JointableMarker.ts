@@ -9,7 +9,6 @@ import { Coordinate } from "../../../../lib/Coordinate"
 import { VectorArray3 } from "../../../../lib/Matrix"
 import { RGBColor } from "../../../../lib/helpers/color"
 import { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder"
-import { RenderingObject } from "../../../../lib/RenderingObject"
 import { Renderer } from "../../../../lib/Renderer"
 import { MouseControllableCallbackFunction } from "../../../../lib/mouse/MouseControllable"
 
@@ -51,7 +50,7 @@ export class JointableMarker {
     this.#jointHandler.addIgnoredConnection(connection)
   }
 
-  attachRenderingObject<T extends RenderingObject<unknown>>(color: RGBColor, renderingObjectBuilder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
+  attachRenderingObject<T>(color: RGBColor, renderingObjectBuilder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
     this.#marker.attachRenderingObject<T>(color, renderingObjectBuilder, renderer)
   }
 

@@ -5,14 +5,14 @@ import { LinearAlignment } from "../../alignments/linearAlignment.js"
 import { Mat4 } from "../../Matrix.js"
 import { RenderingObject } from "../../RenderingObject"
 
-export type LineItemGenerated<T, U extends RenderingObject<U>> = {
+export type LineItemGenerated<T, U> = {
    generatedItems: Array<GeneratedItem<T, U>>,
    removedItems: Array<GeneratedItem<T, U>>,
    transformMatrixes: Array<MatrixArray4>,
    items: Array<GeneratedItem<T, U>>
 }
 
-export class LineItemGenerator<T, U extends RenderingObject<U>> implements ItemGenerator<T, U> {
+export class LineItemGenerator<T, U> implements ItemGenerator<T, U> {
   #generator: GenerateItemFactory<T, U>
   #itemSpan: number
   #generated: Array<GeneratedItem<T, U>> = []

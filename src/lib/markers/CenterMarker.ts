@@ -8,7 +8,6 @@ import type { RenderingObjectBuilder } from '../RenderingObjectBuilder'
 import type { RGBColor } from "../helpers/color"
 import type { Renderer } from "../Renderer"
 import type { Marker } from "./Marker"
-import { RenderingObject } from "../RenderingObject.js"
 
 export class CenterMarker implements Marker {
   #parentCoordinate: Coordinate = new Coordinate()
@@ -62,7 +61,7 @@ export class CenterMarker implements Marker {
     this.#colider = new BallColider(this.#radius, this.#parentCoordinate)
   }
 
-  attachRenderingObject<T extends RenderingObject<unknown>>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
+  attachRenderingObject<T>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
     renderer.addItem(this.#parentCoordinate, builder.makeSphere(this.#radius, color))
     this.#attachedRenderingItem = true
   }

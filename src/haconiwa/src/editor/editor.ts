@@ -6,7 +6,7 @@ import {
   HaconiwaItemGenerator,
   HaconiwaItemGeneratorClonedItem,
   isHaconiwaItemGeneratorLineConnectable,
-  isHaconiwaItemGeneratorItemClonable
+  isHaconiwaItemGeneratorItemClonable,
 } from './itemGenerators/HaconiwaItemGenerator.js'
 import type { Camera } from '../../../lib/Camera'
 import type { RenderingObjectBuilder } from '../../../lib/RenderingObjectBuilder'
@@ -27,7 +27,7 @@ type Plane = {
   normal: VectorArray3
 }
 
-export class HaconiwaEditor<T extends RenderingObject<T>> {
+export class HaconiwaEditor<T extends RenderingObject> {
   #cameraController: CameraController
   #mouseControlHandles: MouseControlHandles
   #editingPlane: EditingPlane

@@ -9,6 +9,8 @@ import { Item } from '../lib/Item.js'
 import { ThreeRenderingObjectBuilder } from "../lib/threeAdapter/ThreeRenderingObjectBuilder.js"
 import { HaconiwaLineItemGeneratorFactory } from "./src/editor/itemGenerators/HaconiwaLineItemGenerator.js"
 import { RouteItemGeneratorFactory } from "./src/editor/itemGenerators/RouteItemGenerator.js"
+import { JointFactory } from "./src/editor/itemGenerators/Joints/JointFactory.js"
+import { RoadJointFactory } from "./src/Roads/RoadJointFactory.js"
 
 const world = new HaconiwaWorld<ThreeRenderingObject>()
 const factory = new Factory()
@@ -37,8 +39,9 @@ window.addEventListener('keydown', async (e) => {
       break
 
     case '3':
+      const generatorFactory = new RouteItemGeneratorFactory(new RoadJointFactory())
       editor.setItemGeneratorFactory(
-        new RouteItemGeneratorFactory(),
+        generatorFactory,
         {
           item: new Item(),
           renderingObject: new ThreeRenderingObject(new ThreeGroup(await loadGlb('./assets/road.glb')))

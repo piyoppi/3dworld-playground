@@ -8,7 +8,7 @@ import type {
   HaconiwaItemGeneratorClonedItem,
   HaconiwaItemGeneratedCallback,
   HaconiwaItemGeneratorLineConnectable,
-  HaconiwaItemGeneratorItemClonable
+  HaconiwaItemGeneratorItemClonable,
 } from "./HaconiwaItemGenerator"
 import { Coordinate } from "../../../../lib/Coordinate.js"
 import { HaconiwaWorldItem } from "../../world.js"
@@ -17,14 +17,15 @@ import { MouseButton, MouseControllableCallbackFunction } from "../../../../lib/
 import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
 import { ColiderItemMap } from "../../../../lib/ColiderItemMap.js"
 import { Vec3 } from "../../../../lib/Matrix.js"
-import { RenderingObject } from "../../../../lib/RenderingObject.js"
 import { JointableMarker } from "../Markers/JointableMarker.js"
-import { createJoint } from "./Joints/JointFactory.js"
+//import { createJoint } from "./Joints/JointFactory.js"
 import { Joint } from "./Joints/Joint.js"
 import { NoneJoint } from "./Joints/NoneJoint.js"
 import { attachCoordinateRenderingItem } from "../../../../lib/CoordinateRenderingObject.js"
+import { RenderingObject } from "../../../../lib/RenderingObject.js"
+import { JointFactory } from "./Joints/JointFactory.js"
 
-export class RouteItemGenerator<T extends RenderingObject<T>>
+export class RouteItemGenerator<T extends RenderingObject>
   implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorLineConnectable, HaconiwaItemGeneratorItemClonable<T> {
   #onGeneratedCallbacks: Array<HaconiwaItemGeneratedCallback<T>> = []
   #planeRaycaster: Raycaster
@@ -33,8 +34,9 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   #endedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   #isStarted = false
-  #renderer
+  #renderer: Renderer<T>
   #coliderConnectionMap: ColiderItemMap<LineItemConnection> | null = null
+  #jointFactory: JointFactory<T> | null = null
   private original: HaconiwaItemGeneratorClonedItem<T> | null = null
 
   constructor(renderer: Renderer<T>, planeRaycaster: Raycaster, markerRaycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) {
@@ -54,6 +56,10 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
 
   setConnectorColiderMap(coliderConnectionMap: ColiderItemMap<LineItemConnection>) {
     this.#coliderConnectionMap = coliderConnectionMap
+  }
+
+  setJointFactory(jointFactory: JointFactory<T>) {
+    this.#jointFactory = jointFactory
   }
 
   setStartedCallback(func: MouseControllableCallbackFunction) {
@@ -97,10 +103,10 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
     item.parentCoordinate.addChild(coordinateForRendering)
 
     item.connections.forEach(connection => {
-      connection.setConnectedCallbacks(() => {
+      connection.setConnectedCallbacks(async () => {
         const joint = joints.get(connection)
         if (joint) {
-          const recreatedJoint = this.createJoint(joint, connection)
+          const recreatedJoint = await this.createJoint(joint, connection)
           this.updateJoint(recreatedJoint, item, connection)
 
           // [FIXME] for debug.
@@ -128,9 +134,8 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
         jointsArray.forEach(joint => this.updateJoint(joint, item, jointableMarker.connection))
       })
     })
-
-    const renderingObject = this.makeRenderingObject()
-    this.#renderer.addItem(coordinateForRendering, renderingObject)
+    
+    this.#renderer.addItem(coordinateForRendering, this.makeRenderingObject())
     this.updateRenderingObject(coordinateForRendering, item, item.line.length, Array.from(joints.values()))
 
     this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], jointableMarkers.map(item => item.marker))]))
@@ -151,9 +156,9 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
     this.#endedCallbacks.call()
   }
 
-  private createJoint(givenJoint: Joint<T>, connection: LineItemConnection) {
-    return givenJoint.edgeCount !== connection.connections.length ?
-      createJoint<T>(connection.connections.length) :
+  private async createJoint(givenJoint: Joint<T>, connection: LineItemConnection) {
+    return givenJoint.edgeCount !== connection.connections.length && this.#jointFactory ?
+      await this.#jointFactory.createJoint(connection.connections.length) :
       givenJoint
   }
 
@@ -174,7 +179,7 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
   private makeRenderingObject() {
     if (!this.original) throw new Error('Item and RenderingObject is not set.')
 
-    return this.original.renderingObject.clone()
+    return this.original.renderingObject.clone() as T
   }
 
   private updateRenderingObject(coordinate: Coordinate, lineItem: LineItem, length: number, joints: Joint<T>[]) {
@@ -208,7 +213,13 @@ export class RouteItemGenerator<T extends RenderingObject<T>>
   }
 }
 
-export class RouteItemGeneratorFactory<T extends RenderingObject<T>> implements HaconiwaItemGeneratorFactory<T> {
+export class RouteItemGeneratorFactory<T extends RenderingObject> implements HaconiwaItemGeneratorFactory<T> {
+  #jointFactory: JointFactory<T>
+
+  constructor(jointFactory: JointFactory<T>) {
+    this.#jointFactory = jointFactory
+  }
+
   create(renderer: Renderer<T>, raycaster: Raycaster, markerRaycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) {
     const generator = new RouteItemGenerator(renderer, raycaster, markerRaycaster, renderingObjectBuilder)
 

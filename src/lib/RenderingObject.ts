@@ -1,8 +1,8 @@
 import type { Material } from "./Material"
 import type { VectorArray3 } from "./Matrix"
 
-export interface RenderingObject<T> {
+export interface RenderingObject {
   readonly size: VectorArray3
-  clone: () => T
+  clone(): RenderingObject
   readonly material: Material
 }

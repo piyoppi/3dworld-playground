@@ -1,11 +1,10 @@
 import { Coordinate } from "../../../../../lib/Coordinate"
 import { LineEdge } from "../../../../../lib/lines/lineEdge"
-import { VectorArray3 } from "../../../../../lib/Matrix"
 import { Renderer } from "../../../../../lib/Renderer"
 import { RenderingObject } from "../../../../../lib/RenderingObject"
 import { RenderingObjectBuilder } from "../../../../../lib/RenderingObjectBuilder"
 
-export interface Joint<T extends RenderingObject<unknown>> {
+export interface Joint<T extends RenderingObject> {
   readonly coordinate: Coordinate
   readonly edgeCount: number
   setEdges: (edges: LineEdge[]) => void

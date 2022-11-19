@@ -1,14 +1,16 @@
 import { RenderingObject } from "../../../../../lib/RenderingObject.js"
-import { Corner } from "./Corner.js"
+import type { Joint } from "./Joint"
 import { NoneJoint } from "./NoneJoint.js"
 
-export function createJoint<T extends RenderingObject<unknown>>(intersectionCount: number) {
-  const map = [
-    NoneJoint<T>,
-    Corner<T>
-  ]
+export abstract class JointFactory<T extends RenderingObject> {
+  async createJoint(intersectionCount: number) {
+    switch(intersectionCount) {
+      case 1:
+        return await this.createCorner()
+      default:
+        return new NoneJoint<T>()
+    }
+  }
 
-  const cls = map[intersectionCount]
-
-  return cls ? new cls() : new NoneJoint<T>()
+  protected abstract createCorner(): Promise<Joint<T>>
 }

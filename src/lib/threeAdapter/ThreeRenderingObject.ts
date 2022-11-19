@@ -1,5 +1,5 @@
 import type { VectorArray3 } from '../Matrix.js'
-import type { RenderingObject } from '../RenderingObject.js'
+import { RenderingObject } from '../RenderingObject.js'
 import { BufferGeometry, Material as ThreeMaterialRaw, Mesh, Group, Box3, Texture, Source } from 'three'
 import { ThreeMaterial } from './ThreeMaterial.js'
 
@@ -80,7 +80,7 @@ export class ThreeGroup implements ThreeRenderingObjectRaw {
   }
 }
 
-export class ThreeRenderingObject implements RenderingObject<ThreeRenderingObject> {
+export class ThreeRenderingObject implements RenderingObject {
   #item: ThreeRenderingObjectRaw
   #size: VectorArray3 = [0, 0, 0]
 

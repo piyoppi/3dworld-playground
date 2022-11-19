@@ -68,7 +68,7 @@ export class DirectionalMarker implements Marker {
     this.#parentCoordinate.addChild(this.#direction.parentCoordinate)
   }
 
-  attachRenderingObject<T extends RenderingObject<T>>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
+  attachRenderingObject<T>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
     renderer.addItem(this.#direction.parentCoordinate, builder.makeVector(this.#norm, this.#radius, color))
   }
 }
