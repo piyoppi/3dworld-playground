@@ -28,8 +28,8 @@ export class Corner<T extends RenderingObject> implements Joint<T> {
   }
 
   setEdges(edges: LineEdge[]) {
-    if (edges.length > 2) {
-      throw new Error('Too many connections.')
+    if (edges.length !== 2) {
+      throw new Error(`The count of connections (${edges.length}) is invalid. Corner must have at least 2 edges.`)
     }
 
     this.#edges = edges
@@ -73,6 +73,11 @@ export class Corner<T extends RenderingObject> implements Joint<T> {
 
   dispose(renderer: Renderer<T>) {
     this.removeCornerRenderingItem(renderer)
+
+    if (renderer.renderingObjectFromCoordinate(this.#fragmentCoordinate)) {
+      renderer.removeItem(this.#fragmentCoordinate)
+      this.#fragmentRenderingObject = null
+    }
   }
 
   private isAcuteRelation() {
@@ -84,8 +89,7 @@ export class Corner<T extends RenderingObject> implements Joint<T> {
   }
 
   private removeCornerRenderingItem(renderer: Renderer<T>) {
-    const renderingObj = renderer.renderingObjectFromCoordinate(this.#coordinate)
-    if (renderingObj) {
+    if (renderer.renderingObjectFromCoordinate(this.#coordinate)) {
       renderer.removeItem(this.#coordinate)
     }
   }

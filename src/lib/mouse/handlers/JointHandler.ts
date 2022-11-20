@@ -94,6 +94,8 @@ export class JointHandler implements MouseControllable {
       if (connections.indexOf(connection) >= 0 || !connection.isConnected(this.#connection)) return
 
       connection.disconnect(this.#connection)
+      this.#connection.disconnect(connection)
+
       this.#disconnectedCallbacks.call()
     })
   }

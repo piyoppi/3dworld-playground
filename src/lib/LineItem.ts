@@ -86,11 +86,6 @@ export class LineItemConnection {
 
     if (itemIndex < 0) return
 
-    const pairItemIndex = this._connections[itemIndex]._connections.indexOf(this)
-    if (pairItemIndex >= 0) {
-      this._connections[itemIndex]._connections.splice(pairItemIndex, 1)
-    }
-
     this._connections.splice(itemIndex, 1)
 
     this.#disconnectedCallbacks.call()

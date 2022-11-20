@@ -82,13 +82,14 @@ export class RouteItemGenerator<T extends RenderingObject>
     this.#isStarted = true
 
     const coliderConnectionMap = this.#coliderConnectionMap
-    const lineGenerator = new LineSegmentGenerator()
     const startPosition = this.#markerRaycaster.colidedDetails[0]?.colider.parentCoordinate?.position || this.#planeRaycaster.colidedDetails[0].position
     const endPosition = this.#planeRaycaster.colidedDetails[0].position
+
+    const lineGenerator = new LineSegmentGenerator()
     lineGenerator.setStartPosition(startPosition)
     lineGenerator.setEndPosition(endPosition)
-
     const line = lineGenerator.getLine()
+
     const item = new LineItem(line)
 
     const jointableMarkers = item.connections.map(connection => {
@@ -109,20 +110,22 @@ export class RouteItemGenerator<T extends RenderingObject>
         const joint = joints.get(connection)
         if (joint) {
           const recreatedJoint = await this.createJoint(joint, connection)
-          console.log(recreatedJoint)
           this.updateJoint(recreatedJoint, item, connection)
+          joints.set(connection, recreatedJoint)
 
           // [FIXME] for debug.
-          attachCoordinateRenderingItem(connection.edge.coordinate, this.#renderingObjectBuilder, this.#renderer, 1, 0.2)
-
-          joints.set(connection, recreatedJoint)
+          // attachCoordinateRenderingItem(connection.edge.coordinate, this.#renderingObjectBuilder, this.#renderer, 1, 0.2)
         }
       })
 
-      connection.setDisconnectedCallbacks(() => {
+      connection.setDisconnectedCallbacks(async () => {
         const joint = joints.get(connection)
+
         if (joint) {
           joint.dispose(this.#renderer)
+          const recreatedJoint = await this.createJoint(joint, connection)
+          this.updateJoint(recreatedJoint, item, connection)
+          joints.set(connection, recreatedJoint)
         }
       })
     })
@@ -160,21 +163,25 @@ export class RouteItemGenerator<T extends RenderingObject>
   }
 
   private async createJoint(givenJoint: Joint<T>, connection: LineItemConnection) {
-    return givenJoint.edgeCount !== connection.connections.length && this.#jointFactory ?
-      await this.#jointFactory.createJoint(connection.connections.length) :
-      givenJoint
-  }
-
-  private updateJoint(joint: Joint<T>, item: LineItem, connection: LineItemConnection) {
-    if (!connection.hasConnections()) return
+    if (!connection.hasConnections() || !this.original) return new NoneJoint<T>()
 
     const edges = [
       connection.edge,
       ...connection.connections.map(connection => connection.edge)
     ]
 
+    const joint = givenJoint.edgeCount !== edges.length ?
+      await this.#jointFactory.createJoint(edges.length) :
+      givenJoint
+
     joint.setEdges(edges)
-    joint.setWidth(6)
+    joint.setWidth(this.original.renderingObject.size[0])
+
+    return joint
+  }
+
+  private updateJoint(joint: Joint<T>, item: LineItem, connection: LineItemConnection) {
+    if (!connection.hasConnections() || !this.original) return
 
     joint.updateRenderingObject(this.#renderingObjectBuilder, this.#renderer)
   }

@@ -8,7 +8,6 @@ export class ColiderItemMap<T> {
   }
 
   add(colider: Colider, item: T) {
-    console.log(item)
     this.#coliderToItem.set(colider.uuid, item)
   }
 
