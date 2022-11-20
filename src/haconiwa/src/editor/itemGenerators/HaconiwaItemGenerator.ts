@@ -6,9 +6,6 @@ import type { HaconiwaWorldItem } from "../../world"
 import type { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder"
 import type { ColiderItemMap } from "../../../../lib/ColiderItemMap"
 import type { LineItemConnection } from "../../../../lib/LineItem"
-import { JointFactory } from "./Joints/JointFactory"
-import { RenderingObject } from "../../../../lib/RenderingObject"
-import { HaconiwaLineItemGenerator } from "./HaconiwaLineItemGenerator"
 
 export interface HaconiwaItemGenerator<T> extends MouseControllable {
   registerOnGeneratedCallback: (callback: HaconiwaItemGeneratedCallback<T>) => void

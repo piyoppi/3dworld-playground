@@ -4,7 +4,6 @@ import { Vec3 } from "../../../../../lib/Matrix.js"
 import { Renderer } from "../../../../../lib/Renderer.js"
 import { RenderingObject } from "../../../../../lib/RenderingObject.js"
 import type { RenderingObjectBuilder } from "../../../../../lib/RenderingObjectBuilder"
-import { Clonable } from "../../../clonable.js"
 import type { Joint } from "./Joint"
 
 export class Corner<T extends RenderingObject> implements Joint<T> {
@@ -58,15 +57,26 @@ export class Corner<T extends RenderingObject> implements Joint<T> {
       renderer.addItem(this.#fragmentCoordinate, renderingObj)
     }
 
-    const itemScale = this.getOffset() / (this.#original?.size[0] || 1)
+    const itemScale = this.getOffset() / this.#original.size[2]
     this.#fragmentCoordinate.scale([1, 1, itemScale])
+    this.#fragmentCoordinate.z = -(this.#original.size[2] * itemScale) / 2
 
-    const cornerRenderingObj = this.makeRenderingObject(builder)
+    if (!this.isAcuteRelation()) {
+      this.#fragmentCoordinate.mirrorX()
+    } else {
+      this.#fragmentCoordinate.resetMirror()
+    }
+
+    const cornerRenderingObj = this.makeCornerRenderingObject(builder)
     renderer.addItem(this.#coordinate, cornerRenderingObj)
   }
 
   dispose(renderer: Renderer<T>) {
     this.removeCornerRenderingItem(renderer)
+  }
+
+  private isAcuteRelation() {
+    return Vec3.dotprod(this.#edges[0].xAxis, this.#edges[1].zAxis) < 0
   }
 
   private getAngle() {
@@ -80,11 +90,11 @@ export class Corner<T extends RenderingObject> implements Joint<T> {
     }
   }
 
-  private makeRenderingObject(builder: RenderingObjectBuilder<T>) {
+  private makeCornerRenderingObject(builder: RenderingObjectBuilder<T>) {
     const angle = this.getAngle()
     let startAngle = -angle
 
-    if (Vec3.dotprod(this.#edges[0].xAxis, this.#edges[1].zAxis) < 0) {
+    if (this.isAcuteRelation()) {
       startAngle += Math.PI + angle
     }
 

@@ -6,7 +6,7 @@ import { loadGlb } from '../../../lib/threeAdapter/ThreeLoaderHelper.js'
 
 export class RoadJointFactory extends JointFactory<ThreeRenderingObject> {
   async createCorner(): Promise<Joint<ThreeRenderingObject>> {
-    const fragment = new ThreeRenderingObject(new ThreeGroup(await loadGlb('./assets/road.glb')))
+    const fragment = new ThreeRenderingObject(new ThreeGroup(await loadGlb('./assets/road-corner.glb')))
     return new Corner(fragment)
   }
 }

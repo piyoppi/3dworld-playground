@@ -128,6 +128,33 @@ export class Mat4 {
     ]
   }
 
+  static mirrorZ(): MatrixArray4 {
+    return [
+      1.0, 0.0,  0.0, 0.0,
+      0.0, 1.0,  0.0, 0.0,
+      0.0, 0.0, -1.0, 0.0,
+      0.0, 0.0,  0.0, 1.0
+    ]
+  }
+
+  static mirrorX(): MatrixArray4 {
+    return [
+      -1.0, 0.0, 0.0, 0.0,
+       0.0, 1.0, 0.0, 0.0,
+       0.0, 0.0, 1.0, 0.0,
+       0.0, 0.0, 0.0, 1.0
+    ]
+  }
+
+  static mirrorY(): MatrixArray4 {
+    return [
+      1.0,  0.0, 0.0, 0.0,
+      0.0, -1.0, 0.0, 0.0,
+      0.0,  0.0, 1.0, 0.0,
+      0.0,  0.0, 0.0, 1.0
+    ]
+  }
+
   static inverse(mat: MatrixArray4): MatrixArray4 {
     const a11 = mat[0]
     const a12 = mat[1]

@@ -18,7 +18,6 @@ import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
 import { ColiderItemMap } from "../../../../lib/ColiderItemMap.js"
 import { Vec3 } from "../../../../lib/Matrix.js"
 import { JointableMarker } from "../Markers/JointableMarker.js"
-//import { createJoint } from "./Joints/JointFactory.js"
 import { Joint } from "./Joints/Joint.js"
 import { NoneJoint } from "./Joints/NoneJoint.js"
 import { attachCoordinateRenderingItem } from "../../../../lib/CoordinateRenderingObject.js"
@@ -36,14 +35,21 @@ export class RouteItemGenerator<T extends RenderingObject>
   #isStarted = false
   #renderer: Renderer<T>
   #coliderConnectionMap: ColiderItemMap<LineItemConnection> | null = null
-  #jointFactory: JointFactory<T> | null = null
+  #jointFactory: JointFactory<T>
   private original: HaconiwaItemGeneratorClonedItem<T> | null = null
 
-  constructor(renderer: Renderer<T>, planeRaycaster: Raycaster, markerRaycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) {
+  constructor(
+    renderer: Renderer<T>,
+    planeRaycaster: Raycaster,
+    markerRaycaster: Raycaster,
+    renderingObjectBuilder: RenderingObjectBuilder<T>,
+    jointFactory: JointFactory<T>
+  ) {
     this.#planeRaycaster = planeRaycaster
     this.#markerRaycaster = markerRaycaster
     this.#renderingObjectBuilder = renderingObjectBuilder
     this.#renderer = renderer
+    this.#jointFactory = jointFactory
   }
 
   get isStart() {
@@ -56,10 +62,6 @@ export class RouteItemGenerator<T extends RenderingObject>
 
   setConnectorColiderMap(coliderConnectionMap: ColiderItemMap<LineItemConnection>) {
     this.#coliderConnectionMap = coliderConnectionMap
-  }
-
-  setJointFactory(jointFactory: JointFactory<T>) {
-    this.#jointFactory = jointFactory
   }
 
   setStartedCallback(func: MouseControllableCallbackFunction) {
@@ -107,6 +109,7 @@ export class RouteItemGenerator<T extends RenderingObject>
         const joint = joints.get(connection)
         if (joint) {
           const recreatedJoint = await this.createJoint(joint, connection)
+          console.log(recreatedJoint)
           this.updateJoint(recreatedJoint, item, connection)
 
           // [FIXME] for debug.
@@ -221,7 +224,7 @@ export class RouteItemGeneratorFactory<T extends RenderingObject> implements Hac
   }
 
   create(renderer: Renderer<T>, raycaster: Raycaster, markerRaycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) {
-    const generator = new RouteItemGenerator(renderer, raycaster, markerRaycaster, renderingObjectBuilder)
+    const generator = new RouteItemGenerator(renderer, raycaster, markerRaycaster, renderingObjectBuilder, this.#jointFactory)
 
     return generator
   }

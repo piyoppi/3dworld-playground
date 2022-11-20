@@ -10,6 +10,7 @@ export class Coordinate {
   #children: Coordinates = new Coordinates()
   #matrix:  MatrixArray4
   #scaleMatrix: MatrixArray4
+  #mirrorMatrix: MatrixArray4
   #beforeUpdateCallbacks = new CallbackFunctions<() => void>()
   #updatedCallbacks = new CallbackFunctions<() => void>()
   #setChildCallback: (parent: Coordinate, child: Coordinate) => void
@@ -21,12 +22,14 @@ export class Coordinate {
     this.#uuid = uuidv4()
     this.#matrix = Mat4.getIdentityMatrix()
     this.#scaleMatrix = Mat4.getIdentityMatrix()
+    this.#mirrorMatrix = Mat4.getIdentityMatrix()
     this.#setChildCallback = (_parent, _child) => {}
     this.#removeChildCallback = (_parent, _child) => {}
   }
 
   get matrix() {
-    return Mat4.mul(this.#matrix, this.#scaleMatrix)
+    return Mat4.mulAll([this.#scaleMatrix, this.#mirrorMatrix, this.#matrix])
+    //return Mat4.mul(this.#matrix, this.#scaleMatrix)
   }
 
   get matrixInverse() {
@@ -157,6 +160,26 @@ export class Coordinate {
 
   scale(a: VectorArray3) {
     this.#scaleMatrix = Mat4.scale(a[0], a[1], a[2])
+    this.#updatedCallbacks.call()
+  }
+
+  mirrorZ() {
+    this.#mirrorMatrix = Mat4.mirrorZ()
+    this.#updatedCallbacks.call()
+  }
+
+  mirrorX() {
+    this.#mirrorMatrix = Mat4.mirrorX()
+    this.#updatedCallbacks.call()
+  }
+
+  mirrorY() {
+    this.#mirrorMatrix = Mat4.mirrorY()
+    this.#updatedCallbacks.call()
+  }
+
+  resetMirror() {
+    this.#mirrorMatrix = Mat4.getIdentityMatrix()
     this.#updatedCallbacks.call()
   }
 
