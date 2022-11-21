@@ -112,9 +112,8 @@ export class RouteItemGenerator<T extends RenderingObject>
           const recreatedJoint = await this.createJoint(joint, connection)
           this.updateJoint(recreatedJoint, item, connection)
           joints.set(connection, recreatedJoint)
-
           // [FIXME] for debug.
-          // attachCoordinateRenderingItem(connection.edge.coordinate, this.#renderingObjectBuilder, this.#renderer, 1, 0.2)
+          attachCoordinateRenderingItem(connection.edge.coordinate, this.#renderingObjectBuilder, this.#renderer, 1, 0.2)
         }
       })
 
@@ -207,12 +206,15 @@ export class RouteItemGenerator<T extends RenderingObject>
     const position =
       Vec3.add(
         lineItem.connections[0].edge.position,
-        Vec3.mulScale(
-          Vec3.subtract(
-            Vec3.subtract(lineItem.connections[1].position, Vec3.mulScale(direction, joints[1].getOffset())),
-            Vec3.add(lineItem.connections[0].position, Vec3.mulScale(direction, joints[0].getOffset()))
-          ),
-          0.5
+        Vec3.add(
+          Vec3.mulScale(direction, joints[0].getOffset()),
+          Vec3.mulScale(
+            Vec3.subtract(
+              Vec3.subtract(lineItem.connections[1].position, Vec3.mulScale(direction, joints[1].getOffset())),
+              Vec3.add(lineItem.connections[0].position, Vec3.mulScale(direction, joints[0].getOffset()))
+            ),
+            0.5
+          )
         )
       )
     coordinate.setDirectionZAxis(direction, position)

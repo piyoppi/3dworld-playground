@@ -1,5 +1,5 @@
 import { Coordinate } from "../Coordinate.js"
-import { Mat4, Vec3, VectorArray3 } from "../Matrix.js"
+import { Vec3, VectorArray3 } from "../Matrix.js"
 import { CallbackFunctions } from '../CallbackFunctions.js'
 import type { Line } from "./line"
 
@@ -49,22 +49,29 @@ export class LineEdge {
     this.#coordinate.addChild(coordinate)
   }
 
-  getTangentVector() {
-    return this.#parent.getDirection(this.#tValue)
-  }
-
   setUpdateCallback(func: () => void) {
     this.#updatedCallbacks.add(func)
   }
 
   updateCoordinate(position: VectorArray3) {
+    //
+    //       z
+    //       ￪
+    //  x <- o---line---o -> x
+    //       :          ￬
+    //       :          z
+    //       :          :
+    //   t : 0   ....   1
+    //
     let direction = this.#parent.getDirection(this.#tValue)
 
     if (Vec3.norm(direction) < 0.1) {
       direction = [0, 0, 1]
     }
 
-    const zAxis = this.#tValue === 0 ? Vec3.reverse(direction) : direction
+    if (this.#tValue === 0) {
+      direction = Vec3.reverse(direction)
+    }
 
     this.#coordinate.setDirectionZAxis(direction, position)
     this.#updatedCallbacks.call()
