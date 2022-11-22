@@ -53,7 +53,7 @@ export class LineEdge {
     this.#updatedCallbacks.add(func)
   }
 
-  updateCoordinate(position: VectorArray3) {
+  updateCoordinate(position: VectorArray3 = this.position) {
     //
     //       z
     //       ￪

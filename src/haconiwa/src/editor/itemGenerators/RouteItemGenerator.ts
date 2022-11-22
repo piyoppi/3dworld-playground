@@ -93,7 +93,7 @@ export class RouteItemGenerator<T extends RenderingObject>
     const item = new LineItem(line)
 
     const jointableMarkers = item.connections.map(connection => {
-      const marker = new JointableMarker(connection, this.#markerRaycaster, this.#planeRaycaster, coliderConnectionMap)
+      const marker = new JointableMarker(connection, item, this.#markerRaycaster, this.#planeRaycaster, coliderConnectionMap)
       item.connections.filter(conn => conn !== connection).forEach(conn => marker.setIgnoredConnection(conn))
 
       return marker
@@ -180,8 +180,6 @@ export class RouteItemGenerator<T extends RenderingObject>
   }
 
   private updateJoint(joint: Joint<T>, item: LineItem, connection: LineItemConnection) {
-    if (!connection.hasConnections() || !this.original) return
-
     joint.updateRenderingObject(this.#renderingObjectBuilder, this.#renderer)
   }
 

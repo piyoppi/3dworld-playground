@@ -1,4 +1,4 @@
-import type { LineItemConnection } from "../../../../lib/LineItem"
+import type { LineItem, LineItemConnection } from "../../../../lib/LineItem"
 import type { Raycaster } from "../../../../lib/Raycaster"
 import { CenterMarker } from "../../../../lib/markers/CenterMarker.js"
 import { PlaneMoveHandler } from "../../../../lib/mouse/handlers/PlaneMoveHandler.js"
@@ -20,6 +20,7 @@ export class JointableMarker {
 
   constructor(
     connection: LineItemConnection,
+    lineItem: LineItem,
     markerRaycaster: Raycaster,
     planeRaycaster: Raycaster,
     coliderConnectionMap: ColiderItemMap<LineItemConnection>
@@ -28,7 +29,17 @@ export class JointableMarker {
     const snapModifier = new CursorSnapColiderModifier(markerRaycaster, [this.#marker.colider])
     this.#connection = connection
     this.#moveHandler = new PlaneMoveHandler(this.#marker.parentCoordinate, planeRaycaster)
-    this.#moveHandler.setApplyer((coordinate: Coordinate, position: VectorArray3) => connection.edge.updateCoordinate(position))
+    this.#moveHandler.setApplyer((coordinate: Coordinate, position: VectorArray3) => {
+      lineItem.connections.forEach(childConnection => {
+        if (childConnection !== connection) {
+          childConnection.edge.updateCoordinate()
+        } else {
+          childConnection.edge.updateCoordinate(position)
+        }
+
+        childConnection.connections.forEach(connection => connection.edge.updateCoordinate())
+      })
+    })
     this.#jointHandler = new JointHandler(connection, markerRaycaster, coliderConnectionMap)
 
     this.#jointHandler.setEndedCallback(() => {
