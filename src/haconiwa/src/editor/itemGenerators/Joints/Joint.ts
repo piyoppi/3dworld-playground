@@ -7,6 +7,8 @@ import { RenderingObjectBuilder } from "../../../../../lib/RenderingObjectBuilde
 export interface Joint<T extends RenderingObject> {
   readonly coordinate: Coordinate
   readonly edgeCount: number
+  readonly disposed: boolean
+  setRenderingObjects: (renderingObjects: T[]) => void
   setEdges: (edges: LineEdge[]) => void
   setWidth: (width: number) => void
   getOffset: () => number

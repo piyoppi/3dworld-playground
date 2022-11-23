@@ -12,12 +12,11 @@ export class Corner<T extends RenderingObject> implements Joint<T> {
   #coordinate: Coordinate = new Coordinate()
   #fragmentCoordinate: Coordinate = new Coordinate()
   #fragmentRenderingObject: T | null = null
-  #original: T
+  #original: T | null = null
   #disposed = false
 
-  constructor(renderingObj: T) {
+  constructor() {
     this.#coordinate.rotateX(-Math.PI / 2)
-    this.#original = renderingObj
   }
 
   get coordinate() {
@@ -26,6 +25,18 @@ export class Corner<T extends RenderingObject> implements Joint<T> {
 
   get edgeCount() {
     return this.#edges.length
+  }
+
+  get disposed() {
+    return this.#disposed
+  }
+
+  setRenderingObjects(renderingObjects: T[]) {
+    if (renderingObjects.length !== 1) {
+      throw new Error(`The count of RenderingObjects (${renderingObjects.length}) is invalid. Corner must have 1 RenderingObjects.`)
+    }
+
+    this.#original = renderingObjects[0]
   }
 
   setEdges(edges: LineEdge[]) {
@@ -50,26 +61,24 @@ export class Corner<T extends RenderingObject> implements Joint<T> {
   }
 
   updateRenderingObject(builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
-    if (this.#disposed) {
-      return
-    }
-
     this.removeCornerRenderingItem(renderer)
 
-    if (!this.#fragmentRenderingObject) {
-      const renderingObj = this.#original.clone() as T
-      this.#fragmentRenderingObject = renderingObj
-      renderer.addItem(this.#fragmentCoordinate, renderingObj)
-    }
+    if (this.#original) {
+      if (!this.#fragmentRenderingObject) {
+        const renderingObj = this.#original.clone() as T
+        this.#fragmentRenderingObject = renderingObj
+        renderer.addItem(this.#fragmentCoordinate, renderingObj)
+      }
 
-    const itemScale = this.getOffset() / this.#original.size[2]
-    this.#fragmentCoordinate.scale([1, 1, itemScale])
-    this.#fragmentCoordinate.z = -(this.#original.size[2] * itemScale) / 2
+      const itemScale = this.getOffset() / this.#original.size[2]
+      this.#fragmentCoordinate.scale([1, 1, itemScale])
+      this.#fragmentCoordinate.z = -(this.#original.size[2] * itemScale) / 2
 
-    if (!this.isAcuteRelation()) {
-      this.#fragmentCoordinate.mirrorX()
-    } else {
-      this.#fragmentCoordinate.resetMirror()
+      if (!this.isAcuteRelation()) {
+        this.#fragmentCoordinate.mirrorX()
+      } else {
+        this.#fragmentCoordinate.resetMirror()
+      }
     }
 
     const cornerRenderingObj = this.makeCornerRenderingObject(builder)
@@ -77,13 +86,14 @@ export class Corner<T extends RenderingObject> implements Joint<T> {
   }
 
   dispose(renderer: Renderer<T>) {
+    this.#disposed = true
+
     this.removeCornerRenderingItem(renderer)
 
     if (renderer.renderingObjectFromCoordinate(this.#fragmentCoordinate)) {
       renderer.removeItem(this.#fragmentCoordinate)
       this.#fragmentRenderingObject = null
     }
-    this.#disposed = true
   }
 
   private isAcuteRelation() {

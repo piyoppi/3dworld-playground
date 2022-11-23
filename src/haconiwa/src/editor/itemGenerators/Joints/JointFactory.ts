@@ -3,14 +3,14 @@ import type { Joint } from "./Joint"
 import { NoneJoint } from "./NoneJoint.js"
 
 export abstract class JointFactory<T extends RenderingObject> {
-  async createJoint(intersectionCount: number) {
+  createJoint(intersectionCount: number) {
     switch(intersectionCount) {
       case 2:
-        return await this.createCorner()
+        return this.createCorner()
       default:
         return new NoneJoint<T>()
     }
   }
 
-  protected abstract createCorner(): Promise<Joint<T>>
+  protected abstract createCorner(): Joint<T>
 }

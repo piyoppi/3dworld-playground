@@ -116,8 +116,8 @@ export class RouteItemGenerator<T extends RenderingObject>
     item.connections.forEach(connection => {
       connection.setConnectedCallbacks(async () => {
         const joint = joints.get(connection)
-        if (joint) {
-          const recreatedJoint = await this.createJoint(joint, connection)
+        if (joint && !joint.disposed) {
+          const recreatedJoint = this.createJoint(joint, connection)
           this.updateJoint(recreatedJoint, item, connection)
           joints.set(connection, recreatedJoint)
           // [FIXME] for debug.
@@ -129,10 +129,10 @@ export class RouteItemGenerator<T extends RenderingObject>
         const joint = joints.get(connection)
 
         if (joint) {
-          const recreatedJoint = await this.createJoint(joint, connection)
+          joint.dispose(this.#renderer)
+          const recreatedJoint = this.createJoint(joint, connection)
           this.updateJoint(recreatedJoint, item, connection)
           joints.set(connection, recreatedJoint)
-          joint.dispose(this.#renderer)
         }
       })
     })
@@ -158,7 +158,7 @@ export class RouteItemGenerator<T extends RenderingObject>
     this.#endedCallbacks.call()
   }
 
-  private async createJoint(givenJoint: Joint<T>, connection: LineItemConnection) {
+  private createJoint(givenJoint: Joint<T>, connection: LineItemConnection) {
     if (!connection.hasConnections() || !this.original) return new NoneJoint<T>()
 
     const edges = [
@@ -167,7 +167,7 @@ export class RouteItemGenerator<T extends RenderingObject>
     ]
 
     const joint = givenJoint.edgeCount !== edges.length ?
-      await this.#jointFactory.createJoint(edges.length) :
+      this.#jointFactory.createJoint(edges.length) :
       givenJoint
 
     joint.setEdges(edges)
