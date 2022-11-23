@@ -13,6 +13,7 @@ export class Corner<T extends RenderingObject> implements Joint<T> {
   #fragmentCoordinate: Coordinate = new Coordinate()
   #fragmentRenderingObject: T | null = null
   #original: T
+  #disposed = false
 
   constructor(renderingObj: T) {
     this.#coordinate.rotateX(-Math.PI / 2)
@@ -49,6 +50,10 @@ export class Corner<T extends RenderingObject> implements Joint<T> {
   }
 
   updateRenderingObject(builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
+    if (this.#disposed) {
+      return
+    }
+
     this.removeCornerRenderingItem(renderer)
 
     if (!this.#fragmentRenderingObject) {
@@ -78,6 +83,7 @@ export class Corner<T extends RenderingObject> implements Joint<T> {
       renderer.removeItem(this.#fragmentCoordinate)
       this.#fragmentRenderingObject = null
     }
+    this.#disposed = true
   }
 
   private isAcuteRelation() {

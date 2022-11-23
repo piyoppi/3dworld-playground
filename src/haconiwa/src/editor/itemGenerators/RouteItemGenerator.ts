@@ -96,6 +96,14 @@ export class RouteItemGenerator<T extends RenderingObject>
       const marker = new JointableMarker(connection, item, this.#markerRaycaster, this.#planeRaycaster, coliderConnectionMap)
       item.connections.filter(conn => conn !== connection).forEach(conn => marker.setIgnoredConnection(conn))
 
+      marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#renderer)
+      marker.setUpdatedCoordinateCallback(() => {
+        const jointsArray = Array.from(joints.values())
+        this.updateRenderingObject(coordinateForRendering, item, item.line.length, jointsArray)
+
+        jointsArray.forEach(joint => this.updateJoint(joint, item, marker.connection))
+      })
+
       return marker
     })
 
@@ -121,25 +129,14 @@ export class RouteItemGenerator<T extends RenderingObject>
         const joint = joints.get(connection)
 
         if (joint) {
-          joint.dispose(this.#renderer)
           const recreatedJoint = await this.createJoint(joint, connection)
           this.updateJoint(recreatedJoint, item, connection)
           joints.set(connection, recreatedJoint)
+          joint.dispose(this.#renderer)
         }
       })
     })
 
-    jointableMarkers.forEach(jointableMarker => {
-      jointableMarker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#renderer)
-
-      jointableMarker.setUpdatedCoordinateCallback(() => {
-        const jointsArray = Array.from(joints.values())
-        this.updateRenderingObject(coordinateForRendering, item, item.line.length, jointsArray)
-
-        jointsArray.forEach(joint => this.updateJoint(joint, item, jointableMarker.connection))
-      })
-    })
-    
     this.#renderer.addItem(coordinateForRendering, this.makeRenderingObject())
     this.updateRenderingObject(coordinateForRendering, item, item.line.length, Array.from(joints.values()))
 
@@ -216,10 +213,6 @@ export class RouteItemGenerator<T extends RenderingObject>
         )
       )
     coordinate.setDirectionZAxis(direction, position)
-
-    if (Vec3.dotprod(coordinate.zAxis, [0, 1, 0]) < 0) {
-      coordinate.rotateX(Math.PI)
-    }
   }
 }
 
