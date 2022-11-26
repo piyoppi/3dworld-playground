@@ -119,7 +119,7 @@ export class RouteItemGenerator<T extends RenderingObject>
       connection.setConnectedCallbacks(async () => {
         const joint = joints.get(connection)
         if (joint && !joint.disposed) {
-          const recreatedJoint = this.createJoint(joint, connection)
+          const recreatedJoint = this.updateJoint(joint, connection)
           joints.set(connection, recreatedJoint)
           // [FIXME] for debug.
           attachCoordinateRenderingItem(connection.edge.coordinate, this.#renderingObjectBuilder, this.#renderer, 1, 0.2)
@@ -131,7 +131,7 @@ export class RouteItemGenerator<T extends RenderingObject>
 
         if (joint) {
           joint.dispose(this.#renderer)
-          const recreatedJoint = this.createJoint(joint, connection)
+          const recreatedJoint = this.updateJoint(joint, connection)
           joints.set(connection, recreatedJoint)
         }
       })
@@ -158,7 +158,7 @@ export class RouteItemGenerator<T extends RenderingObject>
     this.#endedCallbacks.call()
   }
 
-  private createJoint(givenJoint: Joint<T>, connection: LineItemConnection) {
+  private updateJoint(givenJoint: Joint<T>, connection: LineItemConnection) {
     if (!connection.hasConnections() || !this.original) return new NoneJoint<T>()
 
     const edges = [
@@ -166,14 +166,20 @@ export class RouteItemGenerator<T extends RenderingObject>
       ...connection.connections.map(connection => connection.edge)
     ]
 
-    const joint = givenJoint.edgeCount !== edges.length ?
-      this.#jointFactory.createJoint(edges.length) :
-      givenJoint
+    if (givenJoint.edgeCount === edges.length) {
+      givenJoint.setEdges(edges)
+      givenJoint.updateRenderingObject(this.#renderingObjectBuilder, this.#renderer)
+      return givenJoint
+    }
+
+    const joint = this.#jointFactory.createJoint(edges.length)
 
     joint.setEdges(edges)
     joint.setWidth(this.original.renderingObject.size[0])
 
     joint.updateRenderingObject(this.#renderingObjectBuilder, this.#renderer)
+
+    givenJoint.dispose(this.#renderer)
 
     return joint
   }

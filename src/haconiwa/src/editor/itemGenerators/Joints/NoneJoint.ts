@@ -41,6 +41,6 @@ export class NoneJoint<T extends RenderingObject> implements Joint<T> {
   }
 
   dispose(_: Renderer<T>) {
-    console.log('dispose(none)')
+
   }
 }
