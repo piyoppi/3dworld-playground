@@ -61,6 +61,8 @@ export class Corner<T extends RenderingObject> implements Joint<T> {
   }
 
   updateRenderingObject(builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
+    if (this.disposed) return
+
     this.removeCornerRenderingItem(renderer)
 
     if (this.#original) {
