@@ -48,7 +48,7 @@ export class Mat4 {
 
   static mulGlVec3(a: MatrixArray4, b: VectorArray3): VectorArray3 {
     const vec = Mat4.mulVec4(a, [...b, 1])
-    const w =  vec[3]
+    const w = vec[3]
 
     return [
       vec[0] / w,

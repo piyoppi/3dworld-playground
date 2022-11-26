@@ -50,6 +50,8 @@ export class RouteItemGenerator<T extends RenderingObject>
     this.#renderingObjectBuilder = renderingObjectBuilder
     this.#renderer = renderer
     this.#jointFactory = jointFactory
+
+    this.#jointFactory.addOnReadyForRenderingCallback((joint: Joint<T>) => joint.updateRenderingObject(this.#renderingObjectBuilder, this.#renderer))
   }
 
   get isStart() {
@@ -101,7 +103,7 @@ export class RouteItemGenerator<T extends RenderingObject>
         const jointsArray = Array.from(joints.values())
         this.updateRenderingObject(coordinateForRendering, item, item.line.length, jointsArray)
 
-        jointsArray.forEach(joint => this.updateJoint(joint, item, marker.connection))
+        jointsArray.forEach(joint => joint.updateRenderingObject(this.#renderingObjectBuilder, this.#renderer))
       })
 
       return marker
@@ -118,7 +120,6 @@ export class RouteItemGenerator<T extends RenderingObject>
         const joint = joints.get(connection)
         if (joint && !joint.disposed) {
           const recreatedJoint = this.createJoint(joint, connection)
-          this.updateJoint(recreatedJoint, item, connection)
           joints.set(connection, recreatedJoint)
           // [FIXME] for debug.
           attachCoordinateRenderingItem(connection.edge.coordinate, this.#renderingObjectBuilder, this.#renderer, 1, 0.2)
@@ -131,7 +132,6 @@ export class RouteItemGenerator<T extends RenderingObject>
         if (joint) {
           joint.dispose(this.#renderer)
           const recreatedJoint = this.createJoint(joint, connection)
-          this.updateJoint(recreatedJoint, item, connection)
           joints.set(connection, recreatedJoint)
         }
       })
@@ -173,11 +173,9 @@ export class RouteItemGenerator<T extends RenderingObject>
     joint.setEdges(edges)
     joint.setWidth(this.original.renderingObject.size[0])
 
-    return joint
-  }
-
-  private updateJoint(joint: Joint<T>, item: LineItem, connection: LineItemConnection) {
     joint.updateRenderingObject(this.#renderingObjectBuilder, this.#renderer)
+
+    return joint
   }
 
   private makeRenderingObject() {

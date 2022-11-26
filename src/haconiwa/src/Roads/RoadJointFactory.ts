@@ -11,6 +11,7 @@ export class RoadJointFactory extends JointFactory<ThreeRenderingObject> {
     loadGlb('./assets/road-corner.glb').then(glb => {
       const fragment = new ThreeRenderingObject(new ThreeGroup(glb))
       corner.setRenderingObjects([fragment])
+      this.readyForRendering(corner)
     })
 
     return corner

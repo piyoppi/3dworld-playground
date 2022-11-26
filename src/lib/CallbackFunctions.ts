@@ -2,7 +2,7 @@ export type CallbackFunction<T extends Array<unknown>, U> = (...vars: T) => U
 export type CallbackFunctionParams<T> = T extends CallbackFunction<infer Vars, unknown> ? Vars : never
 export type CallbackFunctionReturned<T> = T extends CallbackFunction<any, infer Ret> ? Ret : never
 
-export class CallbackFunctions<T extends CallbackFunction<unknown[], V>, U extends Array<unknown> = CallbackFunctionParams<T>, V = CallbackFunctionReturned<T>> {
+export class CallbackFunctions<T extends CallbackFunction<Array<any>, V>, U extends Array<unknown> = CallbackFunctionParams<T>, V = CallbackFunctionReturned<T>> {
   #functions: Array<T> = []
 
   add(func: T) {
