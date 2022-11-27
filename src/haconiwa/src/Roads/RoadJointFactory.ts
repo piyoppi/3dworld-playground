@@ -3,6 +3,7 @@ import { JointFactory } from "../editor/itemGenerators/Joints/JointFactory.js"
 import { Corner } from "../editor/itemGenerators/Joints/Corner.js"
 import type { Joint } from "../editor/itemGenerators/Joints/Joint"
 import { loadGlb } from '../../../lib/threeAdapter/ThreeLoaderHelper.js'
+import { ThreeWayJunction } from "../editor/itemGenerators/Joints/ThreeWayJunction.js"
 
 export class RoadJointFactory extends JointFactory<ThreeRenderingObject> {
   createCorner(): Joint<ThreeRenderingObject> {
@@ -15,5 +16,11 @@ export class RoadJointFactory extends JointFactory<ThreeRenderingObject> {
     })
 
     return corner
+  }
+
+  createThreeWayJunction(): Joint<ThreeRenderingObject> {
+    const junction = new ThreeWayJunction<ThreeRenderingObject>()
+  
+    return junction
   }
 }

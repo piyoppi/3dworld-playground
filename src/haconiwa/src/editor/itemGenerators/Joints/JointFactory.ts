@@ -14,6 +14,8 @@ export abstract class JointFactory<T extends RenderingObject> {
     switch(intersectionCount) {
       case 2:
         return this.createCorner()
+      case 3:
+        return this.createThreeWayJunction()
       default:
         return new NoneJoint<T>()
     }
@@ -24,4 +26,5 @@ export abstract class JointFactory<T extends RenderingObject> {
   }
 
   protected abstract createCorner(): Joint<T>
+  protected abstract createThreeWayJunction(): Joint<T>
 }
