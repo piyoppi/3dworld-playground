@@ -4,14 +4,14 @@ import { Coordinate } from "../../../../../lib/Coordinate.js"
 import { LineEdge } from "../../../../../lib/lines/lineEdge.js"
 import { Renderer } from "../../../../../lib/Renderer.js"
 import { RenderingObjectBuilder } from "../../../../../lib/RenderingObjectBuilder";
-import { Vec3 } from "../../../../../lib/Matrix.js"
+import { Vec3, VectorArray3 } from "../../../../../lib/Matrix.js"
 
 export class ThreeWayJunction<T extends RenderingObject> implements Joint<T> {
   #coordinate: Coordinate = new Coordinate()
   #edges: LineEdge[] = []
   #disposed = false
   #original: T | null = null
-  #fragmentCoordinate: Coordinate = new Coordinate()
+  #junctionCoordinate: Coordinate = new Coordinate()
   #width = 1
 
   get coordinate() {
@@ -43,7 +43,7 @@ export class ThreeWayJunction<T extends RenderingObject> implements Joint<T> {
 
     if (!this.#coordinate.parent) {
       this.#edges[0].addChildCoordinate(this.#coordinate)
-      this.#edges[0].addChildCoordinate(this.#fragmentCoordinate)
+      this.#edges[0].addChildCoordinate(this.#junctionCoordinate)
     }
   }
 
@@ -58,15 +58,36 @@ export class ThreeWayJunction<T extends RenderingObject> implements Joint<T> {
       Math.abs(Math.acos(Vec3.dotprod(this.#edges[1].xAxis, this.#edges[2].xAxis)))
     )
 
-    
     return ((this.#width / 2) * Math.sin((Math.PI - angle) / 2)) / Math.sin(angle / 2)
   }
 
   updateRenderingObject(builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
+    this.removeJunctionPolygone(renderer)
 
+    const offset = this.getOffset()
+    const points = [
+      [0, 0, 0],
+      [this.#width / 2, 0, -offset],
+      [-this.#width / 2, 0, -offset],
+    ] as VectorArray3[]
+
+    const renderingObj = builder.makePolygones(points, {r: 255, g: 0, b: 0})
+    renderer.addItem(this.#junctionCoordinate, renderingObj)
   }
 
   dispose(renderer: Renderer<T>) {
     this.#disposed = true
+
+    this.removeJunctionPolygone(renderer)
+  }
+
+  private get jointPosition() {
+    return this.#edges[0].position
+  }
+
+  private removeJunctionPolygone(renderer: Renderer<T>) {
+    if (renderer.renderingObjectFromCoordinate(this.#junctionCoordinate)) {
+      renderer.removeItem(this.#junctionCoordinate)
+    }
   }
 }

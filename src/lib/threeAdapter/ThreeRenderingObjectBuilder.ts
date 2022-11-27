@@ -7,15 +7,16 @@ import {
   BoxGeometry,
   CircleGeometry,
   MeshBasicMaterial,
+  PolyhedronBufferGeometry,
   Mesh,
   Group,
   Color,
   PlaneGeometry,
-  Shape,
-  ShapeGeometry
+  BufferGeometry,
+  BufferAttribute,
 } from 'three'
 import { RGBColor, convertRgbToHex } from '../helpers/color.js'
-import { VectorArray2 } from '../Matrix.js'
+import { VectorArray3 } from '../Matrix.js'
 
 export class ThreeRenderingObjectBuilder implements RenderingObjectBuilder<ThreeRenderingObject> {
   makeVector(norm: number, radius: number, shaftColor: RGBColor) {
@@ -73,16 +74,9 @@ export class ThreeRenderingObjectBuilder implements RenderingObjectBuilder<Three
     return new ThreeRenderingObject(new ThreePrimitiveRenderingObject(geometry, material))
   }
 
-  makeShape(points: Array<VectorArray2>, color: RGBColor) {
-    const shape = new Shape()
-
-    shape.moveTo(points[0][0], points[0][1])
-
-    for (let i = 1; i < points.length; i++) {
-      shape.lineTo(points[i][0], points[i][1])
-    }
-
-    const geometry = new ShapeGeometry(shape)
+  makePolygones(points: VectorArray3[], color: RGBColor) {
+    const geometry = new BufferGeometry()
+    geometry.setAttribute('position', new BufferAttribute(new Float32Array(points.flat()), 3))
     const material = new MeshBasicMaterial({ color: convertRgbToHex(color) })
 
     return new ThreeRenderingObject(new ThreePrimitiveRenderingObject(geometry, material))
