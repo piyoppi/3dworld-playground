@@ -104,9 +104,6 @@ export class Corner<T extends RenderingObject> implements Joint<T> {
 
   private getAngle() {
     return Math.PI - Math.acos(Vec3.dotprod(this.#edges[0].xAxis, this.#edges[1].xAxis))
-    return Vec3.dotprod(this.#edges[0].xAxis, this.#edges[1].xAxis) < 0 ?
-      Math.PI - Math.acos(Vec3.dotprod(this.#edges[0].xAxis, this.#edges[1].xAxis)) :
-      Math.acos(Vec3.dotprod(this.#edges[0].xAxis, this.#edges[1].xAxis))
   }
 
   private removeCornerRenderingItem(renderer: Renderer<T>) {
