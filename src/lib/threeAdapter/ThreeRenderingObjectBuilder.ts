@@ -7,7 +7,6 @@ import {
   BoxGeometry,
   CircleGeometry,
   MeshBasicMaterial,
-  PolyhedronBufferGeometry,
   Mesh,
   Group,
   Color,
