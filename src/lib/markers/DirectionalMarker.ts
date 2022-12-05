@@ -10,7 +10,6 @@ import type { Renderer } from "../Renderer.js"
 import type { RenderingObjectBuilder } from '../RenderingObjectBuilder.js'
 import type { RGBColor } from "../helpers/color.js"
 import type { Marker } from "./Marker"
-import { RenderingObject } from "../RenderingObject.js"
 
 export class DirectionalMarker implements Marker {
   #direction
@@ -61,9 +60,7 @@ export class DirectionalMarker implements Marker {
   setParentCoordinate(coordinate: Coordinate) {
     this.#parentCoordinate.removeChild(this.#direction.parentCoordinate)
 
-    if (coordinate) {
-      this.#parentCoordinate = coordinate
-    }
+    this.#parentCoordinate = coordinate
 
     this.#parentCoordinate.addChild(this.#direction.parentCoordinate)
   }

@@ -16,6 +16,8 @@ import { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder.j
 import { Item } from "../../../../lib/Item.js"
 import { CenterMarker } from "../../../../lib/markers/CenterMarker.js"
 import { PlaneMoveHandler } from "../../../../lib/mouse/handlers/PlaneMoveHandler.js"
+import { DirectionalMarker } from "../../../../lib/markers/DirectionalMarker.js"
+import { DirectionalMoveHandler } from "../../../../lib/mouse/handlers/DirectionalMoveHandler.js"
 
 export class MeshItemGenerator<T extends RenderingObject>
   implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorItemClonable<T> {
@@ -67,11 +69,13 @@ export class MeshItemGenerator<T extends RenderingObject>
     const coordinateForRendering = new Coordinate()
     item.parentCoordinate.addChild(coordinateForRendering)
 
-    const marker = new CenterMarker(2)
+   // const marker = new CenterMarker(2)
+    const marker = new DirectionalMarker(4, 0.1, [0, 0, 1])
     marker.setParentCoordinate(item.parentCoordinate)
     marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#renderer)
 
-    const moveHandler = new PlaneMoveHandler(marker.parentCoordinate, this.#planeRaycaster)
+    const moveHandler = new DirectionalMoveHandler(item.parentCoordinate, [1, 0, 0], 0.1)
+    //const moveHandler = new PlaneMoveHandler(marker.parentCoordinate, this.#planeRaycaster)
     marker.addHandler(moveHandler)
 
     this.#renderer.addItem(coordinateForRendering, this.makeRenderingObject())

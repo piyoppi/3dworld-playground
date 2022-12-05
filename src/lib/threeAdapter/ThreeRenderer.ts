@@ -1,4 +1,4 @@
-import { WebGLRenderer, Scene, Mesh, AmbientLight, Group, GridHelper, Color } from 'three'
+import { WebGLRenderer, Scene, Mesh, AmbientLight, Group, GridHelper, Color, Object3D } from 'three'
 import { Renderer } from '../Renderer.js'
 import { ThreeCamera } from './ThreeCamera.js'
 import { syncCoordinate } from './ThreeSyncCoordinate.js'
@@ -47,22 +47,22 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
       if (parentMeshes.length === 0) {
         const group = this.makeEmptyGroupsRecursive(coordinate.parent)
         if (group) {
-          group.add(mesh)
+          this.addScene(group, mesh, coordinate)
           this.registerThreeItem(coordinate, mesh)
           syncCoordinate(coordinate.parent, group)
         }
       } else {
-        parentMeshes[0].add(mesh)
+        this.addScene(parentMeshes[0], mesh, coordinate)
       }
     } else {
-      this.#scene.add(mesh)
+      this.addScene(this.#scene, mesh, coordinate)
     }
 
     this.registerThreeItem(coordinate, mesh)
 
-    coordinate.setSetChildCallback((parent, child) => this.coordinateSetChildCallbackHandler(parent, child))
-    coordinate.setRemoveChildCallback((parent, child) => this.coordinateRemoveChildCallbackHandler(parent, child))
-    coordinate.setUpdateCallback(() => syncCoordinate(coordinate, mesh))
+    // coordinate.setSetChildCallback((parent, child) => this.coordinateSetChildCallbackHandler(parent, child))
+    // coordinate.setRemoveChildCallback((parent, child) => this.coordinateRemoveChildCallbackHandler(parent, child))
+    // coordinate.setUpdateCallback(() => syncCoordinate(coordinate, mesh))
 
     syncCoordinate(coordinate, mesh)
 
@@ -121,7 +121,7 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
 
         if (parentRenderingObjects.length > 0) parentRenderingObjects[0].add(group)
       } else {
-        this.#scene.add(group)
+        this.addScene(this.#scene, group, coord)
       }
 
       this.registerThreeItem(coord, group)
@@ -130,6 +130,17 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
 
       return group
     }).at(-1)
+  }
+
+  private observeCoordinateHooks(coordinate: Coordinate, obj: Object3D) {
+    coordinate.setSetChildCallback((parent, child) => this.coordinateSetChildCallbackHandler(parent, child))
+    coordinate.setRemoveChildCallback((parent, child) => this.coordinateRemoveChildCallbackHandler(parent, child))
+    coordinate.setUpdateCallback(() => syncCoordinate(coordinate, obj))
+  }
+
+  private addScene(parent: Object3D, item: Object3D, coordinate: Coordinate) {
+    parent.add(item)
+    this.observeCoordinateHooks(coordinate, item)
   }
 
   private getAllocatedRootCoordinate(coordinate: Coordinate): Coordinate | null {
@@ -147,13 +158,12 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
     const childMeshes = this.threeItemFromCoordinate(child)
 
     childMeshes.forEach(mesh => {
-      parentMeshes[0].add(mesh)
+      this.addScene(parentMeshes[0], mesh, child)
       syncCoordinate(child, mesh)
     })
   }
 
   private coordinateRemoveChildCallbackHandler(parent: Coordinate, child: Coordinate) {
-    const parentMeshes = this.threeItemFromCoordinate(parent)
     const childMeshes = this.threeItemFromCoordinate(child)
 
     childMeshes.forEach(mesh => mesh.parent?.remove(mesh))
@@ -182,7 +192,7 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
 
   addLight(coordinate: Coordinate) {
     const light = new AmbientLight( 0x404040, 4 )
-    this.#scene.add(light)
+    this.addScene(this.#scene, light, coordinate)
     syncCoordinate(coordinate, light)
   }
 
