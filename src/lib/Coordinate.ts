@@ -131,6 +131,7 @@ export class Coordinate {
 
   lookAt(targetPoint: VectorArray3) {
     this.#matrix = Mat4.lookAt(targetPoint, this.position)  
+    this.#updatedCallbacks.call()
   }
 
   rotateX(rad: number) {

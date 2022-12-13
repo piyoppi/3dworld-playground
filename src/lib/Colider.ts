@@ -140,11 +140,16 @@ export class BoxColider extends ColiderBase implements Colider {
 export class PlaneColider extends ColiderBase implements Colider {
   #norm: VectorArray3
   #position: VectorArray3
+  #edgeEvaluator: (distance: number, ray: Ray) => boolean = () => true
 
   constructor(position: VectorArray3, norm: VectorArray3) {
     super()
     this.#position = position
     this.#norm = norm
+  }
+
+  setEdgeEvaluator(func: (distance: number, ray: Ray) => boolean) {
+    this.#edgeEvaluator = func
   }
 
   checkRay(ray: Ray): number {
@@ -153,6 +158,8 @@ export class PlaneColider extends ColiderBase implements Colider {
     if (Math.abs(parallel) < 0.001) return -1
 
     const distance = (Vec3.dotprod(this.#norm, Vec3.subtract(this.#position, ray.position))) / parallel
+
+    if (!this.#edgeEvaluator(distance, ray)) return -1
 
     return distance
   }
