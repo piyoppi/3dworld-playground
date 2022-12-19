@@ -20,6 +20,7 @@ import { DirectionalMarker } from "../../../../lib/markers/DirectionalMarker.js"
 import { DirectionalMoveHandler } from "../../../../lib/mouse/handlers/DirectionalMoveHandler.js"
 import { RotateHandler } from "../../../../lib/mouse/handlers/RotateHandler.js"
 import { RotateMarker } from "../../../../lib/markers/RotateMarker.js"
+import { PlaneColider } from "../../../../lib/Colider.js"
 
 export class MeshItemGenerator<T extends RenderingObject>
   implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorItemClonable<T> {
@@ -27,6 +28,7 @@ export class MeshItemGenerator<T extends RenderingObject>
   private original: HaconiwaItemGeneratorClonedItem<T> | null = null
   #isStarted = false
   #planeRaycaster: Raycaster
+  #markerRaycaster: Raycaster
   #renderer: Renderer<T>
   #renderingObjectBuilder: RenderingObjectBuilder<T>
   #onGeneratedCallbacks: Array<HaconiwaItemGeneratedCallback<T>> = []
@@ -35,9 +37,12 @@ export class MeshItemGenerator<T extends RenderingObject>
   constructor(
     renderer: Renderer<T>,
     planeRaycaster: Raycaster,
+    markerRaycaster: Raycaster,
     renderingObjectBuilder: RenderingObjectBuilder<T>
   ) {
     this.#planeRaycaster = planeRaycaster
+    this.#markerRaycaster = markerRaycaster
+
     this.#renderer = renderer
     this.#renderingObjectBuilder = renderingObjectBuilder
   }
@@ -71,18 +76,23 @@ export class MeshItemGenerator<T extends RenderingObject>
     const coordinateForRendering = new Coordinate()
     item.parentCoordinate.addChild(coordinateForRendering)
 
-    const marker = new RotateMarker(4, [0, 0, 0], [0, 1, 0])
+    const xzMarker = new RotateMarker(2, [0, 0, 0], [0, 1, 0])
+    const yzMarker = new RotateMarker(2, [0, 0, 0], [1, 0, 0])
     //const marker = new CenterMarker(2)
-    marker.setParentCoordinate(item.parentCoordinate)
-    marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#renderer)
+    xzMarker.setParentCoordinate(item.parentCoordinate)
+    xzMarker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#renderer)
+    yzMarker.setParentCoordinate(item.parentCoordinate)
+    yzMarker.attachRenderingObject<T>({r: 0, g: 255, b: 0}, this.#renderingObjectBuilder, this.#renderer)
 
     //const moveHandler = new PlaneMoveHandler(marker.parentCoordinate, this.#planeRaycaster)
-    const moveHandler = new RotateHandler(marker.parentCoordinate, this.#planeRaycaster)
-    marker.addHandler(moveHandler)
+    xzMarker.addHandler(new RotateHandler(xzMarker.parentCoordinate, this.#markerRaycaster, [0, 1, 0]))
+    yzMarker.addHandler(new RotateHandler(yzMarker.parentCoordinate, this.#markerRaycaster, [1, 0, 0]))
 
-    this.#renderer.addItem(coordinateForRendering, this.makeRenderingObject())
+    const renderingObject = this.makeRenderingObject()
+    this.#renderer.addItem(coordinateForRendering, renderingObject)
+    renderingObject.material.setOpacity(0.7)
 
-    this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], [marker])]))
+    this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], [yzMarker])]))
     this.#startedCallbacks.call()
 
     return true
@@ -105,7 +115,7 @@ export class MeshItemGenerator<T extends RenderingObject>
 
 export class MeshItemGeneratorFactory<T extends RenderingObject> implements HaconiwaItemGeneratorFactory<T> {
   create(renderer: Renderer<T>, raycaster: Raycaster, markerRaycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) {
-    const generator = new MeshItemGenerator(renderer, raycaster, renderingObjectBuilder)
+    const generator = new MeshItemGenerator(renderer, raycaster, markerRaycaster, renderingObjectBuilder)
 
     return generator
   }

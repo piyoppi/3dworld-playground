@@ -12,6 +12,13 @@ export class ThreeMaterial implements Material {
     return this.#materialsRaw
   }
 
+  setOpacity(value: number) {
+    this.#materialsRaw.forEach(material => {
+      material.transparent = true
+      material.opacity = value
+    })
+  }
+
   repeat(x: number, y: number) {
     this.#materialsRaw.forEach(material => {
       if ((material instanceof MeshBasicMaterial || material instanceof MeshStandardMaterial) && material.map) {

@@ -141,11 +141,13 @@ export class PlaneColider extends ColiderBase implements Colider {
   #norm: VectorArray3
   #position: VectorArray3
   #edgeEvaluator: (distance: number, ray: Ray) => boolean = () => true
+  #parentCoordinate: Coordinate | null
 
-  constructor(position: VectorArray3, norm: VectorArray3) {
+  constructor(position: VectorArray3, norm: VectorArray3, parentCoordinate: Coordinate | null = null) {
     super()
     this.#position = position
     this.#norm = norm
+    this.#parentCoordinate = parentCoordinate
   }
 
   setEdgeEvaluator(func: (distance: number, ray: Ray) => boolean) {
@@ -153,13 +155,28 @@ export class PlaneColider extends ColiderBase implements Colider {
   }
 
   checkRay(ray: Ray): number {
-    const parallel = Vec3.dotprod(this.#norm, ray.direction)
+    const rayConverted = ray
+    let normConverted = this.#norm 
+
+    if (this.#parentCoordinate) {
+      const transformToTargetItem = this.#parentCoordinate.getTransformMatrixFromWorldToCoordinate()
+      normConverted = Vec3.normalize(Mat3.mulVec3(Mat4.convertToDirectionalTransformMatrix(transformToTargetItem), this.#norm))
+    }
+
+    // Ray is always in the global coordnate.
+    //if (this.#parentCoordinate) {
+    //  const transformToTargetItem = this.#parentCoordinate.getTransformMatrixFromWorldToCoordinate()
+    //  rayConverted.position = Mat4.mulGlVec3(transformToTargetItem, ray.position)
+    //  rayConverted.direction = Vec3.normalize(Mat3.mulVec3(Mat4.convertToDirectionalTransformMatrix(transformToTargetItem), ray.direction))
+    //}
+
+    const parallel = Vec3.dotprod(this.#norm, rayConverted.direction)
 
     if (Math.abs(parallel) < 0.001) return -1
 
-    const distance = (Vec3.dotprod(this.#norm, Vec3.subtract(this.#position, ray.position))) / parallel
+    const distance = (Vec3.dotprod(this.#norm, Vec3.subtract(this.#position, rayConverted.position))) / parallel
 
-    if (!this.#edgeEvaluator(distance, ray)) return -1
+    if (!this.#edgeEvaluator(distance, rayConverted)) return -1
 
     return distance
   }

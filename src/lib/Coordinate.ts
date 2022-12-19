@@ -149,6 +149,22 @@ export class Coordinate {
     this.#updatedCallbacks.call()
   }
 
+  rotate(direction: VectorArray3, angle: number) {
+    const mat = Mat4.rotate(direction, angle)
+
+    this.#matrix[0] = mat[0]
+    this.#matrix[1] = mat[1]
+    this.#matrix[2] = mat[2]
+    this.#matrix[4] = mat[4]
+    this.#matrix[5] = mat[5]
+    this.#matrix[6] = mat[6]
+    this.#matrix[8] = mat[8]
+    this.#matrix[9] = mat[9]
+    this.#matrix[10] = mat[10]
+
+    this.#updatedCallbacks.call()
+  }
+
   setDirectionYAxis(direction: VectorArray3, position: VectorArray3) {
     this.#matrix = Mat4.transformYAxis(direction, position)
     this.#updatedCallbacks.call()

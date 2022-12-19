@@ -251,18 +251,45 @@ export class Mat4 {
     )
   }
 
+  static rotate(direction: VectorArray3, angle: number) {
+    const sin = Math.sin(angle)
+    const cos = Math.cos(angle)
+    const a = 1 - cos
+
+    return [
+      direction[0] * direction[0] * a + cos,
+      direction[0] * direction[1] * a + direction[2] * sin,
+      direction[0] * direction[2] * a - direction[1] * sin,
+      0,
+      direction[0] * direction[1] * a - direction[2] * sin,
+      direction[1] * direction[1] * a + cos,
+      direction[1] * direction[2] * a + direction[0] * sin,
+      0,
+      direction[0] * direction[2] * a + direction[1] * sin,
+      direction[1] * direction[2] * a - direction[0] * sin,
+      direction[2] * direction[2] * a + cos,
+      0,
+      0,
+      0,
+      0,
+      1
+    ]
+  }
+
   static transformZAxis(direction: VectorArray3, position: VectorArray3 = [0, 0, 0]): MatrixArray4 {
-    let xAxis: VectorArray3
-    let yAxis: VectorArray3
+    // let xAxis: VectorArray3
+    // let yAxis: VectorArray3
 
-    if (Math.abs(Vec3.dotprod(direction, [0, 1, 0])) < 0.001) {
-      xAxis = Vec3.normalize(Vec3.cross([0, 1, 0], direction))
-      yAxis = Vec3.normalize(Vec3.cross(direction, xAxis))
-    } else {
-      yAxis = Vec3.normalize(Vec3.cross([1, 0, 0], direction))
-      xAxis = Vec3.normalize(Vec3.cross(yAxis, direction))
-    }
+    // if (Math.abs(Vec3.dotprod(direction, [0, 1, 0])) < 0.001) {
+    //   xAxis = Vec3.normalize(Vec3.cross([0, 1, 0], direction))
+    //   yAxis = Vec3.normalize(Vec3.cross(direction, xAxis))
+    // } else {
+    //   yAxis = Vec3.normalize(Vec3.cross([1, 0, 0], direction))
+    //   xAxis = Vec3.normalize(Vec3.cross(yAxis, direction))
+    // }
 
+    const xAxis = Vec3.normalize(Vec3.cross([0, 1, 0], direction))
+    const yAxis = Vec3.normalize(Vec3.cross(direction, xAxis))
     return [
       ...xAxis, 0,
       ...yAxis, 0,
