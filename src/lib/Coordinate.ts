@@ -1,7 +1,8 @@
-import { Mat4, MatrixArray4, Vec3, VectorArray3 } from './Matrix.js'
+import { Mat3, Mat4, MatrixArray4, Vec3, VectorArray3 } from './Matrix.js'
 import { v4 as uuidv4 } from 'uuid'
 import { Coordinates } from './Coordinates.js'
 import { CallbackFunctions } from './CallbackFunctions.js'
+import { Eular } from './Eular.js'
 
 export class InvalidParentCoordinateError extends Error {}
 
@@ -57,6 +58,10 @@ export class Coordinate {
 
   get zAxis() {
     return Vec3.normalize([this.#matrix[8], this.#matrix[9], this.#matrix[10]])
+  }
+
+  get eular() {
+    return Eular.fromMatrix(Mat3.fromMatrixArray4(this.#matrix))
   }
 
   setMatrix(array: MatrixArray4) {

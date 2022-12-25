@@ -39,5 +39,6 @@ renderer.setRenderingLoop(() => {
   raycasters.check(pos)
   cameraController.update(renderer.camera)
 })
+
 attachCoordinateRenderingItem(coord, new ThreeRenderingObjectBuilder(), renderer, 3, 0.2)
 attachCoordinateRenderingItem(baseCoord, new ThreeRenderingObjectBuilder(), renderer, 3, 0.2)

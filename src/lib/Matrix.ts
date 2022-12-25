@@ -382,6 +382,14 @@ export class Mat3 {
     ]
   }
 
+  static fromMatrixArray4(m: MatrixArray4): MatrixArray3 {
+    return [
+      m[0], m[1], m[2],
+      m[4], m[5], m[6],
+      m[8], m[9], m[10]
+    ]
+  }
+
   static getIdentityMatrix(): MatrixArray3 {
     return [
       1, 0, 0,

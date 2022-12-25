@@ -85,14 +85,18 @@ export class MeshItemGenerator<T extends RenderingObject>
     yzMarker.attachRenderingObject<T>({r: 0, g: 255, b: 0}, this.#renderingObjectBuilder, this.#renderer)
 
     //const moveHandler = new PlaneMoveHandler(marker.parentCoordinate, this.#planeRaycaster)
-    xzMarker.addHandler(new RotateHandler(xzMarker.parentCoordinate, this.#markerRaycaster, [0, 1, 0]))
-    yzMarker.addHandler(new RotateHandler(yzMarker.parentCoordinate, this.#markerRaycaster, [1, 0, 0]))
+    const xzRotateHandler = new RotateHandler(xzMarker.parentCoordinate, this.#markerRaycaster, [0, 1, 0])
+    const yzRotateHandler = new RotateHandler(yzMarker.parentCoordinate, this.#markerRaycaster, [1, 0, 0])
+    xzRotateHandler.setStartingCallback(() => !yzRotateHandler.isStart)
+    yzRotateHandler.setStartingCallback(() => !xzRotateHandler.isStart)
+    xzMarker.addHandler(xzRotateHandler)
+    yzMarker.addHandler(yzRotateHandler)
 
     const renderingObject = this.makeRenderingObject()
     this.#renderer.addItem(coordinateForRendering, renderingObject)
     renderingObject.material.setOpacity(0.7)
 
-    this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], [yzMarker])]))
+    this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], [xzMarker, yzMarker])]))
     this.#startedCallbacks.call()
 
     return true
