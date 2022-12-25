@@ -11,16 +11,15 @@ import {
 import type { Camera } from '../../../lib/Camera'
 import type { RenderingObjectBuilder } from '../../../lib/RenderingObjectBuilder'
 import type { MouseButton } from '../../../lib/mouse/MouseControllable'
-import { LookAtCameraHandler } from '../../../lib/LookAtCameraHandler.js'
 import { Raycaster } from '../../../lib/Raycaster.js'
 import { Colider, PlaneColider } from '../../../lib/Colider.js'
 import { HaconiwaWorld } from '../world.js'
 import { ControlHandle, MouseControlHandles } from '../../../lib/mouse/MouseControlHandles.js'
-import { InfiniteColider } from '../../../lib/Colider.js'
 import { Raycasters } from '../../../lib/Raycasters.js'
 import { ColiderItemMap } from '../../../lib/ColiderItemMap.js'
 import type { LineItemConnection } from '../../../lib/LineItem'
 import { RenderingObject } from '../../../lib/RenderingObject'
+import { CameraController } from '../../../lib/CameraController.js'
 
 type Plane = {
   position: VectorArray3,
@@ -54,11 +53,12 @@ export class HaconiwaEditor<T extends RenderingObject> {
     this.#markerRaycaster = new Raycaster(this.#renderer.renderer.camera)
 
     this.#mouseControlHandles = new MouseControlHandles(renderer.renderer.camera, this.#raycasters)
-    this.#mouseControlHandles.addBeforeMouseDownCallback((x, y, mouseButton) => this.#mouseDownHandler(x, y, mouseButton))
+    this.#mouseControlHandles.addBeforeMouseDownCallback(() => this.handleMouseEvent())
     this.#mouseControlHandles.addBeforeMouseMoveCallback((_x, _y) => this.#mouseMoveHandler())
 
     this.#cameraController = new CameraController(renderer.renderer.camera)
     this.#cameraController.setMouseHandlers(this.#mouseControlHandles)
+    this.#cameraController.setDefaultMouseDownHandler(this.#mouseControlHandles)
 
     this.#raycasters.add(this.#editingPlane.raycaster)
     this.#raycasters.add(this.#markerRaycaster, {transparency: false})
@@ -144,9 +144,7 @@ export class HaconiwaEditor<T extends RenderingObject> {
   }
 
   #renderingLoop() {
-    if (this.#cameraController.changed) {
-      this.#renderer.renderer.camera.coordinate.setMatrix(this.#cameraController.getLookAtMatrix())
-    }
+    this.#cameraController.update(this.#renderer.renderer.camera)
   }
 }
 
@@ -167,40 +165,5 @@ export class EditingPlane {
 
   get colider() {
     return this.#colider
-  }
-}
-
-export class CameraController {
-  #cameraHandler = new LookAtCameraHandler()
-  #raycaster: Raycaster
-  #colider = new InfiniteColider()
-
-  constructor(camera: Camera) {
-    this.#raycaster = new Raycaster(camera)
-    this.#raycaster.addTarget(this.#colider)
-  }
-
-  get raycaster() {
-    return this.#raycaster
-  }
-
-  get changed() {
-    return this.#cameraHandler.changed
-  }
-
-  setMouseHandlers(mouseControlHandles: MouseControlHandles) {
-    mouseControlHandles.add({colider: this.#colider, handled: this.#cameraHandler})
-  }
-
-  setTargetPositionHandler() {
-    this.#cameraHandler.setTargetPositionHandler()
-  }
-
-  setRotationHandler() {
-    this.#cameraHandler.setRotationHandler()
-  }
-
-  getLookAtMatrix() {
-    return this.#cameraHandler.getLookAtMatrix()
   }
 }

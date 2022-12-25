@@ -155,6 +155,15 @@ export class Mat4 {
     ]
   }
 
+  static fromMatrixArray3(mat: MatrixArray3): MatrixArray4 {
+    return [
+      mat[0], mat[1], mat[2], 0,
+      mat[3], mat[4], mat[5], 0,
+      mat[6], mat[7], mat[8], 0,
+      0,           0,      0, 1
+    ]
+  }
+
   static inverse(mat: MatrixArray4): MatrixArray4 {
     const a11 = mat[0]
     const a12 = mat[1]

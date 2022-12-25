@@ -29,7 +29,6 @@ export class Coordinate {
 
   get matrix() {
     return Mat4.mulAll([this.#scaleMatrix, this.#mirrorMatrix, this.#matrix])
-    //return Mat4.mul(this.#matrix, this.#scaleMatrix)
   }
 
   get matrixInverse() {

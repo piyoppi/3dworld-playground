@@ -21,6 +21,10 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
     this.#camera = camera
     this.#mapCoordinateIdToThreeItems = new Map()
     this.debug()
+
+    this.#renderer.setAnimationLoop(() => {
+      this.render()
+    })
   }
 
   get camera() {
