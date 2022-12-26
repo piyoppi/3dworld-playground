@@ -260,7 +260,7 @@ export class Mat4 {
     )
   }
 
-  static rotate(direction: VectorArray3, angle: number) {
+  static rotate(direction: VectorArray3, angle: number): MatrixArray4 {
     const sin = Math.sin(angle)
     const cos = Math.cos(angle)
     const a = 1 - cos

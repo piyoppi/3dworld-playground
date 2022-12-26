@@ -18,7 +18,8 @@ export class RotateHandler implements MouseControllable {
   #startPosition: VectorArray3 = [0, 0, 0]
   #handlingParams = {
     handledColiderUuid: '',
-    initialAngle: 0
+    initialAngle: 0,
+    beforeAngle: 0
   }
 
   constructor(manipulateCoordinate: Coordinate, raycaster: Raycaster, direction: VectorArray3) {
@@ -59,6 +60,7 @@ export class RotateHandler implements MouseControllable {
       this.#manipulateCoordinate.eular.toVectorArray3XYZ(),
       this.#direction
     )
+    this.#handlingParams.beforeAngle = this.#handlingParams.initialAngle
     console.log(this.#handlingParams.initialAngle, this.#manipulateCoordinate.eular.toVectorArray3(), this.#direction)
 
     this.#startedCallbacks.call()
@@ -97,9 +99,9 @@ export class RotateHandler implements MouseControllable {
     } else {
       angle = angle + this.#handlingParams.initialAngle
     }
-    console.log(angle)
 
-    this.#manipulateCoordinate.rotate(this.#direction, angle)
+    this.#manipulateCoordinate.addRotate(this.#direction, angle - this.#handlingParams.beforeAngle)
+    this.#handlingParams.beforeAngle = angle
   }
 
   end() {
