@@ -9,6 +9,7 @@ import type { RGBColor } from "../helpers/color.js"
 import type { RenderingObjectBuilder } from '../RenderingObjectBuilder.js'
 import type { Renderer } from "../Renderer.js"
 import { VectorArray3, Vec3, Mat4 } from "../Matrix.js"
+import { RenderingObject } from "../RenderingObject.js"
 
 export class RotateMarker implements Marker {
   #parentCoordinate = new Coordinate()
@@ -52,7 +53,6 @@ export class RotateMarker implements Marker {
   addHandler(handler: MouseControllable) {
     this.#handledColiders.addHandler({colider: this.#colider, handled: handler})
 
-    console.log(this.#colider.uuid)
     return this.#colider
   }
 
@@ -66,8 +66,10 @@ export class RotateMarker implements Marker {
     this.createColider()
   }
 
-  attachRenderingObject<T>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
-    renderer.addItem(this.#markerCoordinate, builder.makeCircle(this.#radius, Math.PI * 2, 0, color))
+  attachRenderingObject<T extends RenderingObject>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
+    const circleMesh = builder.makeCircle(this.#radius, Math.PI * 2, 0, color)
+    circleMesh.material.setSide('both')
+    renderer.addItem(this.#markerCoordinate, circleMesh)
     this.#attachedRenderingItem = true
   }
 

@@ -1,5 +1,5 @@
-import { Material } from "../Material"
-import { Material as ThreeMaterialRaw, MeshBasicMaterial, MeshStandardMaterial } from "three"
+import { Material, Side } from "../Material"
+import { BackSide, DoubleSide, FrontSide, Material as ThreeMaterialRaw, MeshBasicMaterial, MeshStandardMaterial, Side as ThreeSide } from "three"
 
 export class ThreeMaterial implements Material {
   #materialsRaw: ThreeMaterialRaw[]
@@ -26,5 +26,21 @@ export class ThreeMaterial implements Material {
         material.map.repeat.y = y
       }
     })
+  }
+
+  setSide(value: Side) {
+    const convertMap = {
+      'front': FrontSide,
+      'back': BackSide,
+      'both': DoubleSide
+    }
+
+    const converted: ThreeSide = convertMap[value]
+
+    if (!converted) {
+      throw new Error('The value of side is invalid.')
+    }
+
+    this.#materialsRaw.forEach(material => material.side = converted)
   }
 }
