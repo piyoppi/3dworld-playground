@@ -4,6 +4,7 @@ import type { Coordinate } from "../../Coordinate.js"
 import type { Raycaster } from "../../Raycaster"
 import { CursorDirectionScreenToWorldConverter } from "./CursorDirectionScreenToWorldConverter.js"
 import { Vec3, VectorArray3 } from "../../Matrix.js"
+import { Colider } from "../../Colider"
 
 type StartingCallbackFunction = () => boolean
 
@@ -21,11 +22,13 @@ export class RotateHandler implements MouseControllable {
     initialAngle: 0,
     beforeAngle: 0
   }
+  #targetColider: Colider
 
-  constructor(manipulateCoordinate: Coordinate, raycaster: Raycaster, direction: VectorArray3) {
+  constructor(manipulateCoordinate: Coordinate, raycaster: Raycaster, direction: VectorArray3, targetColider: Colider) {
     this.#manipulateCoordinate = manipulateCoordinate
     this.#raycaster = raycaster
     this.#direction = direction
+    this.#targetColider = targetColider
   }
 
   get isStart() {
@@ -50,6 +53,7 @@ export class RotateHandler implements MouseControllable {
 
   start(cursorX: number, cursorY: number, _button: MouseButton, cameraCoordinate: Coordinate) {
     if (this.#startingCallbacks.call().some(val => val === false)) return
+    if (this.#raycaster.colidedDetails[0].colider.uuid !== this.#targetColider.uuid) return
 
     this.#cursorDirectionConverter.calcTransformMatrix(this.#manipulateCoordinate, cameraCoordinate)
     this.#isStart = true

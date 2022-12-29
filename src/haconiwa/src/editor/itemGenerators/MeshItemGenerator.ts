@@ -87,8 +87,8 @@ export class MeshItemGenerator<T extends RenderingObject>
     marker.setParentCoordinate(item.parentCoordinate)
     marker.attachRenderingObject({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#renderer)
 
-    const xzRotateHandler = new RotateHandler(xzMarker.parentCoordinate, this.#markerRaycaster, [0, 1, 0])
-    const yzRotateHandler = new RotateHandler(yzMarker.parentCoordinate, this.#markerRaycaster, [1, 0, 0])
+    const xzRotateHandler = new RotateHandler(xzMarker.parentCoordinate, this.#markerRaycaster, [0, 1, 0], xzMarker.colider)
+    const yzRotateHandler = new RotateHandler(yzMarker.parentCoordinate, this.#markerRaycaster, [1, 0, 0], yzMarker.colider)
     xzRotateHandler.setStartingCallback(() => !yzRotateHandler.isStart)
     yzRotateHandler.setStartingCallback(() => !xzRotateHandler.isStart)
     xzMarker.addHandler(xzRotateHandler)
