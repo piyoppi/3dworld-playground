@@ -19,12 +19,12 @@ export class PlaneMoveHandler implements MouseControllable {
   #markerRaycaster: Raycaster
   #applyer: PlaneMoveHandlerApplyer = (coordinate: Coordinate, position: VectorArray3) => coordinate.position = position
   #isStart = false
-  #targetColider: Colider
+  #targetColider: Colider | null
   #handlingParams = {
     handledColiderUuid: ''
   }
 
-  constructor(manipulateCoordinate: Coordinate, raycaster: Raycaster, markerRaycaster: Raycaster, targetColider: Colider) {
+  constructor(manipulateCoordinate: Coordinate, raycaster: Raycaster, markerRaycaster: Raycaster, targetColider: Colider | null = null) {
     this.manipulateCoordinate = manipulateCoordinate
     this.#cursorModifier = new CursorNoneModifier()
     this.#raycaster = raycaster
@@ -65,7 +65,7 @@ export class PlaneMoveHandler implements MouseControllable {
   }
 
   start(cursorX: number, cursorY: number, _button: MouseButton, cameraCoordinate: Coordinate) {
-    if (this.#markerRaycaster.colidedDetails[0].colider.uuid !== this.#targetColider.uuid) return
+    if (this.#targetColider && this.#markerRaycaster.colidedDetails[0]?.colider?.uuid !== this.#targetColider.uuid) return
     this.#isStart = true
     this.#cursorModifier.reset(this.manipulateCoordinate.position)
     this.#handlingParams.handledColiderUuid = this.#raycaster.colidedDetails[0].colider.uuid
