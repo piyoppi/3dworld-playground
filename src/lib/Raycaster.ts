@@ -27,6 +27,10 @@ export class ColidedDetails {
     return Vec3.add(this.#ray.position, Vec3.mulScale(this.#ray.direction, this.#distance))
   }
 
+  get direction() {
+    return this.#ray.direction
+  }
+
   get distance() {
     return this.#distance
   }

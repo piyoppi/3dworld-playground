@@ -23,7 +23,7 @@ export class RotateMarker implements Marker {
 
   constructor(radius: number, planePosition: VectorArray3, planeNorm: VectorArray3) {
     this.#radius = radius
-    this.#colider = new PlaneColider(planePosition, planeNorm, this.#parentCoordinate)
+    this.#colider = new PlaneColider(this.#parentCoordinate, planeNorm)
     this.#planePosition = planePosition
     this.#planeNorm = planeNorm
     this.#markerCoordinate.setDirectionZAxis(planeNorm, planePosition)
@@ -74,7 +74,7 @@ export class RotateMarker implements Marker {
   }
 
   private createColider() {
-    this.#colider = new PlaneColider(this.#planePosition, this.#planeNorm, this.#parentCoordinate)
+    this.#colider = new PlaneColider(this.#parentCoordinate, this.#planeNorm)
     this.#colider.setEdgeEvaluator((dist, ray) => {
       const val = Vec3.norm(
         Vec3.subtract(this.#parentCoordinate.position, Vec3.add(ray.position, Vec3.mulScale(ray.direction, dist)))

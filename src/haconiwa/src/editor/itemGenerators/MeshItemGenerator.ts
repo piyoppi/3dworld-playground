@@ -94,7 +94,7 @@ export class MeshItemGenerator<T extends RenderingObject>
     xzMarker.addHandler(xzRotateHandler)
     yzMarker.addHandler(yzRotateHandler)
 
-    const moveHandler = new PlaneMoveHandler(marker.parentCoordinate, this.#planeRaycaster)
+    const moveHandler = new PlaneMoveHandler(marker.parentCoordinate, this.#planeRaycaster, this.#markerRaycaster, marker.colider)
     marker.addHandler(moveHandler)
 
     const renderingObject = this.makeRenderingObject()

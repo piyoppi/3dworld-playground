@@ -50,6 +50,10 @@ export class BallColider extends ColiderBase implements Colider {
     return this.#parentCoordinate
   }
 
+  set parentCoordinate(value: Coordinate) {
+    this.#parentCoordinate = value
+  }
+
   checkRay(ray: Ray): number {
     const pos = this.#parentCoordinate.getGlobalPosition()
     const s = Vec3.subtract(ray.position, pos)
@@ -138,14 +142,12 @@ export class BoxColider extends ColiderBase implements Colider {
 }
 
 export class PlaneColider extends ColiderBase implements Colider {
-  #norm: VectorArray3
-  #position: VectorArray3
   #edgeEvaluator: (distance: number, ray: Ray) => boolean = () => true
-  #parentCoordinate: Coordinate | null
+  #parentCoordinate: Coordinate
+  #norm: VectorArray3
 
-  constructor(position: VectorArray3, norm: VectorArray3, parentCoordinate: Coordinate | null = null) {
+  constructor(parentCoordinate: Coordinate, norm: VectorArray3) {
     super()
-    this.#position = position
     this.#norm = norm
     this.#parentCoordinate = parentCoordinate
   }
@@ -155,28 +157,16 @@ export class PlaneColider extends ColiderBase implements Colider {
   }
 
   checkRay(ray: Ray): number {
-    const rayConverted = ray
-    let normConverted = this.#norm 
+    const position = this.#parentCoordinate.position
+    const transformToTargetItem = this.#parentCoordinate.getTransformMatrixToWorld()
+    const normConverted = Vec3.normalize(Mat3.mulVec3(Mat4.convertToDirectionalTransformMatrix(transformToTargetItem), this.#norm))
 
-    if (this.#parentCoordinate) {
-      const transformToTargetItem = this.#parentCoordinate.getTransformMatrixFromWorldToCoordinate()
-      normConverted = Vec3.normalize(Mat3.mulVec3(Mat4.convertToDirectionalTransformMatrix(transformToTargetItem), this.#norm))
-    }
+    const parallel = Vec3.dotprod(normConverted, ray.direction)
+    if (Math.abs(parallel) < 0.00001) return -1
 
-    // Ray is always in the global coordnate.
-    //if (this.#parentCoordinate) {
-    //  const transformToTargetItem = this.#parentCoordinate.getTransformMatrixFromWorldToCoordinate()
-    //  rayConverted.position = Mat4.mulGlVec3(transformToTargetItem, ray.position)
-    //  rayConverted.direction = Vec3.normalize(Mat3.mulVec3(Mat4.convertToDirectionalTransformMatrix(transformToTargetItem), ray.direction))
-    //}
+    const distance = (Vec3.dotprod(normConverted, Vec3.subtract(position, ray.position))) / parallel
 
-    const parallel = Vec3.dotprod(this.#norm, rayConverted.direction)
-
-    if (Math.abs(parallel) < 0.001) return -1
-
-    const distance = (Vec3.dotprod(this.#norm, Vec3.subtract(this.#position, rayConverted.position))) / parallel
-
-    if (!this.#edgeEvaluator(distance, rayConverted)) return -1
+    if (!this.#edgeEvaluator(distance, ray)) return -1
 
     return distance
   }

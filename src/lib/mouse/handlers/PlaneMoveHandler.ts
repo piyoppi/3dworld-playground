@@ -5,6 +5,7 @@ import type { Coordinate } from "../../Coordinate.js"
 import { CallbackFunctions } from "../../CallbackFunctions.js"
 import type { Raycaster } from "../../Raycaster"
 import { VectorArray3 } from "../../Matrix"
+import { Colider } from "../../Colider"
 
 export type PlaneMoveHandlerApplyer = (coordinate: Coordinate, position: VectorArray3) => void
 
@@ -14,14 +15,21 @@ export class PlaneMoveHandler implements MouseControllable {
   #beforeUpdateCallbacks = new CallbackFunctions<() => void>()
   #updatedCallbacks: Array<() => void> = []
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
-  #raycaster
+  #raycaster: Raycaster
+  #markerRaycaster: Raycaster
   #applyer: PlaneMoveHandlerApplyer = (coordinate: Coordinate, position: VectorArray3) => coordinate.position = position
   #isStart = false
+  #targetColider: Colider
+  #handlingParams = {
+    handledColiderUuid: ''
+  }
 
-  constructor(manipulateCoordinate: Coordinate, raycaster: Raycaster) {
+  constructor(manipulateCoordinate: Coordinate, raycaster: Raycaster, markerRaycaster: Raycaster, targetColider: Colider) {
     this.manipulateCoordinate = manipulateCoordinate
     this.#cursorModifier = new CursorNoneModifier()
     this.#raycaster = raycaster
+    this.#markerRaycaster = markerRaycaster
+    this.#targetColider = targetColider
   }
 
   get isStart() {
@@ -57,8 +65,10 @@ export class PlaneMoveHandler implements MouseControllable {
   }
 
   start(cursorX: number, cursorY: number, _button: MouseButton, cameraCoordinate: Coordinate) {
+    if (this.#markerRaycaster.colidedDetails[0].colider.uuid !== this.#targetColider.uuid) return
     this.#isStart = true
     this.#cursorModifier.reset(this.manipulateCoordinate.position)
+    this.#handlingParams.handledColiderUuid = this.#raycaster.colidedDetails[0].colider.uuid
 
     this.#startedCallbacks.call()
   }
@@ -66,7 +76,10 @@ export class PlaneMoveHandler implements MouseControllable {
   move() {
     if (!this.#isStart || !this.#raycaster.hasColided) return
 
-    this.#cursorModifier.setPosition(this.#raycaster.colidedDetails[0].position)
+    const colidedDetail = this.#raycaster.colidedDetails.find(item => item.colider.uuid === this.#handlingParams.handledColiderUuid)
+    if (!colidedDetail) return
+
+    this.#cursorModifier.setPosition(colidedDetail.position)
 
     const isChanged =
       this.manipulateCoordinate.x !== this.#cursorModifier.alignedPosition[0] ||

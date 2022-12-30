@@ -13,7 +13,7 @@ export class CenterMarker implements Marker {
   #parentCoordinate: Coordinate = new Coordinate()
   #handledColiders: HandledColiders
   #radius: number
-  #colider: Colider
+  #colider: BallColider
   #attachedRenderingItem = false
 
   constructor(radius: number) {
@@ -58,7 +58,7 @@ export class CenterMarker implements Marker {
     }
 
     this.#parentCoordinate = coordinate
-    this.#colider = new BallColider(this.#radius, this.#parentCoordinate)
+    this.#colider.parentCoordinate = this.#parentCoordinate
   }
 
   attachRenderingObject<T>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {

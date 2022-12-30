@@ -20,6 +20,7 @@ import { ColiderItemMap } from '../../../lib/ColiderItemMap.js'
 import type { LineItemConnection } from '../../../lib/LineItem'
 import { RenderingObject } from '../../../lib/RenderingObject'
 import { CameraController } from '../../../lib/CameraController.js'
+import { Coordinate } from '../../../lib/Coordinate.js'
 
 type Plane = {
   position: VectorArray3,
@@ -155,7 +156,7 @@ export class EditingPlane {
 
   constructor(camera: Camera) {
     this.#raycaster = new Raycaster(camera)
-    this.#colider = new PlaneColider(this.#editingPlane.position, this.#editingPlane.normal)
+    this.#colider = new PlaneColider(new Coordinate(), this.#editingPlane.normal)
     this.#raycaster.addTarget(this.#colider)
   }
 

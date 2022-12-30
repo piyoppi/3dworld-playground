@@ -15,7 +15,7 @@ export function makeConnectionMarker<T>(
 ) {
   return item.connections.map(connection => {
     const marker = new CenterMarker(0.5)
-    const moveHandler = new PlaneMoveHandler(marker.parentCoordinate, planeRaycaster)
+    const moveHandler = new PlaneMoveHandler(marker.parentCoordinate, planeRaycaster, markerRaycaster, marker.colider)
     const snapModifier = new CursorSnapColiderModifier(markerRaycaster, [marker.colider])
     const jointHandler = new JointHandler(connection, markerRaycaster, coliderConnectionMap)
 
