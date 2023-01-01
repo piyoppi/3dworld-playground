@@ -76,6 +76,8 @@ export class MeshItemGenerator<T extends RenderingObject>
     const coordinateForRendering = new Coordinate()
     item.parentCoordinate.addChild(coordinateForRendering)
 
+    const startingHookFn = () => !yzRotateHandler.isStart && !xyRotateHandler.isStart && !xzRotateHandler.isStart && !xAxisHandler.isStart
+
     const xzMarker = new RotateMarker(2, [0, 0, 0], [0, 1, 0])
     const yzMarker = new RotateMarker(2, [0, 0, 0], [1, 0, 0])
     const xyMarker = new RotateMarker(2, [0, 0, 0], [0, 0, 1])
@@ -93,12 +95,33 @@ export class MeshItemGenerator<T extends RenderingObject>
     const xzRotateHandler = new RotateHandler(xzMarker.parentCoordinate, this.#markerRaycaster, [0, 1, 0], xzMarker.colider)
     const yzRotateHandler = new RotateHandler(yzMarker.parentCoordinate, this.#markerRaycaster, [1, 0, 0], yzMarker.colider)
     const xyRotateHandler = new RotateHandler(xyMarker.parentCoordinate, this.#markerRaycaster, [0, 0, 1], xyMarker.colider)
-    xzRotateHandler.setStartingCallback(() => !yzRotateHandler.isStart && !xyRotateHandler.isStart)
-    yzRotateHandler.setStartingCallback(() => !xzRotateHandler.isStart && !xyRotateHandler.isStart)
-    xyRotateHandler.setStartingCallback(() => !xzRotateHandler.isStart && !yzRotateHandler.isStart)
+    xzRotateHandler.setStartingCallback(startingHookFn)
+    yzRotateHandler.setStartingCallback(startingHookFn)
+    xyRotateHandler.setStartingCallback(startingHookFn)
     xzMarker.addHandler(xzRotateHandler)
     yzMarker.addHandler(yzRotateHandler)
     xyMarker.addHandler(xyRotateHandler)
+
+    const xAxisMarker = new DirectionalMarker(3, 0.1, [1, 0, 0])
+    const xAxisHandler = new DirectionalMoveHandler(item.parentCoordinate, [1, 0, 0], 0.1)
+    xAxisMarker.addHandler(xAxisHandler)
+    xAxisHandler.setStartingCallback(startingHookFn)
+    xAxisMarker.setParentCoordinate(item.parentCoordinate)
+    xAxisMarker.attachRenderingObject({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#renderer)
+
+    const yAxisMarker = new DirectionalMarker(3, 0.1, [0, 1, 0])
+    const yAxisHandler = new DirectionalMoveHandler(item.parentCoordinate, [0, 1, 0], 0.1)
+    yAxisMarker.addHandler(yAxisHandler)
+    yAxisHandler.setStartingCallback(startingHookFn)
+    yAxisMarker.setParentCoordinate(item.parentCoordinate)
+    yAxisMarker.attachRenderingObject({r: 0, g: 255, b: 0}, this.#renderingObjectBuilder, this.#renderer)
+
+    const zAxisMarker = new DirectionalMarker(3, 0.1, [0, 0, 1])
+    const zAxisHandler = new DirectionalMoveHandler(item.parentCoordinate, [0, 0, 1], 0.1)
+    zAxisMarker.addHandler(zAxisHandler)
+    zAxisHandler.setStartingCallback(startingHookFn)
+    zAxisMarker.setParentCoordinate(item.parentCoordinate)
+    zAxisMarker.attachRenderingObject({r: 0, g: 0, b: 255}, this.#renderingObjectBuilder, this.#renderer)
 
     const moveHandler = new PlaneMoveHandler(marker.parentCoordinate, this.#planeRaycaster, this.#markerRaycaster, marker.colider)
     marker.addHandler(moveHandler)
@@ -107,7 +130,7 @@ export class MeshItemGenerator<T extends RenderingObject>
     this.#renderer.addItem(coordinateForRendering, renderingObject)
     renderingObject.material.setOpacity(0.7)
 
-    this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], [xzMarker, yzMarker, xyMarker, marker])]))
+    this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], [xzMarker, yzMarker, xyMarker, xAxisMarker, yAxisMarker, zAxisMarker, marker])]))
     this.#startedCallbacks.call()
 
     return true

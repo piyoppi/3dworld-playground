@@ -12,23 +12,21 @@ import type { RGBColor } from "../helpers/color.js"
 import type { Marker } from "./Marker"
 
 export class DirectionalMarker implements Marker {
-  #direction
   #norm: number
   #radius: number
-  #parentCoordinate: Coordinate
+  #parentCoordinate = new Coordinate()
+  #markerCoordinate = new Coordinate()
   #handledColiders: HandledColiders
   #colider: Colider
 
   constructor(norm: number, radius: number, direction: VectorArray3) {
-    this.#direction = new Item()
     this.#norm = norm
     this.#radius = radius
 
-    this.#direction.parentCoordinate.setDirectionYAxis(direction, Vec3.mulScale(direction, norm / 2))
+    this.#markerCoordinate.setDirectionYAxis(direction, Vec3.mulScale(direction, norm / 2))
 
-    this.#parentCoordinate = new Coordinate()
     this.#handledColiders = new HandledColiders()
-    this.#colider = new BoxColider(this.#radius, this.#norm, this.#radius, this.#direction.parentCoordinate)
+    this.#colider = new BoxColider(this.#radius, this.#norm, this.#radius, this.#markerCoordinate)
   }
 
   get parentCoordinate() {
@@ -58,14 +56,14 @@ export class DirectionalMarker implements Marker {
   }
 
   setParentCoordinate(coordinate: Coordinate) {
-    this.#parentCoordinate.removeChild(this.#direction.parentCoordinate)
+    this.#parentCoordinate.removeChild(this.#markerCoordinate)
 
     this.#parentCoordinate = coordinate
 
-    this.#parentCoordinate.addChild(this.#direction.parentCoordinate)
+    this.#parentCoordinate.addChild(this.#markerCoordinate)
   }
 
   attachRenderingObject<T>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
-    renderer.addItem(this.#direction.parentCoordinate, builder.makeVector(this.#norm, this.#radius, color))
+    renderer.addItem(this.#markerCoordinate, builder.makeVector(this.#norm, this.#radius, color))
   }
 }
