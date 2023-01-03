@@ -6,9 +6,17 @@ import type { HaconiwaWorldItem } from "../../world"
 import type { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder"
 import type { ColiderItemMap } from "../../../../lib/ColiderItemMap"
 import type { LineItemConnection } from "../../../../lib/LineItem"
+import { Marker } from "../../../../lib/markers/Marker"
+
+export type AddMarkerCallbackFunction = (marker: Marker) => void
+export type RemoveMarkerCallbackFunction = (marker: Marker) => void
+export type EndedCallbackFunction = () => void
 
 export interface HaconiwaItemGenerator<T> extends MouseControllable {
   registerOnGeneratedCallback: (callback: HaconiwaItemGeneratedCallback<T>) => void
+  addMarkerCallback: (callback: AddMarkerCallbackFunction) => void
+  removeMarkerCallback: (callback: RemoveMarkerCallbackFunction) => void
+  addEndedCallback: (callback: EndedCallbackFunction) => void
 }
 
 export type HaconiwaItemGeneratedCallback<T> = (generates: Array<HaconiwaWorldItem<T>>) => void

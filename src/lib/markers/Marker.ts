@@ -13,3 +13,7 @@ export interface Marker {
   detach: (raycaster: Raycaster, mouseHandlers: MouseControlHandles) => void
   setParentCoordinate: (coordinate: Coordinate) => void
 }
+
+export interface MarkerRenderable {
+  readonly markerCoordinate: Coordinate
+}

@@ -1,4 +1,3 @@
-import { BallColider, Colider } from "../Colider.js"
 import { Coordinate } from "../Coordinate.js"
 import { MouseControllable } from "../mouse/MouseControllable.js"
 import { Raycaster } from "../Raycaster.js"
@@ -7,32 +6,25 @@ import type { MouseControlHandles } from "../mouse/MouseControlHandles"
 import type { RenderingObjectBuilder } from '../RenderingObjectBuilder'
 import type { RGBColor } from "../helpers/color"
 import type { Renderer } from "../Renderer"
-import type { Marker, MarkerRenderable } from "./Marker"
+import type { Marker } from "./Marker"
+import { BoxColider } from "../Colider.js"
+import { VectorArray3 } from "../Matrix.js"
 
-export class CenterMarker implements Marker, MarkerRenderable {
+export class BoxMarker implements Marker {
   #parentCoordinate: Coordinate = new Coordinate()
-  #markerCoordinate = new Coordinate()
   #handledColiders: HandledColiders
-  #radius: number
-  #colider: BallColider
+  #colider: BoxColider 
+  #size: VectorArray3
   #attachedRenderingItem = false
 
-  constructor(radius: number) {
-    this.#handledColiders= new HandledColiders()
-    this.#radius = radius
-    this.#colider = new BallColider(this.#radius, this.#parentCoordinate)
-  }
-
-  get radius() {
-    return this.#radius
+  constructor(size: VectorArray3) {
+    this.#handledColiders = new HandledColiders()
+    this.#colider = new BoxColider(size[0], size[1], size[2], this.#parentCoordinate)
+    this.#size = size
   }
 
   get parentCoordinate() {
     return this.#parentCoordinate
-  }
-
-  get markerCoordinate() {
-    return this.#markerCoordinate
   }
 
   get handlers() {
@@ -64,12 +56,10 @@ export class CenterMarker implements Marker, MarkerRenderable {
 
     this.#parentCoordinate = coordinate
     this.#colider.parentCoordinate = this.#parentCoordinate
-
-    this.#parentCoordinate.addChild(this.#markerCoordinate)
   }
 
   attachRenderingObject<T>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
-    renderer.addItem(this.#markerCoordinate, builder.makeSphere(this.#radius, color))
+    renderer.addItem(this.#parentCoordinate, builder.makeBox(this.#size[0], this.#size[1], this.#size[2], color))
     this.#attachedRenderingItem = true
   }
 }

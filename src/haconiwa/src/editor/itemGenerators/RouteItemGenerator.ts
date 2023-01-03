@@ -9,6 +9,9 @@ import type {
   HaconiwaItemGeneratedCallback,
   HaconiwaItemGeneratorLineConnectable,
   HaconiwaItemGeneratorItemClonable,
+  AddMarkerCallbackFunction,
+  RemoveMarkerCallbackFunction,
+  EndedCallbackFunction
 } from "./HaconiwaItemGenerator"
 import { Coordinate } from "../../../../lib/Coordinate.js"
 import { HaconiwaWorldItem } from "../../world.js"
@@ -27,6 +30,7 @@ import { JointFactory } from "./Joints/JointFactory.js"
 export class RouteItemGenerator<T extends RenderingObject>
   implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorLineConnectable, HaconiwaItemGeneratorItemClonable<T> {
   #onGeneratedCallbacks: Array<HaconiwaItemGeneratedCallback<T>> = []
+  #addMarkerCallbacks = new CallbackFunctions<AddMarkerCallbackFunction>()
   #planeRaycaster: Raycaster
   #markerRaycaster: Raycaster
   #renderingObjectBuilder: RenderingObjectBuilder<T>
@@ -37,6 +41,7 @@ export class RouteItemGenerator<T extends RenderingObject>
   #coliderConnectionMap: ColiderItemMap<LineItemConnection> | null = null
   #jointFactory: JointFactory<T>
   private original: HaconiwaItemGeneratorClonedItem<T> | null = null
+  #removeMarkerCallbacks = new CallbackFunctions<RemoveMarkerCallbackFunction>()
 
   constructor(
     renderer: Renderer<T>,
@@ -76,6 +81,18 @@ export class RouteItemGenerator<T extends RenderingObject>
 
   registerOnGeneratedCallback(func: HaconiwaItemGeneratedCallback<T>) {
     this.#onGeneratedCallbacks.push(func)
+  }
+
+  addMarkerCallback(func: AddMarkerCallbackFunction) {
+    this.#addMarkerCallbacks.add(func)
+  }
+
+  removeMarkerCallback(func: RemoveMarkerCallbackFunction) {
+    this.#removeMarkerCallbacks.add(func)
+  }
+
+  addEndedCallback(func: EndedCallbackFunction) {
+    this.#endedCallbacks.add(func)
   }
 
   start(x: number, y: number, button: MouseButton, cameraCoordinate: Coordinate) {
@@ -140,7 +157,8 @@ export class RouteItemGenerator<T extends RenderingObject>
     this.#renderer.addItem(coordinateForRendering, this.makeRenderingObject())
     this.updateRenderingObject(coordinateForRendering, item, item.line.length, Array.from(joints.values()))
 
-    this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], jointableMarkers.map(item => item.marker))]))
+    this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], [])]))
+    jointableMarkers.forEach(item => this.#addMarkerCallbacks.call(item.marker))
 
     this.#startedCallbacks.call()
 

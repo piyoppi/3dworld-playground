@@ -39,6 +39,7 @@ export class HaconiwaEditor<T extends RenderingObject> {
 
   #currentItemGenerator: HaconiwaItemGenerator<T> | null = null
   #currentItemGeneratorHandler: ControlHandle | null = null
+  #itemGenerators: HaconiwaItemGenerator<T>[] = []
 
   #renderingObjectBuilder: RenderingObjectBuilder<T>
 
@@ -80,7 +81,7 @@ export class HaconiwaEditor<T extends RenderingObject> {
   }
 
   setItemGeneratorFactory(generator: HaconiwaItemGeneratorFactory<T>, original: HaconiwaItemGeneratorClonedItem<T> | undefined = undefined) {
-    this.clearItemGenerator()
+    //this.clearItemGenerator()
 
     this.#currentItemGenerator = generator.create(
       this.#renderer.renderer,
@@ -101,6 +102,14 @@ export class HaconiwaEditor<T extends RenderingObject> {
       this.#currentItemGenerator.setOriginal(original)
     }
 
+    this.#currentItemGenerator.addMarkerCallback(marker => {
+      marker.attach(this.#markerRaycaster, this.#mouseControlHandles)
+    })
+
+    this.#currentItemGenerator.removeMarkerCallback(marker => {
+      marker.detach(this.#markerRaycaster, this.#mouseControlHandles)
+    })
+
     this.#currentItemGenerator.registerOnGeneratedCallback(generates => {
       generates.forEach(item => {
         item.markers.forEach(marker => {
@@ -108,6 +117,10 @@ export class HaconiwaEditor<T extends RenderingObject> {
         })
         this.#world.addItem(item)
       })
+    })
+
+    this.#currentItemGenerator.addEndedCallback(() => {
+      this.setItemGeneratorFactory(generator, original)
     })
 
     this.#currentItemGeneratorHandler = {colider: this.#editingPlane.colider, handled: this.#currentItemGenerator}

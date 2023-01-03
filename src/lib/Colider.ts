@@ -8,10 +8,12 @@ export interface Colider {
   checkRay(ray: Ray): number
   checkColider(colider: Colider): VectorArray3
   readonly parentCoordinate?: Coordinate
+  enabled: boolean
 }
 
 export class ColiderBase {
   #uuid: string
+  #enabled = true
 
   constructor() {
     this.#uuid = uuidv4()
@@ -19,6 +21,14 @@ export class ColiderBase {
 
   get uuid() {
     return this.#uuid
+  }
+
+  get enabled() {
+    return this.#enabled
+  }
+
+  set enabled(value: boolean) {
+    this.#enabled = value
   }
 }
 
@@ -55,6 +65,8 @@ export class BallColider extends ColiderBase implements Colider {
   }
 
   checkRay(ray: Ray): number {
+    if (!this.enabled) return -1
+
     const pos = this.#parentCoordinate.getGlobalPosition()
     const s = Vec3.subtract(ray.position, pos)
     const a = 1
@@ -101,7 +113,13 @@ export class BoxColider extends ColiderBase implements Colider {
     return this.#parentCoordinate
   }
 
+  set parentCoordinate(value: Coordinate) {
+    this.#parentCoordinate = value
+  }
+
   checkRay(ray: Ray): number {
+    if (!this.enabled) return -1
+
     const transformToTargetItem = this.#parentCoordinate.getTransformMatrixFromWorldToCoordinate()
     const transformedRay = {
       position: Mat4.mulGlVec3(transformToTargetItem, ray.position),
@@ -157,6 +175,8 @@ export class PlaneColider extends ColiderBase implements Colider {
   }
 
   checkRay(ray: Ray): number {
+    if (!this.enabled) return -1
+
     const position = this.#parentCoordinate.position
     const transformToTargetItem = this.#parentCoordinate.getTransformMatrixToWorld()
     const normConverted = Vec3.normalize(Mat3.mulVec3(Mat4.convertToDirectionalTransformMatrix(transformToTargetItem), this.#norm))

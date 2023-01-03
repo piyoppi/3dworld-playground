@@ -9,9 +9,9 @@ import type { Raycaster } from "../Raycaster.js"
 import type { Renderer } from "../Renderer.js"
 import type { RenderingObjectBuilder } from '../RenderingObjectBuilder.js'
 import type { RGBColor } from "../helpers/color.js"
-import type { Marker } from "./Marker"
+import type { Marker, MarkerRenderable } from "./Marker"
 
-export class DirectionalMarker implements Marker {
+export class DirectionalMarker implements Marker, MarkerRenderable {
   #norm: number
   #radius: number
   #parentCoordinate = new Coordinate()
@@ -27,10 +27,16 @@ export class DirectionalMarker implements Marker {
 
     this.#handledColiders = new HandledColiders()
     this.#colider = new BoxColider(this.#radius, this.#norm, this.#radius, this.#markerCoordinate)
+
+    this.#parentCoordinate.addChild(this.#markerCoordinate)
   }
 
   get parentCoordinate() {
     return this.#parentCoordinate
+  }
+
+  get markerCoordinate() {
+    return this.#markerCoordinate
   }
 
   get handlers() {

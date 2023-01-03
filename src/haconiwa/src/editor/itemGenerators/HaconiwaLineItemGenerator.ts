@@ -9,7 +9,10 @@ import type {
   HaconiwaItemGeneratorClonedItem,
   HaconiwaItemGeneratedCallback,
   HaconiwaItemGeneratorLineConnectable,
-  HaconiwaItemGeneratorItemClonable
+  HaconiwaItemGeneratorItemClonable,
+  AddMarkerCallbackFunction,
+  RemoveMarkerCallbackFunction,
+  EndedCallbackFunction
 } from "./HaconiwaItemGenerator"
 import { Coordinate } from "../../../../lib/Coordinate.js"
 import { HaconiwaWorldItem } from "../../world.js"
@@ -32,6 +35,8 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject> implements Hac
   #isStarted = false
   #renderer
   #coliderConnectionMap: ColiderItemMap<LineItemConnection> | null = null
+  #addMarkerCallbacks = new CallbackFunctions<AddMarkerCallbackFunction>()
+  #removeMarkerCallbacks = new CallbackFunctions<RemoveMarkerCallbackFunction>()
 
   constructor(renderer: Renderer<T>, planeRaycaster: Raycaster, markerRaycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) {
     this.#planeRaycaster = planeRaycaster
@@ -64,6 +69,18 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject> implements Hac
     this.#onGeneratedCallbacks.push(func)
   }
 
+  addMarkerCallback(func: AddMarkerCallbackFunction) {
+    this.#addMarkerCallbacks.add(func)
+  }
+
+  removeMarkerCallback(func: RemoveMarkerCallbackFunction) {
+    this.#removeMarkerCallbacks.add(func)
+  }
+
+  addEndedCallback(func: EndedCallbackFunction) {
+    this.#endedCallbacks.add(func)
+  }
+
   start(x: number, y: number, button: MouseButton, cameraCoordinate: Coordinate) {
     if (!this.original) throw new Error('Item and RenderingObject is not set.')
     if (!this.#planeRaycaster.hasColided || !this.#coliderConnectionMap || this.#isStarted) return
@@ -92,7 +109,8 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject> implements Hac
       })
     })
 
-    this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], markers)]))
+    this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], [])]))
+    markers.forEach(marker => this.#addMarkerCallbacks.call(marker))
 
     this.#startedCallbacks.call()
 
