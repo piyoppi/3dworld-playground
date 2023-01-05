@@ -2,7 +2,6 @@ import type { MouseButton, MouseControllable, MouseControllableCallbackFunction 
 import { CallbackFunctions } from "../../CallbackFunctions.js"
 import type { Coordinate } from "../../Coordinate.js"
 import type { Raycaster } from "../../Raycaster"
-import { Mat4, Mat3, Vec3, VectorArray3 } from "../../Matrix.js"
 import { Colider } from "../../Colider.js"
 
 type StartingCallbackFunction = () => boolean
@@ -14,11 +13,11 @@ export class ProxyHandler implements MouseControllable {
   #endingCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   #isStart = false
   #raycaster: Raycaster
-  #targetColider: Colider
+  #targetColiders: Colider[]
 
-  constructor(raycaster: Raycaster, targetColider: Colider) {
+  constructor(raycaster: Raycaster, targetColiders: Colider[]) {
     this.#raycaster = raycaster
-    this.#targetColider = targetColider
+    this.#targetColiders = targetColiders
   }
 
   get isStart() {
@@ -59,7 +58,7 @@ export class ProxyHandler implements MouseControllable {
 
   start(cursorX: number, cursorY: number, _button: MouseButton, cameraCoordinate: Coordinate) {
     if (this.#startingCallbacks.call().some(val => val === false)) return
-    if (this.#raycaster.colidedDetails[0].colider.uuid !== this.#targetColider.uuid) return
+    if (!this.#targetColiders.find(colider => colider.uuid === this.#raycaster.colidedDetails[0].colider.uuid)) return
 
     this.#isStart = true
 

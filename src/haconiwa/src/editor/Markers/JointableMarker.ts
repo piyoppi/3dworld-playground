@@ -26,7 +26,7 @@ export class JointableMarker {
     coliderConnectionMap: ColiderItemMap<LineItemConnection>
   ) {
     this.#marker.setParentCoordinate(connection.edge.coordinate)
-    const snapModifier = new CursorSnapColiderModifier(markerRaycaster, [this.#marker.colider])
+    const snapModifier = new CursorSnapColiderModifier(markerRaycaster, this.#marker.coliders)
     this.#connection = connection
     this.#moveHandler = new PlaneMoveHandler(this.#marker.parentCoordinate, planeRaycaster, markerRaycaster)
     this.#moveHandler.setApplyer((coordinate: Coordinate, position: VectorArray3) => {
@@ -49,7 +49,7 @@ export class JointableMarker {
     })
 
     this.#marker.addHandler(this.#jointHandler)
-    coliderConnectionMap.add(this.#marker.colider, connection)
+    coliderConnectionMap.add(this.#marker.coliders[0], connection)
 
     this.#marker.addHandler(this.#moveHandler)
 

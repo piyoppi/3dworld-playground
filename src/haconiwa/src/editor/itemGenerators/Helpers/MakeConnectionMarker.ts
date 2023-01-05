@@ -5,7 +5,6 @@ import { CursorSnapColiderModifier } from "../../../../../lib/mouse/handlers/cur
 import type { LineItem, LineItemConnection } from "../../../../../lib/LineItem"
 import type { Raycaster } from "../../../../../lib/Raycaster"
 import type { ColiderItemMap } from "../../../../../lib/ColiderItemMap"
-import { RenderingObject } from "../../../../../lib/RenderingObject.js"
 
 export function makeConnectionMarker<T>(
   item: LineItem,
@@ -15,8 +14,8 @@ export function makeConnectionMarker<T>(
 ) {
   return item.connections.map(connection => {
     const marker = new CenterMarker(0.5)
-    const moveHandler = new PlaneMoveHandler(marker.parentCoordinate, planeRaycaster, markerRaycaster, marker.colider)
-    const snapModifier = new CursorSnapColiderModifier(markerRaycaster, [marker.colider])
+    const moveHandler = new PlaneMoveHandler(marker.parentCoordinate, planeRaycaster, markerRaycaster, marker.coliders)
+    const snapModifier = new CursorSnapColiderModifier(markerRaycaster, marker.coliders)
     const jointHandler = new JointHandler(connection, markerRaycaster, coliderConnectionMap)
 
     jointHandler.setEndedCallback(() => {
@@ -26,7 +25,7 @@ export function makeConnectionMarker<T>(
     })
 
     marker.addHandler(jointHandler)
-    coliderConnectionMap.add(marker.colider, connection)
+    coliderConnectionMap.add(marker.coliders[0], connection)
 
     marker.addHandler(moveHandler)
 

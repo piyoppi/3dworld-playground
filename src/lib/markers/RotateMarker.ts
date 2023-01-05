@@ -34,16 +34,16 @@ export class RotateMarker implements Marker, MarkerRenderable {
     return this.#parentCoordinate
   }
 
-  get markerCoordinate() {
-    return this.#markerCoordinate
+  get markerCoordinates() {
+    return [this.#markerCoordinate]
   }
 
   get handlers() {
     return this.#handledColiders.handlers
   }
 
-  get colider() {
-    return this.#colider
+  get coliders() {
+    return [this.#colider]
   }
 
   attach(raycaster: Raycaster, interactionHandler: MouseControlHandles) {
@@ -56,8 +56,6 @@ export class RotateMarker implements Marker, MarkerRenderable {
 
   addHandler(handler: MouseControllable) {
     this.#handledColiders.addHandler({colider: this.#colider, handled: handler})
-
-    return this.#colider
   }
 
   setParentCoordinate(coordinate: Coordinate) {

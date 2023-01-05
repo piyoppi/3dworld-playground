@@ -35,22 +35,20 @@ export class DirectionalMarker implements Marker, MarkerRenderable {
     return this.#parentCoordinate
   }
 
-  get markerCoordinate() {
-    return this.#markerCoordinate
+  get markerCoordinates() {
+    return [this.#markerCoordinate]
   }
 
   get handlers() {
     return this.#handledColiders.handlers
   }
 
-  get colider() {
-    return this.#colider
+  get coliders() {
+    return [this.#colider]
   }
 
   addHandler(handler: MouseControllable) {
     this.#handledColiders.addHandler({colider: this.#colider, handled: handler})
-
-    return this.#colider
   }
 
   attach(raycaster: Raycaster, interactionHandler: MouseControlHandles) {

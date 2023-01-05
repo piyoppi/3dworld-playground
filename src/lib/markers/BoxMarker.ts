@@ -31,8 +31,8 @@ export class BoxMarker implements Marker {
     return this.#handledColiders.handlers
   }
 
-  get colider() {
-    return this.#colider
+  get coliders() {
+    return [this.#colider]
   }
 
   addHandler(handler: MouseControllable) {
