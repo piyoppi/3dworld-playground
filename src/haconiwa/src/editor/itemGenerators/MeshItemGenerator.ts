@@ -146,7 +146,7 @@ export class MeshItemGenerator<T extends RenderingObject>
 
         itemMarker.coliders.forEach(colider => colider.enabled = false)
 
-        const startingHookFn = () => !xyzRotationHandlers.some(handler => handler.isStart) && !xyzHandlers.some(handler => handler.isStart)
+        const startingHookFn = () => !moveHandler.isStart && !xyzRotationHandlers.some(handler => handler.isStart) && !xyzHandlers.some(handler => handler.isStart)
 
         const xyzRotationMarker = new CoordinateRotationMarker(2)
         const xyzRotationHandlers = [
@@ -171,7 +171,8 @@ export class MeshItemGenerator<T extends RenderingObject>
         xyzHandlers.forEach(handler => handler.setStartedCallback(startingHookFn))
 
         const marker = new CenterMarker(0.5)
-        const moveHandler = new PlaneMoveHandler(marker.parentCoordinate, this.#planeRaycaster, this.#markerRaycaster, marker.coliders)
+        const moveHandler = new PlaneMoveHandler(item.parentCoordinate, this.#planeRaycaster, this.#markerRaycaster, marker.coliders)
+        moveHandler.setStartingCallback(startingHookFn)
         marker.setParentCoordinate(item.parentCoordinate)
         marker.attachRenderingObject({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#renderer)
         marker.addHandler(moveHandler)

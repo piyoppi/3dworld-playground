@@ -8,11 +8,13 @@ import { VectorArray3 } from "../../Matrix"
 import { Colider } from "../../Colider"
 
 export type PlaneMoveHandlerApplyer = (coordinate: Coordinate, position: VectorArray3) => void
+type StartingCallbackFunction = () => boolean
 
 export class PlaneMoveHandler implements MouseControllable {
   manipulateCoordinate: Coordinate
   #cursorModifier: CursorModifier
   #beforeUpdateCallbacks = new CallbackFunctions<() => void>()
+  #startingCallbacks = new CallbackFunctions<StartingCallbackFunction>()
   #updatedCallbacks: Array<() => void> = []
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   #raycaster: Raycaster
@@ -36,8 +38,16 @@ export class PlaneMoveHandler implements MouseControllable {
     return this.#isStart
   }
 
+  setStartingCallback(func: StartingCallbackFunction) {
+    this.#startingCallbacks.add(func)
+  }
+
   setStartedCallback(func: MouseControllableCallbackFunction) {
     this.#startedCallbacks.add(func)
+  }
+
+  removeStartingCallback(func: StartingCallbackFunction) {
+    this.#startingCallbacks.remove(func)
   }
 
   removeStartedCallback(func: MouseControllableCallbackFunction) {
@@ -66,6 +76,8 @@ export class PlaneMoveHandler implements MouseControllable {
 
   start(cursorX: number, cursorY: number, _button: MouseButton, cameraCoordinate: Coordinate) {
     if (this.#targetColiders.length > 0 && !this.#targetColiders.find(colider => colider.uuid === this.#markerRaycaster.colidedDetails[0]?.colider?.uuid)) return
+    if (this.#startingCallbacks.call().some(val => val === false)) return
+
     this.#isStart = true
     this.#cursorModifier.reset(this.manipulateCoordinate.position)
     this.#handlingParams.handledColiderUuid = this.#raycaster.colidedDetails[0].colider.uuid

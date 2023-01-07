@@ -15,7 +15,6 @@ export class CenterMarker implements Marker, MarkerRenderable {
   #handledColiders: HandledColiders
   #radius: number
   #colider: BallColider
-  #attachedRenderingItem = false
 
   constructor(radius: number) {
     this.#handledColiders= new HandledColiders()
@@ -56,10 +55,6 @@ export class CenterMarker implements Marker, MarkerRenderable {
   }
 
   setParentCoordinate(coordinate: Coordinate) {
-    if (this.#attachedRenderingItem) {
-      throw new Error('RenderingItem is already attached')
-    }
-
     this.#parentCoordinate = coordinate
     this.#colider.parentCoordinate = this.#parentCoordinate
 
@@ -68,6 +63,5 @@ export class CenterMarker implements Marker, MarkerRenderable {
 
   attachRenderingObject<T>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
     renderer.addItem(this.#markerCoordinate, builder.makeSphere(this.#radius, color))
-    this.#attachedRenderingItem = true
   }
 }
