@@ -42,6 +42,7 @@ export class RouteItemGenerator<T extends RenderingObject>
   #jointFactory: JointFactory<T>
   private original: HaconiwaItemGeneratorClonedItem<T> | null = null
   #removeMarkerCallbacks = new CallbackFunctions<RemoveMarkerCallbackFunction>()
+  #generatedItem: LineItem | null = null
 
   constructor(
     renderer: Renderer<T>,
@@ -97,6 +98,7 @@ export class RouteItemGenerator<T extends RenderingObject>
 
   start(x: number, y: number, button: MouseButton, cameraCoordinate: Coordinate) {
     if (!this.#planeRaycaster.hasColided || !this.#coliderConnectionMap || this.#isStarted) return
+    if (this.#generatedItem) return
 
     this.#isStarted = true
 
@@ -110,6 +112,7 @@ export class RouteItemGenerator<T extends RenderingObject>
     const line = lineGenerator.getLine()
 
     const item = new LineItem(line)
+    this.#generatedItem = item
 
     const jointableMarkers = item.connections.map(connection => {
       const marker = new JointableMarker(connection, item, this.#markerRaycaster, this.#planeRaycaster, coliderConnectionMap)
