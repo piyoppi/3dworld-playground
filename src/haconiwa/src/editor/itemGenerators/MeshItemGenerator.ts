@@ -17,15 +17,10 @@ import type { Raycaster } from "../../../../lib/Raycaster"
 import type { Renderer } from "../../../../lib/Renderer"
 import { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder.js"
 import { Item } from "../../../../lib/Item.js"
-import { CenterMarker } from "../../../../lib/markers/CenterMarker.js"
-import { PlaneMoveHandler } from "../../../../lib/mouse/handlers/PlaneMoveHandler.js"
-import { DirectionalMoveHandler } from "../../../../lib/mouse/handlers/DirectionalMoveHandler.js"
-import { RotateHandler } from "../../../../lib/mouse/handlers/RotateHandler.js"
 import { BoxMarker } from "../../../../lib/markers/BoxMarker.js"
 import { ProxyHandler } from "../../../../lib/mouse/handlers/ProxyHandler.js"
 import { Marker, MarkerRenderable } from "../../../../lib/markers/Marker.js"
-import { CoordinateMarker } from "../../../../lib/markers/CoordinateMarker.js"
-import { CoordinateRotationMarker } from "../../../../lib/markers/CoordinateRotationMarker.js"
+import { makeCoordinateMover } from "../../../../lib/markers/generators/CoordinateMover.js"
 
 export class MeshItemGenerator<T extends RenderingObject>
   implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorItemClonable<T> {
@@ -141,53 +136,15 @@ export class MeshItemGenerator<T extends RenderingObject>
 
       proxyHandler.setStartedCallback(() => {
         if (this.#mounted) return
-
         this.#mounted = true
 
         itemMarker.coliders.forEach(colider => colider.enabled = false)
 
-        const startingHookFn = () => !moveHandler.isStart && !xyzRotationHandlers.some(handler => handler.isStart) && !xyzHandlers.some(handler => handler.isStart)
-
-        const xyzRotationMarker = new CoordinateRotationMarker(2)
-        const xyzRotationHandlers = [
-          new RotateHandler(item.parentCoordinate, this.#markerRaycaster, [1, 0, 0], xyzRotationMarker.coliders[0]),
-          new RotateHandler(item.parentCoordinate, this.#markerRaycaster, [0, 1, 0], xyzRotationMarker.coliders[1]),
-          new RotateHandler(item.parentCoordinate, this.#markerRaycaster, [0, 0, 1], xyzRotationMarker.coliders[2])
-        ]
-        xyzRotationMarker.addHandlers(xyzRotationHandlers[0], xyzRotationHandlers[1], xyzRotationHandlers[2])
-        xyzRotationMarker.attachRenderingObject(this.#renderingObjectBuilder, this.#renderer)
-        xyzRotationMarker.setParentCoordinate(item.parentCoordinate)
-        xyzRotationHandlers.forEach(handler => handler.setStartedCallback(startingHookFn))
-
-        const xyzMarker = new CoordinateMarker(3, 0.1)
-        const xyzHandlers = [
-          new DirectionalMoveHandler(item.parentCoordinate, [1, 0, 0], 0.1),
-          new DirectionalMoveHandler(item.parentCoordinate, [0, 1, 0], 0.1),
-          new DirectionalMoveHandler(item.parentCoordinate, [0, 0, 1], 0.1)
-        ]
-        xyzMarker.addHandlers(xyzHandlers[0], xyzHandlers[1], xyzHandlers[2])
-        xyzMarker.attachRenderingObject(this.#renderingObjectBuilder, this.#renderer)
-        xyzMarker.setParentCoordinate(item.parentCoordinate)
-        xyzHandlers.forEach(handler => handler.setStartedCallback(startingHookFn))
-
-        const marker = new CenterMarker(0.5)
-        const moveHandler = new PlaneMoveHandler(item.parentCoordinate, this.#planeRaycaster, this.#markerRaycaster, marker.coliders)
-        moveHandler.setStartingCallback(startingHookFn)
-        marker.setParentCoordinate(item.parentCoordinate)
-        marker.attachRenderingObject({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#renderer)
-        marker.addHandler(moveHandler)
-
         this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], [])]))
 
-        this.#handlingMarkers = [
-          xyzRotationMarker,
-          xyzMarker,
-          marker
-        ]
-
-        this.#addMarkerCallbacks.call(xyzRotationMarker)
-        this.#addMarkerCallbacks.call(xyzMarker)
-        this.#addMarkerCallbacks.call(marker)
+        const markers = makeCoordinateMover(this.#planeRaycaster, this.#markerRaycaster, item.parentCoordinate, this.#renderingObjectBuilder, this.#renderer)
+        markers.forEach(marker => this.#addMarkerCallbacks.call(marker))
+        this.#handlingMarkers = markers
       })
     } else {
       return false
