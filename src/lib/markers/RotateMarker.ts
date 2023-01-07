@@ -1,4 +1,4 @@
-import { BoxColider, Colider, PlaneColider } from "../Colider.js"
+import { PlaneColider } from "../Colider.js"
 import { Coordinate } from "../Coordinate.js"
 import { HandledColiders } from "./HandledColiders.js"
 import type { Marker, MarkerRenderable } from "./Marker"
@@ -8,7 +8,7 @@ import type { Raycaster } from "../Raycaster.js"
 import type { RGBColor } from "../helpers/color.js"
 import type { RenderingObjectBuilder } from '../RenderingObjectBuilder.js'
 import type { Renderer } from "../Renderer.js"
-import { VectorArray3, Vec3, Mat4 } from "../Matrix.js"
+import { VectorArray3, Vec3 } from "../Matrix.js"
 import { RenderingObject } from "../RenderingObject.js"
 
 export class RotateMarker implements Marker, MarkerRenderable {
@@ -19,15 +19,21 @@ export class RotateMarker implements Marker, MarkerRenderable {
   #radius: number
   #planePosition: VectorArray3
   #planeNorm: VectorArray3
-  #attachedRenderingItem = false
 
   constructor(radius: number, planePosition: VectorArray3, planeNorm: VectorArray3) {
     this.#radius = radius
-    this.#colider = new PlaneColider(this.#parentCoordinate, planeNorm)
     this.#planePosition = planePosition
     this.#planeNorm = planeNorm
     this.#markerCoordinate.setDirectionZAxis(planeNorm, planePosition)
-    this.createColider()
+
+    this.#colider = new PlaneColider(this.#parentCoordinate, planeNorm)
+    this.#colider.setEdgeEvaluator((dist, ray) => {
+      const val = Vec3.norm(
+        Vec3.subtract(this.#parentCoordinate.position, Vec3.add(ray.position, Vec3.mulScale(ray.direction, dist)))
+      )
+
+      return val < this.#radius
+    })
   }
 
   get parentCoordinate() {
@@ -59,30 +65,14 @@ export class RotateMarker implements Marker, MarkerRenderable {
   }
 
   setParentCoordinate(coordinate: Coordinate) {
-    if (this.#attachedRenderingItem) {
-      throw new Error('RenderingItem is already attached')
-    }
-
     this.#parentCoordinate = coordinate
     this.#parentCoordinate.addChild(this.#markerCoordinate)
-    this.createColider()
+    this.#colider.parentCoordinate = coordinate
   }
 
   attachRenderingObject<T extends RenderingObject>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
     const circleMesh = builder.makeCircle(this.#radius, Math.PI * 2, 0, color)
     circleMesh.material.setSide('both')
     renderer.addItem(this.#markerCoordinate, circleMesh)
-    this.#attachedRenderingItem = true
-  }
-
-  private createColider() {
-    this.#colider = new PlaneColider(this.#parentCoordinate, this.#planeNorm)
-    this.#colider.setEdgeEvaluator((dist, ray) => {
-      const val = Vec3.norm(
-        Vec3.subtract(this.#parentCoordinate.position, Vec3.add(ray.position, Vec3.mulScale(ray.direction, dist)))
-      )
-
-      return val < this.#radius
-    })
   }
 }

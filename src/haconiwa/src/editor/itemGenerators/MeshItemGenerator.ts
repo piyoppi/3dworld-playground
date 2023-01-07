@@ -19,14 +19,13 @@ import { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder.j
 import { Item } from "../../../../lib/Item.js"
 import { CenterMarker } from "../../../../lib/markers/CenterMarker.js"
 import { PlaneMoveHandler } from "../../../../lib/mouse/handlers/PlaneMoveHandler.js"
-import { DirectionalMarker } from "../../../../lib/markers/DirectionalMarker.js"
 import { DirectionalMoveHandler } from "../../../../lib/mouse/handlers/DirectionalMoveHandler.js"
 import { RotateHandler } from "../../../../lib/mouse/handlers/RotateHandler.js"
-import { RotateMarker } from "../../../../lib/markers/RotateMarker.js"
 import { BoxMarker } from "../../../../lib/markers/BoxMarker.js"
 import { ProxyHandler } from "../../../../lib/mouse/handlers/ProxyHandler.js"
 import { Marker, MarkerRenderable } from "../../../../lib/markers/Marker.js"
 import { CoordinateMarker } from "../../../../lib/markers/CoordinateMarker.js"
+import { CoordinateRotationMarker } from "../../../../lib/markers/CoordinateRotationMarker.js"
 
 export class MeshItemGenerator<T extends RenderingObject>
   implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorItemClonable<T> {
@@ -99,9 +98,9 @@ export class MeshItemGenerator<T extends RenderingObject>
 
     const itemClicked = this.#markerRaycaster.colidedColiders.some(item => item.uuid === this.#itemMarker?.coliders[0].uuid)
     const myMarkersClicked =
-      this.#handlingMarkers.some(marker => 
-        this.#markerRaycaster.colidedColiders.find(item =>
-          marker.coliders.find(colider => item.uuid === colider.uuid)
+      this.#handlingMarkers.some(handlingMarker =>
+        this.#markerRaycaster.colidedColiders.some(colidedColider =>
+          handlingMarker.coliders.some(markersColider => colidedColider.uuid === markersColider.uuid)
         )
       ) ||
       itemClicked
@@ -147,31 +146,18 @@ export class MeshItemGenerator<T extends RenderingObject>
 
         itemMarker.coliders.forEach(colider => colider.enabled = false)
 
-        const startingHookFn = () => !yzRotateHandler.isStart && !xyRotateHandler.isStart && !xzRotateHandler.isStart && !xyzHandlers.some(handler => handler.isStart)
+        const startingHookFn = () => !xyzRotationHandlers.some(handler => handler.isStart) && !xyzHandlers.some(handler => handler.isStart)
 
-        const xzMarker = new RotateMarker(2, [0, 0, 0], [0, 1, 0])
-        const yzMarker = new RotateMarker(2, [0, 0, 0], [1, 0, 0])
-        const xyMarker = new RotateMarker(2, [0, 0, 0], [0, 0, 1])
-        xzMarker.setParentCoordinate(item.parentCoordinate)
-        xzMarker.attachRenderingObject<T>({r: 255, g: 0, b: 255}, this.#renderingObjectBuilder, this.#renderer)
-        yzMarker.setParentCoordinate(item.parentCoordinate)
-        yzMarker.attachRenderingObject<T>({r: 0, g: 255, b: 255}, this.#renderingObjectBuilder, this.#renderer)
-        xyMarker.setParentCoordinate(item.parentCoordinate)
-        xyMarker.attachRenderingObject<T>({r: 255, g: 255, b: 0}, this.#renderingObjectBuilder, this.#renderer)
-
-        const marker = new CenterMarker(0.5)
-        marker.setParentCoordinate(item.parentCoordinate)
-        marker.attachRenderingObject({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#renderer)
-
-        const xzRotateHandler = new RotateHandler(xzMarker.parentCoordinate, this.#markerRaycaster, [0, 1, 0], xzMarker.coliders[0])
-        const yzRotateHandler = new RotateHandler(yzMarker.parentCoordinate, this.#markerRaycaster, [1, 0, 0], yzMarker.coliders[0])
-        const xyRotateHandler = new RotateHandler(xyMarker.parentCoordinate, this.#markerRaycaster, [0, 0, 1], xyMarker.coliders[0])
-        xzRotateHandler.setStartingCallback(startingHookFn)
-        yzRotateHandler.setStartingCallback(startingHookFn)
-        xyRotateHandler.setStartingCallback(startingHookFn)
-        xzMarker.addHandler(xzRotateHandler)
-        yzMarker.addHandler(yzRotateHandler)
-        xyMarker.addHandler(xyRotateHandler)
+        const xyzRotationMarker = new CoordinateRotationMarker(2)
+        const xyzRotationHandlers = [
+          new RotateHandler(item.parentCoordinate, this.#markerRaycaster, [1, 0, 0], xyzRotationMarker.coliders[0]),
+          new RotateHandler(item.parentCoordinate, this.#markerRaycaster, [0, 1, 0], xyzRotationMarker.coliders[1]),
+          new RotateHandler(item.parentCoordinate, this.#markerRaycaster, [0, 0, 1], xyzRotationMarker.coliders[2])
+        ]
+        xyzRotationMarker.addHandlers(xyzRotationHandlers[0], xyzRotationHandlers[1], xyzRotationHandlers[2])
+        xyzRotationMarker.attachRenderingObject(this.#renderingObjectBuilder, this.#renderer)
+        xyzRotationMarker.setParentCoordinate(item.parentCoordinate)
+        xyzRotationHandlers.forEach(handler => handler.setStartedCallback(startingHookFn))
 
         const xyzMarker = new CoordinateMarker(3, 0.1)
         const xyzHandlers = [
@@ -184,22 +170,21 @@ export class MeshItemGenerator<T extends RenderingObject>
         xyzMarker.setParentCoordinate(item.parentCoordinate)
         xyzHandlers.forEach(handler => handler.setStartedCallback(startingHookFn))
 
+        const marker = new CenterMarker(0.5)
         const moveHandler = new PlaneMoveHandler(marker.parentCoordinate, this.#planeRaycaster, this.#markerRaycaster, marker.coliders)
+        marker.setParentCoordinate(item.parentCoordinate)
+        marker.attachRenderingObject({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#renderer)
         marker.addHandler(moveHandler)
 
         this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], [])]))
 
         this.#handlingMarkers = [
-          xzMarker,
-          yzMarker,
-          xyMarker,
+          xyzRotationMarker,
           xyzMarker,
           marker
         ]
 
-        this.#addMarkerCallbacks.call(xzMarker)
-        this.#addMarkerCallbacks.call(yzMarker)
-        this.#addMarkerCallbacks.call(xyMarker)
+        this.#addMarkerCallbacks.call(xyzRotationMarker)
         this.#addMarkerCallbacks.call(xyzMarker)
         this.#addMarkerCallbacks.call(marker)
       })

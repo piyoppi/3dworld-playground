@@ -170,6 +170,14 @@ export class PlaneColider extends ColiderBase implements Colider {
     this.#parentCoordinate = parentCoordinate
   }
 
+  get parentCoordinate() {
+    return this.#parentCoordinate
+  }
+
+  set parentCoordinate(value: Coordinate) {
+    this.#parentCoordinate = value
+  }
+
   setEdgeEvaluator(func: (distance: number, ray: Ray) => boolean) {
     this.#edgeEvaluator = func
   }

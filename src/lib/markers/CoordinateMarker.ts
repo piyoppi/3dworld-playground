@@ -3,7 +3,6 @@ import { MouseControllable } from "../mouse/MouseControllable.js"
 import { Raycaster } from "../Raycaster.js"
 import type { MouseControlHandles } from "../mouse/MouseControlHandles"
 import type { RenderingObjectBuilder } from '../RenderingObjectBuilder'
-import type { RGBColor } from "../helpers/color"
 import type { Renderer } from "../Renderer"
 import type { Marker, MarkerRenderable } from "./Marker"
 
@@ -29,8 +28,8 @@ export class CoordinateMarker implements Marker, MarkerRenderable {
   get markerCoordinates() {
     return [
       ...this.#xAxisMarker.markerCoordinates,
-      ...this.#xAxisMarker.markerCoordinates,
-      ...this.#xAxisMarker.markerCoordinates,
+      ...this.#yAxisMarker.markerCoordinates,
+      ...this.#zAxisMarker.markerCoordinates,
     ]
   }
 
