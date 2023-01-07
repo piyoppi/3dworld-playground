@@ -64,6 +64,10 @@ export class RouteItemGenerator<T extends RenderingObject>
     return this.#isStarted
   }
 
+  get generated() {
+    return !!this.#generatedItem
+  }
+
   setOriginal(original: HaconiwaItemGeneratorClonedItem<T>) {
     this.original = original
   }
@@ -243,13 +247,16 @@ export class RouteItemGenerator<T extends RenderingObject>
 
 export class RouteItemGeneratorFactory<T extends RenderingObject> implements HaconiwaItemGeneratorFactory<T> {
   #jointFactory: JointFactory<T>
+  #original: HaconiwaItemGeneratorClonedItem<T>
 
-  constructor(jointFactory: JointFactory<T>) {
+  constructor(jointFactory: JointFactory<T>, original: HaconiwaItemGeneratorClonedItem<T>) {
     this.#jointFactory = jointFactory
+    this.#original = original
   }
 
   create(renderer: Renderer<T>, raycaster: Raycaster, markerRaycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) {
     const generator = new RouteItemGenerator(renderer, raycaster, markerRaycaster, renderingObjectBuilder, this.#jointFactory)
+    generator.setOriginal(this.#original)
 
     return generator
   }

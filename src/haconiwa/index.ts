@@ -31,34 +31,34 @@ window.addEventListener('keydown', async (e) => {
 
     case '2':
       editor.setItemGeneratorFactory(
-        new HaconiwaLineItemGeneratorFactory(),
-        {
-          item: new Item(),
-          renderingObject: new ThreeRenderingObject(new ThreeGroup(await loadGlb('./assets/road.glb')))
-        }
+        new HaconiwaLineItemGeneratorFactory(
+          {
+            item: new Item(),
+            renderingObject: new ThreeRenderingObject(new ThreeGroup(await loadGlb('./assets/road.glb')))
+          }
+        )
       )
       break
 
     case '3':
-      const generatorFactory = new RouteItemGeneratorFactory(new RoadJointFactory())
-      editor.setItemGeneratorFactory(
-        generatorFactory,
+      const generatorFactory = new RouteItemGeneratorFactory(
+        new RoadJointFactory(),
         {
           item: new Item(),
           renderingObject: new ThreeRenderingObject(new ThreeGroup(await loadGlb('./assets/road.glb')))
         }
       )
+      editor.setItemGeneratorFactory(generatorFactory)
       break
 
     case '4':
-      const meshItemGeneratorFactory = new MeshItemGeneratorFactory<ThreeRenderingObject>()
-      editor.setItemGeneratorFactory(
-        meshItemGeneratorFactory,
+      const meshItemGeneratorFactory = new MeshItemGeneratorFactory<ThreeRenderingObject>(
         {
           item: new Item(),
           renderingObject: new ThreeRenderingObject(new ThreeGroup(await loadGlb('./assets/house.glb')))
         }
       )
+      editor.setItemGeneratorFactory(meshItemGeneratorFactory)
       break
   }
 })

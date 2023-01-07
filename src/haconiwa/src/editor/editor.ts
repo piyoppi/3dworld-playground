@@ -30,6 +30,7 @@ type Plane = {
 export class HaconiwaEditor<T extends RenderingObject> {
   #cameraController: CameraController
   #mouseControlHandles: MouseControlHandles
+  #itemGeneratorsMouseControlHandles: MouseControlHandles
   #editingPlane: EditingPlane
   #markerRaycaster: Raycaster
   #renderer: HaconiwaRenderer<T>
@@ -58,6 +59,10 @@ export class HaconiwaEditor<T extends RenderingObject> {
     this.#mouseControlHandles.addBeforeMouseDownCallback(() => this.handleMouseEvent())
     this.#mouseControlHandles.addBeforeMouseMoveCallback((_x, _y) => this.#mouseMoveHandler())
 
+    this.#itemGeneratorsMouseControlHandles = new MouseControlHandles(renderer.renderer.camera, this.#raycasters)
+    this.#itemGeneratorsMouseControlHandles.addBeforeMouseDownCallback(() => this.handleMouseEvent())
+    this.#itemGeneratorsMouseControlHandles.addBeforeMouseMoveCallback((_x, _y) => this.#mouseMoveHandler())
+
     this.#cameraController = new CameraController(renderer.renderer.camera)
     this.#cameraController.setMouseHandlers(this.#mouseControlHandles)
     this.#cameraController.setDefaultMouseDownHandler(this.#mouseControlHandles)
@@ -78,10 +83,13 @@ export class HaconiwaEditor<T extends RenderingObject> {
 
   captureMouseEvent() {
     this.#mouseControlHandles.captureMouseEvent()
+    this.#itemGeneratorsMouseControlHandles.captureMouseEvent()
   }
 
-  setItemGeneratorFactory(generator: HaconiwaItemGeneratorFactory<T>, original: HaconiwaItemGeneratorClonedItem<T> | undefined = undefined) {
-    //this.clearItemGenerator()
+  setItemGeneratorFactory(generator: HaconiwaItemGeneratorFactory<T>) {
+    if (this.#currentItemGenerator && !this.#currentItemGenerator.generated) {
+      this.clearItemGenerator()
+    }
 
     this.#currentItemGenerator = generator.create(
       this.#renderer.renderer,
@@ -94,44 +102,37 @@ export class HaconiwaEditor<T extends RenderingObject> {
       this.#currentItemGenerator.setConnectorColiderMap(this.#coliderConnectionMap)
     }
 
-    if (isHaconiwaItemGeneratorItemClonable(this.#currentItemGenerator)) {
-      if (!original) {
-        throw new Error('Original-item is required')
-      }
-
-      this.#currentItemGenerator.setOriginal(original)
-    }
-
     this.#currentItemGenerator.addMarkerCallback(marker => {
-      marker.attach(this.#markerRaycaster, this.#mouseControlHandles)
+      marker.attach(this.#markerRaycaster, this.#itemGeneratorsMouseControlHandles)
     })
 
     this.#currentItemGenerator.removeMarkerCallback(marker => {
-      marker.detach(this.#markerRaycaster, this.#mouseControlHandles)
+      marker.detach(this.#markerRaycaster, this.#itemGeneratorsMouseControlHandles)
     })
 
     this.#currentItemGenerator.registerOnGeneratedCallback(generates => {
       generates.forEach(item => {
         item.markers.forEach(marker => {
-          marker.attach(this.#markerRaycaster, this.#mouseControlHandles)
+          marker.attach(this.#markerRaycaster, this.#itemGeneratorsMouseControlHandles)
         })
         this.#world.addItem(item)
       })
     })
 
     this.#currentItemGenerator.addEndedCallback(() => {
-      this.setItemGeneratorFactory(generator, original)
+      this.setItemGeneratorFactory(generator)
     })
 
     this.#currentItemGeneratorHandler = {colider: this.#editingPlane.colider, handled: this.#currentItemGenerator}
-    this.#mouseControlHandles.add(this.#currentItemGeneratorHandler)
+    this.#itemGeneratorsMouseControlHandles.add(this.#currentItemGeneratorHandler)
     this.#raycasters.disable(this.#cameraController.raycaster)
   }
 
   clearItemGenerator() {
     if (!this.#currentItemGenerator || !this.#currentItemGeneratorHandler) return
+    if (this.#currentItemGenerator && this.#currentItemGenerator.generated) return
 
-    this.#mouseControlHandles.remove(this.#currentItemGeneratorHandler)
+    this.#itemGeneratorsMouseControlHandles.remove(this.#currentItemGeneratorHandler)
     this.#currentItemGenerator = null
     this.#raycasters.enable(this.#cameraController.raycaster)
   }

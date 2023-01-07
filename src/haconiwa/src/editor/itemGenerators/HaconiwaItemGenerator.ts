@@ -17,6 +17,7 @@ export interface HaconiwaItemGenerator<T> extends MouseControllable {
   addMarkerCallback: (callback: AddMarkerCallbackFunction) => void
   removeMarkerCallback: (callback: RemoveMarkerCallbackFunction) => void
   addEndedCallback: (callback: EndedCallbackFunction) => void
+  readonly generated: boolean
 }
 
 export type HaconiwaItemGeneratedCallback<T> = (generates: Array<HaconiwaWorldItem<T>>) => void

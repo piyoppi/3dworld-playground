@@ -58,6 +58,10 @@ export class MeshItemGenerator<T extends RenderingObject>
     return this.#isStarted
   }
 
+  get generated() {
+    return !!this.#generatedItem
+  }
+
   registerOnGeneratedCallback(func: HaconiwaItemGeneratedCallback<T>) {
     this.#onGeneratedCallbacks.push(func)
   }
@@ -173,8 +177,15 @@ export class MeshItemGenerator<T extends RenderingObject>
 }
 
 export class MeshItemGeneratorFactory<T extends RenderingObject> implements HaconiwaItemGeneratorFactory<T> {
+  #original: HaconiwaItemGeneratorClonedItem<T>
+
+  constructor(original: HaconiwaItemGeneratorClonedItem<T>) {
+    this.#original = original
+  }
+
   create(renderer: Renderer<T>, raycaster: Raycaster, markerRaycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) {
     const generator = new MeshItemGenerator(renderer, raycaster, markerRaycaster, renderingObjectBuilder)
+    generator.setOriginal(this.#original)
 
     return generator
   }

@@ -37,6 +37,7 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject> implements Hac
   #coliderConnectionMap: ColiderItemMap<LineItemConnection> | null = null
   #addMarkerCallbacks = new CallbackFunctions<AddMarkerCallbackFunction>()
   #removeMarkerCallbacks = new CallbackFunctions<RemoveMarkerCallbackFunction>()
+  #generatedItem: LineItem | null = null
 
   constructor(renderer: Renderer<T>, planeRaycaster: Raycaster, markerRaycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) {
     this.#planeRaycaster = planeRaycaster
@@ -47,6 +48,10 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject> implements Hac
 
   get isStart() {
     return this.#isStarted
+  }
+
+  get generated() {
+    return !!this.#generatedItem
   }
 
   setConnectorColiderMap(coliderConnectionMap: ColiderItemMap<LineItemConnection>) {
@@ -97,6 +102,7 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject> implements Hac
     const lineItemGenerator = new LineItemGenerator<Coordinate, T>(() => this.itemFactory(), this.original.renderingObject.size[0])
     const line = lineGenerator.getLine()
     const item = new LineItem(line)
+    this.#generatedItem = item
     const markers = makeConnectionMarker(item, this.#markerRaycaster, this.#planeRaycaster, this.#coliderConnectionMap)
 
     markers.forEach((marker, index) => {
@@ -138,8 +144,15 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject> implements Hac
 }
 
 export class HaconiwaLineItemGeneratorFactory<T extends RenderingObject> implements HaconiwaItemGeneratorFactory<T> {
+  #original: HaconiwaItemGeneratorClonedItem<T>
+
+  constructor(original: HaconiwaItemGeneratorClonedItem<T>) {
+    this.#original = original
+  }
+
   create(renderer: Renderer<T>, raycaster: Raycaster, markerRaycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) {
     const generator = new HaconiwaLineItemGenerator(renderer, raycaster, markerRaycaster, renderingObjectBuilder)
+    generator.setOriginal(this.#original)
 
     return generator
   }

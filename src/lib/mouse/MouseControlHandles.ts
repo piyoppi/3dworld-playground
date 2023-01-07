@@ -25,6 +25,7 @@ export class MouseControlHandles {
   #camera: Camera
   #beforeMouseDownCallbacks: Array<MouseDownCallbackFunction> = []
   #beforeMouseMoveCallbacks: Array<MouseMoveCallbackFunction> = []
+  #enabled = true
 
   constructor(camera: Camera, raycasters: Raycasters) {
     this.#raycasters = raycasters
@@ -35,6 +36,14 @@ export class MouseControlHandles {
 
   get handling() {
     return this.#handlingItems.length > 0
+  }
+
+  get enabled() {
+    return this.#enabled
+  }
+
+  set enabled(value: boolean) {
+    this.#enabled = value
   }
 
   addBeforeMouseDownCallback(callback: MouseDownCallbackFunction) {
@@ -71,6 +80,8 @@ export class MouseControlHandles {
   }
 
   start(screenX: number, screenY: number, button: number) {
+    if (!this.#enabled) return
+
     const mouseButton = convertButtonNumberToMouseButtonsType(button)
 
     this.#beforeMouseDownCallbacks.forEach(func => func(screenX, screenY, mouseButton))
