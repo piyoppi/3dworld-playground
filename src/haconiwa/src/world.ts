@@ -2,7 +2,6 @@ import { Colider } from "../../lib/Colider.js"
 import { Item } from "../../lib/Item.js"
 import type { Renderer } from "../../lib/Renderer"
 import type { Raycaster } from "../../lib/Raycaster"
-import type { MouseControlHandles } from "../../lib/mouse/MouseControlHandles"
 import type { Marker } from "../../lib/markers/Marker"
 
 export class HaconiwaWorld {

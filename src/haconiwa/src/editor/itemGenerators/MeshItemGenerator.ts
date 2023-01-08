@@ -84,7 +84,7 @@ export class MeshItemGenerator<T extends RenderingObject>
     if (this.mounted) {
       if (!myMarkersClicked) {
         this.removeHandlingMarker()
-        this.unselected()
+        this.unselected(this)
       }
 
       return false
@@ -120,7 +120,7 @@ export class MeshItemGenerator<T extends RenderingObject>
         markers.forEach(marker => this.registerMarker(marker))
         this.#handlingMarkers = markers
 
-        this.selected()
+        this.selected(this)
       })
     } else {
       return false

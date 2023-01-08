@@ -38,7 +38,7 @@ export class HaconiwaEditor<T extends RenderingObject> {
 
   #currentItemGenerator: HaconiwaItemGenerator<T> | null = null
   #currentItemGeneratorHandler: ControlHandle | null = null
-  #selectedItems = new HaconiwaWorldItems()
+  #selectedItemGenerators: HaconiwaItemGenerator<T>[] = []
 
   #renderingObjectBuilder: RenderingObjectBuilder<T>
 
@@ -85,7 +85,7 @@ export class HaconiwaEditor<T extends RenderingObject> {
   }
 
   setItemGeneratorFactory(generator: HaconiwaItemGeneratorFactory<T>) {
-    this.#selectedItems.clear()
+    this.#selectedItemGenerators = []
     this.clearItemGenerator()
 
     this.#currentItemGenerator = generator.create(
@@ -121,13 +121,14 @@ export class HaconiwaEditor<T extends RenderingObject> {
     })
 
     this.#currentItemGenerator.addSelectedCallback(item => {
-      this.#selectedItems.add(item)
-      console.log('add selectedItem')
+      this.#selectedItemGenerators.push(item)
     })
 
     this.#currentItemGenerator.addUnselectedCallback(item => {
-      this.#selectedItems.remove(item)
-      console.log('remove selectedItem')
+      const index = this.#selectedItemGenerators.findIndex(registered => registered.uuid === item.uuid)
+
+      if (index < 0) return
+      this.#selectedItemGenerators.splice(index, 1)
     })
 
     this.#currentItemGeneratorHandler = {colider: this.#editingPlane.colider, handled: this.#currentItemGenerator}
@@ -145,10 +146,14 @@ export class HaconiwaEditor<T extends RenderingObject> {
   }
 
   removeSelectedItems() {
-    this.#selectedItems.forEach(item => {
+    this.#selectedItemGenerators.forEach(generator => {
+      const item = generator.generatedItem
+      if (!item) return
+
       item.removeRenderingItem(this.#renderer.renderer)
       this.#raycasters.forEach(raycaster => item.removeTargetColider(raycaster))
       this.#world.removeItem(item)
+      generator.dispose()
     })
   }
 

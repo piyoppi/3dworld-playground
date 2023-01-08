@@ -8,17 +8,20 @@ import {
   RemoveMarkerCallbackFunction,
   EndedCallbackFunction,
   SelectedCallbackFunction,
-  UnselectedCallbackFunction
+  UnselectedCallbackFunction,
+  HaconiwaItemGenerator
 } from './HaconiwaItemGenerator'
+import { v4 as uuidv4 } from 'uuid'
 
 export class HaconiwaItemGeneratorBase<T> {
   #onGeneratedCallbacks: Array<HaconiwaItemGeneratedCallback<T>> = []
   #addMarkerCallbacks = new CallbackFunctions<AddMarkerCallbackFunction>()
   #removeMarkerCallbacks = new CallbackFunctions<RemoveMarkerCallbackFunction>()
   #endedCallbacks = new CallbackFunctions<EndedCallbackFunction>()
-  #selectedCallbacks = new CallbackFunctions<SelectedCallbackFunction>()
-  #unselectedCallbacks = new CallbackFunctions<SelectedCallbackFunction>()
+  #selectedCallbacks = new CallbackFunctions<SelectedCallbackFunction<T>>()
+  #unselectedCallbacks = new CallbackFunctions<SelectedCallbackFunction<T>>()
   #generatedItem: HaconiwaWorldItem | null = null
+  #uuid = uuidv4()
 
   get generatedItem() {
     return this.#generatedItem
@@ -26,6 +29,10 @@ export class HaconiwaItemGeneratorBase<T> {
 
   get generated() {
     return !!this.#generatedItem
+  }
+
+  get uuid() {
+    return this.#uuid
   }
 
   registerOnGeneratedCallback(callback: HaconiwaItemGeneratedCallback<T>) {
@@ -44,11 +51,11 @@ export class HaconiwaItemGeneratorBase<T> {
     this.#endedCallbacks.add(func)
   }
 
-  addSelectedCallback(func: SelectedCallbackFunction) {
+  addSelectedCallback(func: SelectedCallbackFunction<T>) {
     this.#selectedCallbacks.add(func)
   }
 
-  addUnselectedCallback(func: UnselectedCallbackFunction) {
+  addUnselectedCallback(func: UnselectedCallbackFunction<T>) {
     this.#unselectedCallbacks.add(func)
   }
 
@@ -69,14 +76,12 @@ export class HaconiwaItemGeneratorBase<T> {
     this.#removeMarkerCallbacks.call(marker)
   }
 
-  protected selected() {
-    if (!this.#generatedItem) throw new Error('Item is not genetarted yet.')
-    this.#selectedCallbacks.call(this.#generatedItem)
+  protected selected(self: HaconiwaItemGenerator<T>) {
+    this.#selectedCallbacks.call(self)
   }
 
-  protected unselected() {
-    if (!this.#generatedItem) throw new Error('Item is not genetarted yet.')
-    this.#unselectedCallbacks.call(this.#generatedItem)
+  protected unselected(self: HaconiwaItemGenerator<T>) {
+    this.#unselectedCallbacks.call(self)
   }
 
   end() {
