@@ -1,4 +1,3 @@
-import type { Colider } from "./Colider"
 import type { VectorArray2 } from "./Matrix"
 import type { Raycaster } from "./Raycaster"
 
@@ -17,6 +16,10 @@ export class Raycasters {
 
   get colidedColiders() {
     return this.#raycasters.map(item => item.raycaster.colidedColiders).flat()
+  }
+
+  forEach(callback: (raycaster: Raycaster) => void) {
+    this.#raycasters.forEach(item => callback(item.raycaster))
   }
 
   add(raycaster: Raycaster, options: RaycasterItemOptions = {transparency: true}) {

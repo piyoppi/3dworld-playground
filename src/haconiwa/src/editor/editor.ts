@@ -4,16 +4,14 @@ import type { VectorArray3 } from '../../../lib/Matrix'
 import {
   HaconiwaItemGeneratorFactory,
   HaconiwaItemGenerator,
-  HaconiwaItemGeneratorClonedItem,
   isHaconiwaItemGeneratorLineConnectable,
-  isHaconiwaItemGeneratorItemClonable,
 } from './itemGenerators/HaconiwaItemGenerator.js'
 import type { Camera } from '../../../lib/Camera'
 import type { RenderingObjectBuilder } from '../../../lib/RenderingObjectBuilder'
 import type { MouseButton } from '../../../lib/mouse/MouseControllable'
 import { Raycaster } from '../../../lib/Raycaster.js'
 import { Colider, PlaneColider } from '../../../lib/Colider.js'
-import { HaconiwaWorld } from '../world.js'
+import { HaconiwaWorld, HaconiwaWorldItem, HaconiwaWorldItems } from '../world.js'
 import { ControlHandle, MouseControlHandles } from '../../../lib/mouse/MouseControlHandles.js'
 import { Raycasters } from '../../../lib/Raycasters.js'
 import { ColiderItemMap } from '../../../lib/ColiderItemMap.js'
@@ -40,13 +38,13 @@ export class HaconiwaEditor<T extends RenderingObject> {
 
   #currentItemGenerator: HaconiwaItemGenerator<T> | null = null
   #currentItemGeneratorHandler: ControlHandle | null = null
-  #itemGenerators: HaconiwaItemGenerator<T>[] = []
+  #selectedItems = new HaconiwaWorldItems()
 
   #renderingObjectBuilder: RenderingObjectBuilder<T>
 
-  #world: HaconiwaWorld<T>
+  #world: HaconiwaWorld
 
-  constructor(world: HaconiwaWorld<T>, renderer: HaconiwaRenderer<T>, mouseCapturer: MouseCapturer, renderingObjectBuilder: RenderingObjectBuilder<T>) {
+  constructor(world: HaconiwaWorld, renderer: HaconiwaRenderer<T>, mouseCapturer: MouseCapturer, renderingObjectBuilder: RenderingObjectBuilder<T>) {
     this.#renderer = renderer
     this.#renderer.setBeforeRenderCallback(() => this.#renderingLoop())
     this.#renderingObjectBuilder = renderingObjectBuilder
@@ -87,9 +85,8 @@ export class HaconiwaEditor<T extends RenderingObject> {
   }
 
   setItemGeneratorFactory(generator: HaconiwaItemGeneratorFactory<T>) {
-    if (this.#currentItemGenerator && !this.#currentItemGenerator.generated) {
-      this.clearItemGenerator()
-    }
+    this.#selectedItems.clear()
+    this.clearItemGenerator()
 
     this.#currentItemGenerator = generator.create(
       this.#renderer.renderer,
@@ -123,6 +120,16 @@ export class HaconiwaEditor<T extends RenderingObject> {
       this.setItemGeneratorFactory(generator)
     })
 
+    this.#currentItemGenerator.addSelectedCallback(item => {
+      this.#selectedItems.add(item)
+      console.log('add selectedItem')
+    })
+
+    this.#currentItemGenerator.addUnselectedCallback(item => {
+      this.#selectedItems.remove(item)
+      console.log('remove selectedItem')
+    })
+
     this.#currentItemGeneratorHandler = {colider: this.#editingPlane.colider, handled: this.#currentItemGenerator}
     this.#itemGeneratorsMouseControlHandles.add(this.#currentItemGeneratorHandler)
     this.#raycasters.disable(this.#cameraController.raycaster)
@@ -135,6 +142,14 @@ export class HaconiwaEditor<T extends RenderingObject> {
     this.#itemGeneratorsMouseControlHandles.remove(this.#currentItemGeneratorHandler)
     this.#currentItemGenerator = null
     this.#raycasters.enable(this.#cameraController.raycaster)
+  }
+
+  removeSelectedItems() {
+    this.#selectedItems.forEach(item => {
+      item.removeRenderingItem(this.#renderer.renderer)
+      this.#raycasters.forEach(raycaster => item.removeTargetColider(raycaster))
+      this.#world.removeItem(item)
+    })
   }
 
   handleMouseEvent() {

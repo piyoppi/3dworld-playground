@@ -11,16 +11,24 @@ import { Marker } from "../../../../lib/markers/Marker"
 export type AddMarkerCallbackFunction = (marker: Marker) => void
 export type RemoveMarkerCallbackFunction = (marker: Marker) => void
 export type EndedCallbackFunction = () => void
+export type SelectedCallbackFunction = (item: HaconiwaWorldItem) => void
+export type UnselectedCallbackFunction = (item: HaconiwaWorldItem) => void
 
+// 選択アイテムフック
+// 削除
 export interface HaconiwaItemGenerator<T> extends MouseControllable {
   registerOnGeneratedCallback: (callback: HaconiwaItemGeneratedCallback<T>) => void
   addMarkerCallback: (callback: AddMarkerCallbackFunction) => void
   removeMarkerCallback: (callback: RemoveMarkerCallbackFunction) => void
   addEndedCallback: (callback: EndedCallbackFunction) => void
+  addSelectedCallback: (callback: SelectedCallbackFunction) => void
+  addUnselectedCallback: (callback: SelectedCallbackFunction) => void
+  dispose: () => void
   readonly generated: boolean
+  readonly generatedItem: HaconiwaWorldItem | null
 }
 
-export type HaconiwaItemGeneratedCallback<T> = (generates: Array<HaconiwaWorldItem<T>>) => void
+export type HaconiwaItemGeneratedCallback<T> = (generates: Array<HaconiwaWorldItem>) => void
 
 export type HaconiwaItemGeneratorClonedItem<T> = {
   item: Item,

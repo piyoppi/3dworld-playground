@@ -7,15 +7,10 @@ import type {
   HaconiwaItemGenerator,
   HaconiwaItemGeneratorFactory,
   HaconiwaItemGeneratorClonedItem,
-  HaconiwaItemGeneratedCallback,
   HaconiwaItemGeneratorLineConnectable,
   HaconiwaItemGeneratorItemClonable,
-  AddMarkerCallbackFunction,
-  RemoveMarkerCallbackFunction,
-  EndedCallbackFunction
 } from "./HaconiwaItemGenerator"
 import { Coordinate } from "../../../../lib/Coordinate.js"
-import { HaconiwaWorldItem } from "../../world.js"
 import { LineItemGenerator } from "../../../../lib/itemGenerators/lineItemGenerator/LineItemGenerator.js"
 import type { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder.js"
 import { MouseButton, MouseControllableCallbackFunction } from "../../../../lib/mouse/MouseControllable.js"
@@ -23,23 +18,24 @@ import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
 import type { ColiderItemMap } from "../../../../lib/ColiderItemMap.js"
 import { makeConnectionMarker } from './Helpers/MakeConnectionMarker.js'
 import { RenderingObject } from "../../../../lib/RenderingObject.js"
+import { HaconiwaItemGeneratorBase } from "./HaconiwaItemGeneratorBase.js"
 
-export class HaconiwaLineItemGenerator<T extends RenderingObject> implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorLineConnectable, HaconiwaItemGeneratorItemClonable<T>  {
-  #onGeneratedCallbacks: Array<HaconiwaItemGeneratedCallback<T>> = []
+export class HaconiwaLineItemGenerator<T extends RenderingObject>
+  extends HaconiwaItemGeneratorBase<T>
+  implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorLineConnectable, HaconiwaItemGeneratorItemClonable<T>  {
   #planeRaycaster: Raycaster
   #markerRaycaster: Raycaster
   #renderingObjectBuilder: RenderingObjectBuilder<T>
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
-  #endedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   private original: HaconiwaItemGeneratorClonedItem<T> | null = null
   #isStarted = false
   #renderer
   #coliderConnectionMap: ColiderItemMap<LineItemConnection> | null = null
-  #addMarkerCallbacks = new CallbackFunctions<AddMarkerCallbackFunction>()
-  #removeMarkerCallbacks = new CallbackFunctions<RemoveMarkerCallbackFunction>()
   #generatedItem: LineItem | null = null
 
   constructor(renderer: Renderer<T>, planeRaycaster: Raycaster, markerRaycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) {
+    super()
+
     this.#planeRaycaster = planeRaycaster
     this.#markerRaycaster = markerRaycaster
     this.#renderingObjectBuilder = renderingObjectBuilder
@@ -68,22 +64,6 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject> implements Hac
 
   removeStartedCallback(func: MouseControllableCallbackFunction) {
     this.#startedCallbacks.remove(func)
-  }
-
-  registerOnGeneratedCallback(func: HaconiwaItemGeneratedCallback<T>) {
-    this.#onGeneratedCallbacks.push(func)
-  }
-
-  addMarkerCallback(func: AddMarkerCallbackFunction) {
-    this.#addMarkerCallbacks.add(func)
-  }
-
-  removeMarkerCallback(func: RemoveMarkerCallbackFunction) {
-    this.#removeMarkerCallbacks.add(func)
-  }
-
-  addEndedCallback(func: EndedCallbackFunction) {
-    this.#endedCallbacks.add(func)
   }
 
   start(x: number, y: number, button: MouseButton, cameraCoordinate: Coordinate) {
@@ -115,8 +95,8 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject> implements Hac
       })
     })
 
-    this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], [])]))
-    markers.forEach(marker => this.#addMarkerCallbacks.call(marker))
+    this.registerItem(item)
+    markers.forEach(marker => this.registerMarker(marker))
 
     this.#startedCallbacks.call()
 
@@ -130,8 +110,9 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject> implements Hac
   }
 
   end() {
+    super.end()
+
     this.#isStarted = false
-    this.#endedCallbacks.call()
   }
 
   private itemFactory() {

@@ -5,12 +5,7 @@ import {
   HaconiwaItemGeneratorItemClonable,
   HaconiwaItemGeneratorFactory,
   HaconiwaItemGeneratorClonedItem,
-  HaconiwaItemGeneratedCallback,
-  AddMarkerCallbackFunction,
-  RemoveMarkerCallbackFunction,
-  EndedCallbackFunction
 } from './HaconiwaItemGenerator'
-import { HaconiwaWorldItem } from "../../world.js"
 import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
 import { MouseButton, MouseControllableCallbackFunction } from "../../../../lib/mouse/MouseControllable.js"
 import type { Raycaster } from "../../../../lib/Raycaster"
@@ -21,25 +16,21 @@ import { BoxMarker } from "../../../../lib/markers/BoxMarker.js"
 import { ProxyHandler } from "../../../../lib/mouse/handlers/ProxyHandler.js"
 import { Marker, MarkerRenderable } from "../../../../lib/markers/Marker.js"
 import { makeCoordinateMover } from "../../../../lib/markers/generators/CoordinateMover.js"
+import { HaconiwaItemGeneratorBase } from "./HaconiwaItemGeneratorBase.js"
 
 export class MeshItemGenerator<T extends RenderingObject>
+  extends HaconiwaItemGeneratorBase<T>
   implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorItemClonable<T> {
 
   private original: HaconiwaItemGeneratorClonedItem<T> | null = null
   #isStarted = false
-  #mounted = false
   #planeRaycaster: Raycaster
   #markerRaycaster: Raycaster
   #renderer: Renderer<T>
   #renderingObjectBuilder: RenderingObjectBuilder<T>
-  #onGeneratedCallbacks: Array<HaconiwaItemGeneratedCallback<T>> = []
-  #addMarkerCallbacks = new CallbackFunctions<AddMarkerCallbackFunction>()
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
-  #endedCallbacks = new CallbackFunctions<EndedCallbackFunction>()
-  #removeMarkerCallbacks = new CallbackFunctions<RemoveMarkerCallbackFunction>()
   #handlingMarkers: Array<Marker & MarkerRenderable> = []
   #itemMarker: BoxMarker | null = null
-  #generatedItem: Item | null = null
 
   constructor(
     renderer: Renderer<T>,
@@ -47,6 +38,8 @@ export class MeshItemGenerator<T extends RenderingObject>
     markerRaycaster: Raycaster,
     renderingObjectBuilder: RenderingObjectBuilder<T>
   ) {
+    super()
+
     this.#planeRaycaster = planeRaycaster
     this.#markerRaycaster = markerRaycaster
 
@@ -58,16 +51,8 @@ export class MeshItemGenerator<T extends RenderingObject>
     return this.#isStarted
   }
 
-  get generated() {
-    return !!this.#generatedItem
-  }
-
-  registerOnGeneratedCallback(func: HaconiwaItemGeneratedCallback<T>) {
-    this.#onGeneratedCallbacks.push(func)
-  }
-
-  addMarkerCallback(func: AddMarkerCallbackFunction) {
-    this.#addMarkerCallbacks.add(func)
+  get mounted() {
+    return this.#handlingMarkers.length > 0
   }
 
   setStartedCallback(func: MouseControllableCallbackFunction) {
@@ -76,14 +61,6 @@ export class MeshItemGenerator<T extends RenderingObject>
 
   removeStartedCallback(func: MouseControllableCallbackFunction) {
     this.#startedCallbacks.remove(func)
-  }
-
-  removeMarkerCallback(func: RemoveMarkerCallbackFunction) {
-    this.#removeMarkerCallbacks.add(func)
-  }
-
-  addEndedCallback(func: EndedCallbackFunction) {
-    this.#endedCallbacks.add(func)
   }
 
   setOriginal(original: HaconiwaItemGeneratorClonedItem<T>) {
@@ -104,26 +81,22 @@ export class MeshItemGenerator<T extends RenderingObject>
       ) ||
       itemClicked
 
-    if (this.#mounted) {
+    if (this.mounted) {
       if (!myMarkersClicked) {
-        this.#handlingMarkers.forEach(marker => {
-          this.#removeMarkerCallbacks.call(marker)
-          marker.markerCoordinates.forEach(coord => this.#renderer.removeItem(coord))
-        })
-        this.#handlingMarkers = []
-        if (this.#itemMarker) this.#itemMarker.coliders.forEach(colider => colider.enabled = true)
-
-        this.#mounted = false
+        this.removeHandlingMarker()
+        this.unselected()
       }
 
       return false
-    } else if (this.#markerRaycaster.colidedColiders.length > 0) {
-      return false
+    } else {
+      if (this.#markerRaycaster.colidedColiders.length > 0) {
+        return false
+      }
     }
 
-    if (!this.#generatedItem) {
+    if (!this.generated) {
       const item = new Item()
-      this.#generatedItem = item
+      this.registerItem(item)
       const coordinateForRendering = new Coordinate()
       item.parentCoordinate.addChild(coordinateForRendering)
 
@@ -136,19 +109,18 @@ export class MeshItemGenerator<T extends RenderingObject>
       const proxyHandler = new ProxyHandler(this.#markerRaycaster, itemMarker.coliders)
       itemMarker.setParentCoordinate(item.parentCoordinate)
       itemMarker.addHandler(proxyHandler)
-      this.#addMarkerCallbacks.call(itemMarker)
+      this.registerMarker(itemMarker)
 
       proxyHandler.setStartedCallback(() => {
-        if (this.#mounted) return
-        this.#mounted = true
+        if (this.mounted) return
 
         itemMarker.coliders.forEach(colider => colider.enabled = false)
 
-        this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], [])]))
-
         const markers = makeCoordinateMover(this.#planeRaycaster, this.#markerRaycaster, item.parentCoordinate, this.#renderingObjectBuilder, this.#renderer)
-        markers.forEach(marker => this.#addMarkerCallbacks.call(marker))
+        markers.forEach(marker => this.registerMarker(marker))
         this.#handlingMarkers = markers
+
+        this.selected()
       })
     } else {
       return false
@@ -165,8 +137,30 @@ export class MeshItemGenerator<T extends RenderingObject>
   }
 
   end() {
+    super.end()
     this.#isStarted = false
-    this.#endedCallbacks.call()
+  }
+
+  dispose() {
+    if (!this.generated) return
+
+    this.removeHandlingMarker()    
+    this.removeItemMarker()
+  }
+
+  private removeHandlingMarker() {
+    this.#handlingMarkers.forEach(marker => {
+      this.removeMarker(marker)
+      marker.markerCoordinates.forEach(coord => this.#renderer.removeItem(coord))
+    })
+    this.#handlingMarkers = []
+    if (this.#itemMarker) this.#itemMarker.coliders.forEach(colider => colider.enabled = true)
+  }
+
+  private removeItemMarker() {
+    if (!this.#itemMarker) return
+
+    this.removeMarker(this.#itemMarker)
   }
 
   private makeRenderingObject() {

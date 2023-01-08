@@ -6,15 +6,10 @@ import type {
   HaconiwaItemGenerator,
   HaconiwaItemGeneratorFactory,
   HaconiwaItemGeneratorClonedItem,
-  HaconiwaItemGeneratedCallback,
   HaconiwaItemGeneratorLineConnectable,
   HaconiwaItemGeneratorItemClonable,
-  AddMarkerCallbackFunction,
-  RemoveMarkerCallbackFunction,
-  EndedCallbackFunction
 } from "./HaconiwaItemGenerator"
 import { Coordinate } from "../../../../lib/Coordinate.js"
-import { HaconiwaWorldItem } from "../../world.js"
 import { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder.js"
 import { MouseButton, MouseControllableCallbackFunction } from "../../../../lib/mouse/MouseControllable.js"
 import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
@@ -26,23 +21,20 @@ import { NoneJoint } from "./Joints/NoneJoint.js"
 import { attachCoordinateRenderingItem } from "../../../../lib/CoordinateRenderingObject.js"
 import { RenderingObject } from "../../../../lib/RenderingObject.js"
 import { JointFactory } from "./Joints/JointFactory.js"
+import { HaconiwaItemGeneratorBase } from "./HaconiwaItemGeneratorBase.js"
 
 export class RouteItemGenerator<T extends RenderingObject>
+  extends HaconiwaItemGeneratorBase<T>
   implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorLineConnectable, HaconiwaItemGeneratorItemClonable<T> {
-  #onGeneratedCallbacks: Array<HaconiwaItemGeneratedCallback<T>> = []
-  #addMarkerCallbacks = new CallbackFunctions<AddMarkerCallbackFunction>()
   #planeRaycaster: Raycaster
   #markerRaycaster: Raycaster
   #renderingObjectBuilder: RenderingObjectBuilder<T>
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
-  #endedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   #isStarted = false
   #renderer: Renderer<T>
   #coliderConnectionMap: ColiderItemMap<LineItemConnection> | null = null
   #jointFactory: JointFactory<T>
   private original: HaconiwaItemGeneratorClonedItem<T> | null = null
-  #removeMarkerCallbacks = new CallbackFunctions<RemoveMarkerCallbackFunction>()
-  #generatedItem: LineItem | null = null
 
   constructor(
     renderer: Renderer<T>,
@@ -51,6 +43,8 @@ export class RouteItemGenerator<T extends RenderingObject>
     renderingObjectBuilder: RenderingObjectBuilder<T>,
     jointFactory: JointFactory<T>
   ) {
+    super()
+
     this.#planeRaycaster = planeRaycaster
     this.#markerRaycaster = markerRaycaster
     this.#renderingObjectBuilder = renderingObjectBuilder
@@ -62,10 +56,6 @@ export class RouteItemGenerator<T extends RenderingObject>
 
   get isStart() {
     return this.#isStarted
-  }
-
-  get generated() {
-    return !!this.#generatedItem
   }
 
   setOriginal(original: HaconiwaItemGeneratorClonedItem<T>) {
@@ -84,25 +74,9 @@ export class RouteItemGenerator<T extends RenderingObject>
     this.#startedCallbacks.remove(func)
   }
 
-  registerOnGeneratedCallback(func: HaconiwaItemGeneratedCallback<T>) {
-    this.#onGeneratedCallbacks.push(func)
-  }
-
-  addMarkerCallback(func: AddMarkerCallbackFunction) {
-    this.#addMarkerCallbacks.add(func)
-  }
-
-  removeMarkerCallback(func: RemoveMarkerCallbackFunction) {
-    this.#removeMarkerCallbacks.add(func)
-  }
-
-  addEndedCallback(func: EndedCallbackFunction) {
-    this.#endedCallbacks.add(func)
-  }
-
   start(x: number, y: number, button: MouseButton, cameraCoordinate: Coordinate) {
     if (!this.#planeRaycaster.hasColided || !this.#coliderConnectionMap || this.#isStarted) return
-    if (this.#generatedItem) return
+    if (this.generated) return
 
     this.#isStarted = true
 
@@ -116,7 +90,6 @@ export class RouteItemGenerator<T extends RenderingObject>
     const line = lineGenerator.getLine()
 
     const item = new LineItem(line)
-    this.#generatedItem = item
 
     const jointableMarkers = item.connections.map(connection => {
       const marker = new JointableMarker(connection, item, this.#markerRaycaster, this.#planeRaycaster, coliderConnectionMap)
@@ -164,8 +137,8 @@ export class RouteItemGenerator<T extends RenderingObject>
     this.#renderer.addItem(coordinateForRendering, this.makeRenderingObject())
     this.updateRenderingObject(coordinateForRendering, item, item.line.length, Array.from(joints.values()))
 
-    this.#onGeneratedCallbacks.forEach(func => func([new HaconiwaWorldItem(item, [], [])]))
-    jointableMarkers.forEach(item => this.#addMarkerCallbacks.call(item.marker))
+    this.registerItem(item)
+    jointableMarkers.forEach(item => this.registerMarker(item.marker))
 
     this.#startedCallbacks.call()
 
@@ -179,8 +152,8 @@ export class RouteItemGenerator<T extends RenderingObject>
   }
 
   end() {
+    super.end()
     this.#isStarted = false
-    this.#endedCallbacks.call()
   }
 
   private updateJoint(givenJoint: Joint<T>, connection: LineItemConnection) {

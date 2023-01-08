@@ -9,11 +9,10 @@ import { Item } from '../lib/Item.js'
 import { ThreeRenderingObjectBuilder } from "../lib/threeAdapter/ThreeRenderingObjectBuilder.js"
 import { HaconiwaLineItemGeneratorFactory } from "./src/editor/itemGenerators/HaconiwaLineItemGenerator.js"
 import { RouteItemGeneratorFactory } from "./src/editor/itemGenerators/RouteItemGenerator.js"
-import { JointFactory } from "./src/editor/itemGenerators/Joints/JointFactory.js"
 import { RoadJointFactory } from "./src/Roads/RoadJointFactory.js"
 import { MeshItemGeneratorFactory } from "./src/editor/itemGenerators/MeshItemGenerator.js"
 
-const world = new HaconiwaWorld<ThreeRenderingObject>()
+const world = new HaconiwaWorld()
 const factory = new Factory()
 const mouseCapturer = new MouseCapturer(window.innerWidth, window.innerHeight)
 const renderer = factory.makeRenderer({fov: 100, aspect: window.innerWidth / window.innerHeight, near: 0.001, far: 100})
@@ -59,6 +58,9 @@ window.addEventListener('keydown', async (e) => {
         }
       )
       editor.setItemGeneratorFactory(meshItemGeneratorFactory)
+      break
+    case 'Delete':
+      editor.removeSelectedItems()
       break
   }
 })
