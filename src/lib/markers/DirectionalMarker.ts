@@ -1,6 +1,5 @@
 import { BoxColider, Colider } from "../Colider.js"
 import { Coordinate } from "../Coordinate.js"
-import { Item } from "../Item.js"
 import { HandledColiders } from "./HandledColiders.js"
 import { Vec3, VectorArray3 } from "../Matrix.js"
 import type { MouseControllable } from "../mouse/MouseControllable.js"
@@ -9,9 +8,9 @@ import type { Raycaster } from "../Raycaster.js"
 import type { Renderer } from "../Renderer.js"
 import type { RenderingObjectBuilder } from '../RenderingObjectBuilder.js'
 import type { RGBColor } from "../helpers/color.js"
-import type { Marker, MarkerRenderable } from "./Marker"
+import type { SingleMarker, MarkerRenderable } from "./Marker"
 
-export class DirectionalMarker implements Marker, MarkerRenderable {
+export class DirectionalMarker implements SingleMarker, MarkerRenderable {
   #norm: number
   #radius: number
   #parentCoordinate = new Coordinate()

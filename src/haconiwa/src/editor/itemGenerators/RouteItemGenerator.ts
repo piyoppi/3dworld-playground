@@ -15,13 +15,14 @@ import { MouseButton, MouseControllableCallbackFunction } from "../../../../lib/
 import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
 import { ColiderItemMap } from "../../../../lib/ColiderItemMap.js"
 import { Vec3 } from "../../../../lib/Matrix.js"
-import { JointableMarker } from "../Markers/JointableMarker.js"
+import { markerJointable } from "../Markers/JointableMarker.js"
 import { Joint } from "./Joints/Joint.js"
 import { NoneJoint } from "./Joints/NoneJoint.js"
-import { attachCoordinateRenderingItem } from "../../../../lib/CoordinateRenderingObject.js"
 import { RenderingObject } from "../../../../lib/RenderingObject.js"
 import { JointFactory } from "./Joints/JointFactory.js"
 import { HaconiwaItemGeneratorBase } from "./HaconiwaItemGeneratorBase.js"
+import { PlaneMoveHandler } from "../../../../lib/mouse/handlers/PlaneMoveHandler.js"
+import { CenterMarker } from "../../../../lib/markers/CenterMarker.js"
 
 export class RouteItemGenerator<T extends RenderingObject>
   extends HaconiwaItemGeneratorBase<T>
@@ -92,18 +93,22 @@ export class RouteItemGenerator<T extends RenderingObject>
     const item = new LineItem(line)
 
     const jointableMarkers = item.connections.map(connection => {
-      const marker = new JointableMarker(connection, item, this.#markerRaycaster, this.#planeRaycaster, coliderConnectionMap)
-      item.connections.filter(conn => conn !== connection).forEach(conn => marker.setIgnoredConnection(conn))
+      const marker = new CenterMarker(0.5)
+      const handler = new PlaneMoveHandler(connection.edge.coordinate, this.#planeRaycaster, this.#markerRaycaster)
+      marker.addHandler(handler)
+      const jointableHandler = markerJointable(marker, handler, connection, item, this.#markerRaycaster, coliderConnectionMap)
+
+      item.connections.filter(conn => conn !== connection).forEach(conn => jointableHandler.addIgnoredConnection(conn))
 
       marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#renderer)
-      marker.setUpdatedCoordinateCallback(() => {
+      marker.parentCoordinate.setUpdateCallback(() => {
         const jointsArray = Array.from(joints.values())
         this.updateRenderingObject(coordinateForRendering, item, item.line.length, jointsArray)
 
         jointsArray.forEach(joint => joint.updateRenderingObject(this.#renderingObjectBuilder, this.#renderer))
       })
 
-      return marker
+      return {marker, handler: jointableHandler}
     })
 
     const joints = new Map<LineItemConnection, Joint<T>>()
@@ -118,8 +123,7 @@ export class RouteItemGenerator<T extends RenderingObject>
         if (joint && !joint.disposed) {
           const recreatedJoint = this.updateJoint(joint, connection)
           joints.set(connection, recreatedJoint)
-          // [FIXME] for debug.
-          attachCoordinateRenderingItem(connection.edge.coordinate, this.#renderingObjectBuilder, this.#renderer, 1, 0.2)
+          this.updateRenderingObject(coordinateForRendering, item, item.line.length, Array.from(joints.values()))
         }
       })
 
@@ -141,7 +145,6 @@ export class RouteItemGenerator<T extends RenderingObject>
     jointableMarkers.forEach(item => this.registerMarker(item.marker))
 
     this.#startedCallbacks.call()
-
     jointableMarkers[1].marker.handlers.forEach(handler => handler.start(x, y, button, cameraCoordinate))
 
     return true

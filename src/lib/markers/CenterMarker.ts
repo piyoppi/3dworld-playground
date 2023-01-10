@@ -7,9 +7,9 @@ import type { MouseControlHandles } from "../mouse/MouseControlHandles"
 import type { RenderingObjectBuilder } from '../RenderingObjectBuilder'
 import type { RGBColor } from "../helpers/color"
 import type { Renderer } from "../Renderer"
-import type { Marker, MarkerRenderable } from "./Marker"
+import type { SingleMarker, MarkerRenderable } from "./Marker"
 
-export class CenterMarker implements Marker, MarkerRenderable {
+export class CenterMarker implements SingleMarker, MarkerRenderable {
   #parentCoordinate: Coordinate = new Coordinate()
   #markerCoordinate = new Coordinate()
   #handledColiders: HandledColiders

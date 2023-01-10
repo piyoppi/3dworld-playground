@@ -64,10 +64,6 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
 
     this.registerThreeItem(coordinate, mesh)
 
-    // coordinate.setSetChildCallback((parent, child) => this.coordinateSetChildCallbackHandler(parent, child))
-    // coordinate.setRemoveChildCallback((parent, child) => this.coordinateRemoveChildCallbackHandler(parent, child))
-    // coordinate.setUpdateCallback(() => syncCoordinate(coordinate, mesh))
-
     syncCoordinate(coordinate, mesh)
 
     this.#mapCoordinateIdToRenderingObject.set(coordinate.uuid, renderingObject)

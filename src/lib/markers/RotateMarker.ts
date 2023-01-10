@@ -1,7 +1,7 @@
 import { PlaneColider } from "../Colider.js"
 import { Coordinate } from "../Coordinate.js"
 import { HandledColiders } from "./HandledColiders.js"
-import type { Marker, MarkerRenderable } from "./Marker"
+import type { SingleMarker, MarkerRenderable } from "./Marker"
 import type { MouseControllable } from "../mouse/MouseControllable.js"
 import type { MouseControlHandles } from "../mouse/MouseControlHandles"
 import type { Raycaster } from "../Raycaster.js"
@@ -11,7 +11,7 @@ import type { Renderer } from "../Renderer.js"
 import { VectorArray3, Vec3 } from "../Matrix.js"
 import { RenderingObject } from "../RenderingObject.js"
 
-export class RotateMarker implements Marker, MarkerRenderable {
+export class RotateMarker implements SingleMarker, MarkerRenderable {
   #parentCoordinate = new Coordinate()
   #markerCoordinate = new Coordinate()
   #handledColiders = new HandledColiders()

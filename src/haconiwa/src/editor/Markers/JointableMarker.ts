@@ -1,87 +1,47 @@
 import type { LineItem, LineItemConnection } from "../../../../lib/LineItem"
 import type { Raycaster } from "../../../../lib/Raycaster"
-import { CenterMarker } from "../../../../lib/markers/CenterMarker.js"
 import { PlaneMoveHandler } from "../../../../lib/mouse/handlers/PlaneMoveHandler.js"
 import { JointHandler } from "../../../../lib/mouse/handlers/JointHandler.js"
 import { CursorSnapColiderModifier } from "../../../../lib/mouse/handlers/cursorModifiers/CursorSnapColiderModifier.js"
 import type { ColiderItemMap } from "../../../../lib/ColiderItemMap"
 import { Coordinate } from "../../../../lib/Coordinate"
 import { VectorArray3 } from "../../../../lib/Matrix"
-import { RGBColor } from "../../../../lib/helpers/color"
-import { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder"
-import { Renderer } from "../../../../lib/Renderer"
-import { MouseControllableCallbackFunction } from "../../../../lib/mouse/MouseControllable"
+import { SingleMarker } from "../../../../lib/markers/Marker"
 
-export class JointableMarker {
-  #marker = new CenterMarker(0.5)
-  #jointHandler: JointHandler
-  #moveHandler: PlaneMoveHandler
-  #connection: LineItemConnection
+export function markerJointable(
+  marker: SingleMarker, 
+  handler: PlaneMoveHandler,
+  connection: LineItemConnection,
+  lineItem: LineItem,
+  markerRaycaster: Raycaster,
+  coliderConnectionMap: ColiderItemMap<LineItemConnection>
+) {
+  marker.setParentCoordinate(connection.edge.coordinate)
 
-  constructor(
-    connection: LineItemConnection,
-    lineItem: LineItem,
-    markerRaycaster: Raycaster,
-    planeRaycaster: Raycaster,
-    coliderConnectionMap: ColiderItemMap<LineItemConnection>
-  ) {
-    this.#marker.setParentCoordinate(connection.edge.coordinate)
-    const snapModifier = new CursorSnapColiderModifier(markerRaycaster, this.#marker.coliders)
-    this.#connection = connection
-    this.#moveHandler = new PlaneMoveHandler(this.#marker.parentCoordinate, planeRaycaster, markerRaycaster)
-    this.#moveHandler.setApplyer((coordinate: Coordinate, position: VectorArray3) => {
-      lineItem.connections.forEach(childConnection => {
-        if (childConnection !== connection) {
-          childConnection.edge.updateCoordinate()
-        } else {
-          childConnection.edge.updateCoordinate(position)
-        }
-
-        childConnection.connections.forEach(connection => connection.edge.updateCoordinate())
-      })
-    })
-    this.#jointHandler = new JointHandler(connection, markerRaycaster, coliderConnectionMap)
-
-    this.#jointHandler.setEndedCallback(() => {
-      if (connection.connections.length > 0) {
-        this.#moveHandler.clearCursorModifier()
+  handler.setApplyer((coordinate: Coordinate, position: VectorArray3) => {
+    lineItem.connections.forEach(childConnection => {
+      if (childConnection !== connection) {
+        childConnection.edge.updateCoordinate()
+      } else {
+        childConnection.edge.updateCoordinate(position)
       }
+
+      childConnection.connections.forEach(connection => connection.edge.updateCoordinate())
     })
+  })
 
-    this.#marker.addHandler(this.#jointHandler)
-    coliderConnectionMap.add(this.#marker.coliders[0], connection)
+  const snapModifier = new CursorSnapColiderModifier(markerRaycaster, marker.coliders)
+  handler.setCursorModifier(snapModifier)
 
-    this.#marker.addHandler(this.#moveHandler)
+  const jointHandler = new JointHandler(connection, markerRaycaster, coliderConnectionMap)
+  jointHandler.setEndedCallback(() => {
+    if (connection.connections.length > 0) {
+      handler.clearCursorModifier()
+    }
+  })
 
-    this.#moveHandler.setCursorModifier(snapModifier)
-    this.#marker.parentCoordinate.position = connection.edge.position
-  }
+  marker.addHandler(jointHandler)
+  coliderConnectionMap.add(marker.coliders[0], connection)
 
-  setIgnoredConnection(connection: LineItemConnection) {
-    this.#jointHandler.addIgnoredConnection(connection)
-  }
-
-  attachRenderingObject<T>(color: RGBColor, renderingObjectBuilder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
-    this.#marker.attachRenderingObject<T>(color, renderingObjectBuilder, renderer)
-  }
-
-  setUpdatedCoordinateCallback(fn: MouseControllableCallbackFunction) {
-    this.#marker.parentCoordinate.setUpdateCallback(fn)
-  }
-
-  get moveHandler() {
-    return this.#moveHandler
-  }
-
-  get jointHandler() {
-    return this.#jointHandler
-  }
-
-  get marker() {
-    return this.#marker
-  }
-
-  get connection() {
-    return this.#connection
-  }
+  return jointHandler
 }

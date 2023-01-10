@@ -1,7 +1,7 @@
 import type { VectorArray3 } from "../../../Matrix"
 import { CursorModifier } from './CursorModifier.js'
 
-export class CursorGridModifier implements CursorGridModifier {
+export class CursorGridModifier implements CursorModifier {
   #currentPosition: VectorArray3
   #resolution: number
   #updated: boolean

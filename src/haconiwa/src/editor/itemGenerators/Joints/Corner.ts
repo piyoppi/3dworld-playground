@@ -65,6 +65,9 @@ export class Corner<T extends RenderingObject> implements Joint<T> {
 
     this.removeCornerRenderingItem(renderer)
 
+    const cornerRenderingObj = this.makeCornerRenderingObject(builder)
+    renderer.addItem(this.#coordinate, cornerRenderingObj)
+
     if (this.#original) {
       if (!this.#fragmentRenderingObject) {
         const renderingObj = this.#original.clone() as T
@@ -82,9 +85,6 @@ export class Corner<T extends RenderingObject> implements Joint<T> {
         this.#fragmentCoordinate.resetMirror()
       }
     }
-
-    const cornerRenderingObj = this.makeCornerRenderingObject(builder)
-    renderer.addItem(this.#coordinate, cornerRenderingObj)
   }
 
   dispose(renderer: Renderer<T>) {
