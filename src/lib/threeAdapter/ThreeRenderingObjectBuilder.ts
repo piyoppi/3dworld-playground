@@ -73,6 +73,42 @@ export class ThreeRenderingObjectBuilder implements RenderingObjectBuilder<Three
     return new ThreeRenderingObject(new ThreePrimitiveRenderingObject(geometry, material))
   }
 
+  makeAnnulus(innerRadius: number, outerRadius: number, color: RGBColor) {
+    const segments = 30
+    const angleStep = 2 * Math.PI / segments
+
+    const points1: VectorArray3[] = []
+
+    for(let i = 0; i < segments; i++) {
+      const angle = i * angleStep
+      const pointOuter = [outerRadius * Math.cos(angle), outerRadius * Math.sin(angle), 0] as VectorArray3
+      const pointInner = [innerRadius * Math.cos(angle + angleStep / 2), innerRadius * Math.sin(angle + angleStep / 2), 0] as VectorArray3
+
+      points1.push(pointOuter)
+      points1.push(pointOuter)
+      points1.push(pointInner)
+    }
+
+    points1.push(points1.splice(0, 1)[0])
+
+    const points2: VectorArray3[] = []
+
+    for(let i = 0; i < segments; i++) {
+      const angle = i * angleStep
+      const pointOuter = [outerRadius * Math.cos(angle), outerRadius * Math.sin(angle), 0] as VectorArray3
+      const pointInner = [innerRadius * Math.cos(angle + angleStep / 2), innerRadius * Math.sin(angle + angleStep / 2), 0] as VectorArray3
+
+      points2.push(pointOuter)
+      points2.push(pointInner)
+      if (i === 0) points2.push(pointInner)
+      points2.push(pointInner)
+    }
+
+    points2[2] = points2.splice(-1, 1)[0]
+
+    return this.makePolygones([...points1, ...points2], color)
+  }
+
   makePolygones(points: VectorArray3[], color: RGBColor) {
     const geometry = new BufferGeometry()
     geometry.setAttribute('position', new BufferAttribute(new Float32Array(points.flat()), 3))

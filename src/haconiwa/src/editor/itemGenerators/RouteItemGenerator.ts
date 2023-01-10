@@ -23,6 +23,7 @@ import { JointFactory } from "./Joints/JointFactory.js"
 import { HaconiwaItemGeneratorBase } from "./HaconiwaItemGeneratorBase.js"
 import { PlaneMoveHandler } from "../../../../lib/mouse/handlers/PlaneMoveHandler.js"
 import { CenterMarker } from "../../../../lib/markers/CenterMarker.js"
+import { makeCoordinateDirectionalMover } from "../../../../lib/markers/generators/CoordinateDirectionalMover.js"
 
 export class RouteItemGenerator<T extends RenderingObject>
   extends HaconiwaItemGeneratorBase<T>
@@ -93,6 +94,7 @@ export class RouteItemGenerator<T extends RenderingObject>
     const item = new LineItem(line)
 
     const jointableMarkers = item.connections.map(connection => {
+      //const markers = makeCoordinateDirectionalMover(connection.edge.coordinate, this.#renderingObjectBuilder, this.#renderer)
       const marker = new CenterMarker(0.5)
       const handler = new PlaneMoveHandler(connection.edge.coordinate, this.#planeRaycaster, this.#markerRaycaster)
       marker.addHandler(handler)

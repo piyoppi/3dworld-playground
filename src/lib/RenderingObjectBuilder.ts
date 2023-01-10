@@ -7,5 +7,6 @@ export interface RenderingObjectBuilder<T> {
   makeSphere: (radius: number, color: RGBColor) => T
   makePlane: (width: number, height: number, color: RGBColor) => T
   makeCircle: (radius: number, angle: number, angleOffset: number, color: RGBColor) => T
+  makeAnnulus: (innerRadius: number, outerRadius: number, color: RGBColor) => T
   makePolygones: (points: VectorArray3[], color: RGBColor) => T
 }
