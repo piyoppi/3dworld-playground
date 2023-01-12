@@ -7,7 +7,7 @@ import type { Raycaster } from "../../Raycaster"
 import { RenderingObject } from "../../RenderingObject.js"
 
 export function makeCoordinateRotator<T extends RenderingObject>(markerRaycaster: Raycaster, parentCoordinate: Coordinate, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>, startingHookFunction: (() => boolean) | null = null) {
-  const xyzRotationMarker = new CoordinateRotationMarker(2)
+  const xyzRotationMarker = new CoordinateRotationMarker(2, 1.5)
   const xyzRotationHandlers = [
     new RotateHandler(parentCoordinate, markerRaycaster, [1, 0, 0], xyzRotationMarker.coliders[0]),
     new RotateHandler(parentCoordinate, markerRaycaster, [0, 1, 0], xyzRotationMarker.coliders[1]),

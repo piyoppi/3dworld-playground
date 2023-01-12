@@ -21,9 +21,9 @@ export class RotateMarker implements SingleMarker, MarkerRenderable {
   #planePosition: VectorArray3
   #planeNorm: VectorArray3
 
-  constructor(outerRadius: number, planePosition: VectorArray3, planeNorm: VectorArray3) {
+  constructor(outerRadius: number, innerRadius: number, planePosition: VectorArray3, planeNorm: VectorArray3) {
     this.#outerRadius = outerRadius
-    this.#innerRadius = 1
+    this.#innerRadius = innerRadius
     this.#planePosition = planePosition
     this.#planeNorm = planeNorm
     this.#markerCoordinate.setDirectionZAxis(planeNorm, planePosition)
@@ -73,7 +73,6 @@ export class RotateMarker implements SingleMarker, MarkerRenderable {
   }
 
   attachRenderingObject<T extends RenderingObject>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
-    //const circleMesh = builder.makeCircle(this.#outerRadius, Math.PI * 2, 0, color)
     const circleMesh = builder.makeAnnulus(this.#innerRadius, this.#outerRadius, color)
     circleMesh.material.setSide('both')
     renderer.addItem(this.#markerCoordinate, circleMesh)

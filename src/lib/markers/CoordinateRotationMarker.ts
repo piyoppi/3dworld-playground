@@ -13,10 +13,10 @@ export class CoordinateRotationMarker implements Marker, MarkerRenderable {
   #xzPlaneMarker: RotateMarker
   #xyPlaneMarker: RotateMarker
 
-  constructor(radius: number) {
-    this.#yzPlaneMarker = new RotateMarker(radius, [0, 0, 0], [1, 0, 0])
-    this.#xzPlaneMarker = new RotateMarker(radius, [0, 0, 0], [0, 1, 0])
-    this.#xyPlaneMarker = new RotateMarker(radius, [0, 0, 0], [0, 0, 1])
+  constructor(outerRadius: number, innerRadius: number) {
+    this.#yzPlaneMarker = new RotateMarker(outerRadius, innerRadius, [0, 0, 0], [1, 0, 0])
+    this.#xzPlaneMarker = new RotateMarker(outerRadius, innerRadius, [0, 0, 0], [0, 1, 0])
+    this.#xyPlaneMarker = new RotateMarker(outerRadius, innerRadius, [0, 0, 0], [0, 0, 1])
   }
 
   get markerCoordinates() {
