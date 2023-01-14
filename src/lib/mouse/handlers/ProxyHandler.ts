@@ -1,4 +1,4 @@
-import type { MouseButton, MouseControllable, MouseControllableCallbackFunction } from "../../mouse/MouseControllable"
+import type { MouseButton, MouseControllable, MouseControllableCallbackFunction, WindowCursor } from "../../mouse/MouseControllable"
 import { CallbackFunctions } from "../../CallbackFunctions.js"
 import type { Coordinate } from "../../Coordinate.js"
 import type { Raycaster } from "../../Raycaster"
@@ -56,7 +56,7 @@ export class ProxyHandler implements MouseControllable {
     this.#endingCallbacks.remove(func)
   }
 
-  start(cursorX: number, cursorY: number, _button: MouseButton, cameraCoordinate: Coordinate) {
+  start(_cursor: WindowCursor, _button: MouseButton, _cameraCoordinate: Coordinate) {
     if (this.#startingCallbacks.call().some(val => val === false)) return
     if (!this.#targetColiders.find(colider => colider.uuid === this.#raycaster.colidedDetails[0].colider.uuid)) return
 
@@ -65,7 +65,7 @@ export class ProxyHandler implements MouseControllable {
     this.#startedCallbacks.call()
   }
 
-  move(cursorX: number, cursorY: number) {
+  move(_cursor: WindowCursor) {
     if (this.#raycaster.colidedDetails.length === 0) return
 
     this.#movingCallbacks.call()

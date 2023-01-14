@@ -1,4 +1,4 @@
-import type { MouseButton, MouseControllable, MouseControllableCallbackFunction } from "../../mouse/MouseControllable.js"
+import type { MouseButton, MouseControllable, MouseControllableCallbackFunction, WindowCursor } from "../../mouse/MouseControllable.js"
 import type { CursorModifier } from "./cursorModifiers/CursorModifier.js"
 import type { Coordinate } from "../../Coordinate"
 import { Vec3, VectorArray3 } from "../../Matrix.js"
@@ -52,23 +52,23 @@ export class DirectionalMoveHandler implements MouseControllable {
     this.#cursorModifier = cursorModifier
   }
 
-  start(cursorX: number, cursorY: number, _button: MouseButton, cameraCoordinate: Coordinate) {
+  start({screenX, screenY}: WindowCursor, _button: MouseButton, cameraCoordinate: Coordinate) {
     if (this.#startingCallbacks.call().some(val => val === false)) return
     if (this.#cursorTrackDifference.isStart) return
 
     this.#cursorModifier.reset(this.manipulateCoordinate.position)
-    this.#cursorTrackDifference.start(cursorX, cursorY)
+    this.#cursorTrackDifference.start(screenX, screenY)
     this.#cursorDirectionConverter.calcTransformMatrix(this.manipulateCoordinate, cameraCoordinate)
 
     this.#startedCallbacks.call()
   }
 
-  move(cursorX: number, cursorY: number) {
+  move({screenX, screenY}: WindowCursor) {
     if (!this.#cursorTrackDifference.isStart) return
 
     const directionInWorld = Mat3.mulVec3(Mat4.convertToDirectionalTransformMatrix(this.manipulateCoordinate.getTransformMatrixToWorld()), this.#direction)
 
-    const mouseDelta = this.#cursorTrackDifference.calculate(cursorX, cursorY)
+    const mouseDelta = this.#cursorTrackDifference.calculate(screenX, screenY)
     const mouseDeltaInItemCoordinate = this.#cursorDirectionConverter.convert(mouseDelta)
     const len = Vec3.dotprod(mouseDeltaInItemCoordinate, directionInWorld)
     const scale = len * this.#scale

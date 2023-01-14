@@ -3,6 +3,8 @@ import type { MouseControllable, MouseButton, MouseControllableCallbackFunction 
 import type { Camera } from "../Camera"
 import { convertButtonNumberToMouseButtonsType } from "./ConvertMouseButtonIdToMouseButtonType.js"
 import { Raycasters } from "../Raycasters.js"
+import { getNormalizedScreenPosition } from "./NormalizedScreenPosition.js"
+import { VectorArray2 } from "../Matrix"
 
 export type ControlHandle = {
   colider: Colider,
@@ -26,12 +28,14 @@ export class MouseControlHandles {
   #beforeMouseDownCallbacks: Array<MouseDownCallbackFunction> = []
   #beforeMouseMoveCallbacks: Array<MouseMoveCallbackFunction> = []
   #enabled = true
+  #windowSize: VectorArray2
 
-  constructor(camera: Camera, raycasters: Raycasters) {
+  constructor(camera: Camera, raycasters: Raycasters, windowWidth: number, windowHeight: number) {
     this.#raycasters = raycasters
     this.#handleItems = []
     this.#handlingItems = []
     this.#camera = camera
+    this.#windowSize = [windowWidth, windowHeight]
   }
 
   get handling() {
@@ -83,6 +87,9 @@ export class MouseControlHandles {
     if (!this.#enabled) return
 
     const mouseButton = convertButtonNumberToMouseButtonsType(button)
+    const normalized = getNormalizedScreenPosition([screenX, screenY], this.#windowSize)
+    const normalizedX = normalized[0]
+    const normalizedY = normalized[1]
 
     this.#beforeMouseDownCallbacks.forEach(func => func(screenX, screenY, mouseButton))
 
@@ -90,7 +97,7 @@ export class MouseControlHandles {
 
     for (const handledItem of colidedHandleItems) {
       if (!handledItem.controlHandle.handled.isStart) {
-        const skip = handledItem.controlHandle.handled.start(screenX, screenY, mouseButton, this.#camera.coordinate)
+        const skip = handledItem.controlHandle.handled.start({screenX, screenY, normalizedX, normalizedY}, mouseButton, this.#camera.coordinate)
 
         if (skip) break
       }
@@ -99,10 +106,13 @@ export class MouseControlHandles {
 
   move(screenX: number, screenY: number, button: number) {
     const mouseButton = convertButtonNumberToMouseButtonsType(button)
+    const normalized = getNormalizedScreenPosition([screenX, screenY], this.#windowSize)
+    const normalizedX = normalized[0]
+    const normalizedY = normalized[1]
 
     this.#beforeMouseMoveCallbacks.forEach(func => func(screenX, screenY, mouseButton))
 
-    this.#handlingItems.forEach(handledItem => handledItem.controlHandle.handled.move(screenX, screenY, mouseButton, this.#camera.coordinate))
+    this.#handlingItems.forEach(handledItem => handledItem.controlHandle.handled.move({screenX, screenY, normalizedX, normalizedY}, mouseButton, this.#camera.coordinate))
   }
 
   end() {

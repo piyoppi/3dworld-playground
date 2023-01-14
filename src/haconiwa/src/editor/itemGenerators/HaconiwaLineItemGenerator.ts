@@ -13,7 +13,7 @@ import type {
 import { Coordinate } from "../../../../lib/Coordinate.js"
 import { LineItemGenerator } from "../../../../lib/itemGenerators/lineItemGenerator/LineItemGenerator.js"
 import type { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder.js"
-import { MouseButton, MouseControllableCallbackFunction } from "../../../../lib/mouse/MouseControllable.js"
+import { MouseButton, MouseControllableCallbackFunction, WindowCursor } from "../../../../lib/mouse/MouseControllable.js"
 import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
 import type { ColiderItemMap } from "../../../../lib/ColiderItemMap.js"
 import { makeConnectionMarker } from './Helpers/MakeConnectionMarker.js'
@@ -66,7 +66,7 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject>
     this.#startedCallbacks.remove(func)
   }
 
-  start(x: number, y: number, button: MouseButton, cameraCoordinate: Coordinate) {
+  start(cursor: WindowCursor, button: MouseButton, cameraCoordinate: Coordinate) {
     if (!this.original) throw new Error('Item and RenderingObject is not set.')
     if (!this.#planeRaycaster.hasColided || !this.#coliderConnectionMap || this.#isStarted) return
 
@@ -100,7 +100,7 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject>
 
     this.#startedCallbacks.call()
 
-    markers[1]?.handlers.forEach(handler => handler.start(x, y, button, cameraCoordinate))
+    markers[1]?.handlers.forEach(handler => handler.start(cursor, button, cameraCoordinate))
 
     return true
   }

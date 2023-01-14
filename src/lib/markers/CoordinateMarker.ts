@@ -1,6 +1,6 @@
 import { Coordinate } from "../Coordinate.js"
-import { MouseControllable } from "../mouse/MouseControllable.js"
-import { Raycaster } from "../Raycaster.js"
+import type { Raycaster } from "../Raycaster.js"
+import type { MouseControllable } from "../mouse/MouseControllable"
 import type { MouseControlHandles } from "../mouse/MouseControlHandles"
 import type { RenderingObjectBuilder } from '../RenderingObjectBuilder'
 import type { Renderer } from "../Renderer"

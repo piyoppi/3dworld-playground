@@ -1,9 +1,8 @@
 import { InfiniteColider } from './Colider.js'
-import { LookAtCameraHandler } from './LookAtCameraHandler.js'
+import { LookAtCameraHandler } from './mouse/handlers/LookAtCameraHandler.js'
 import type { Camera } from './Camera'
 import { Raycaster } from './Raycaster.js'
 import { MouseControlHandles } from './mouse/MouseControlHandles.js'
-import { Renderer } from './Renderer.js'
 
 export class CameraController {
   #cameraHandler = new LookAtCameraHandler()

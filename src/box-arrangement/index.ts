@@ -1,4 +1,4 @@
-import { LookAtCameraHandler } from '../lib/LookAtCameraHandler.js'
+import { LookAtCamera } from '../lib/LookAtCamera.js'
 import { MouseCapturer } from '../lib/mouse/MouseCapturer.js'
 import { ThreeFactory as Factory } from '../lib/threeAdapter/ThreeFactory.js'
 import { Coordinate } from '../lib/Coordinate.js'
@@ -9,10 +9,9 @@ import { DirectionalMoveHandler } from '../lib/mouse/handlers/DirectionalMoveHan
 import { MouseControlHandles } from '../lib/mouse/MouseControlHandles.js'
 import { CameraKeyboardHandler } from '../lib/CameraKeyboardHandler.js'
 import { BoxColider } from '../lib/Colider.js'
-import { convertButtonNumberToMouseButtonsType } from "../lib/mouse/ConvertMouseButtonIdToMouseButtonType.js"
 import { Raycasters } from '../lib/Raycasters.js'
 
-const lookAtCameraHandler = new LookAtCameraHandler()
+const lookAtCameraHandler = new LookAtCamera()
 const cameraKeyBoardHandler = new CameraKeyboardHandler()
 cameraKeyBoardHandler.setLookAtCameraHandler(lookAtCameraHandler)
 cameraKeyBoardHandler.capture()
@@ -29,7 +28,7 @@ const raycaster = new Raycaster(renderer.camera)
 const axesRaycaster = new Raycaster(renderer.camera)
 const raycasters = new Raycasters()
 raycasters.add(axesRaycaster)
-const mouseInteractionHandler = new MouseControlHandles(renderer.camera, raycasters)
+const mouseInteractionHandler = new MouseControlHandles(renderer.camera, raycasters, window.innerWidth, window.innerHeight)
 
 const lightCoordinate = new Coordinate()
 lightCoordinate.y = 1
@@ -94,16 +93,14 @@ renderer.mount()
 
 window.addEventListener('resize', () => renderer.resize(window.innerWidth, window.innerHeight))
 window.addEventListener('mousedown', e => {
-  const button = convertButtonNumberToMouseButtonsType(e.button)
-  lookAtCameraHandler.start(e.screenX, e.screenY, button, renderer.camera.coordinate)
+  lookAtCameraHandler.start(e.screenX, e.screenY)
   captureMouseClicked()
   mouseInteractionHandler.start(e.screenX, e.screenY, e.button)
 })
 window.addEventListener('mousemove', e => {
-  const button = convertButtonNumberToMouseButtonsType(e.button)
   mouseInteractionHandler.move(e.screenX, e.screenY, e.button)
   lookAtCameraHandler.isLocked = mouseInteractionHandler.handling
-  lookAtCameraHandler.move(e.screenX, e.screenY, button, renderer.camera.coordinate)
+  lookAtCameraHandler.move(e.screenX, e.screenY)
 })
 window.addEventListener('wheel', e => {
   lookAtCameraHandler.addDistance(e.deltaY * 0.001)

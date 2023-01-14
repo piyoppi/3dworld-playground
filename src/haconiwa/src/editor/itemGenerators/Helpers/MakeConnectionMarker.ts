@@ -1,5 +1,5 @@
 import { CenterMarker } from "../../../../../lib/markers/CenterMarker.js"
-import { PlaneMoveHandler } from "../../../../../lib/mouse/handlers/PlaneMoveHandler.js"
+import { RaycastMoveHandler } from "../../../../../lib/mouse/handlers/RaycastMoveHandler.js"
 import { JointHandler } from "../../../../../lib/mouse/handlers/JointHandler.js"
 import { CursorSnapColiderModifier } from "../../../../../lib/mouse/handlers/cursorModifiers/CursorSnapColiderModifier.js"
 import type { LineItem, LineItemConnection } from "../../../../../lib/LineItem"
@@ -14,7 +14,7 @@ export function makeConnectionMarker<T>(
 ) {
   return item.connections.map(connection => {
     const marker = new CenterMarker(0.5)
-    const moveHandler = new PlaneMoveHandler(marker.parentCoordinate, planeRaycaster, markerRaycaster, marker.coliders)
+    const moveHandler = new RaycastMoveHandler(marker.parentCoordinate, planeRaycaster, markerRaycaster, marker.coliders)
     const snapModifier = new CursorSnapColiderModifier(markerRaycaster, marker.coliders)
     const jointHandler = new JointHandler(connection, markerRaycaster, coliderConnectionMap)
 

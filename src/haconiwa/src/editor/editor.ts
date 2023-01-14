@@ -53,11 +53,11 @@ export class HaconiwaEditor<T extends RenderingObject> {
 
     this.#markerRaycaster = new Raycaster(this.#renderer.renderer.camera)
 
-    this.#mouseControlHandles = new MouseControlHandles(renderer.renderer.camera, this.#raycasters)
+    this.#mouseControlHandles = new MouseControlHandles(renderer.renderer.camera, this.#raycasters, this.#renderer.width, this.#renderer.height)
     this.#mouseControlHandles.addBeforeMouseDownCallback(() => this.handleMouseEvent())
     this.#mouseControlHandles.addBeforeMouseMoveCallback((_x, _y) => this.#mouseMoveHandler())
 
-    this.#itemGeneratorsMouseControlHandles = new MouseControlHandles(renderer.renderer.camera, this.#raycasters)
+    this.#itemGeneratorsMouseControlHandles = new MouseControlHandles(renderer.renderer.camera, this.#raycasters, this.#renderer.width, this.#renderer.height)
     this.#itemGeneratorsMouseControlHandles.addBeforeMouseDownCallback(() => this.handleMouseEvent())
     this.#itemGeneratorsMouseControlHandles.addBeforeMouseMoveCallback((_x, _y) => this.#mouseMoveHandler())
 

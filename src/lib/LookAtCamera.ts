@@ -1,12 +1,12 @@
 import { Mat4, Mat3, MatrixArray4, VectorArray3, MatrixArray3  } from './Matrix.js'
 import { CursorTrackDifferentialCalculator } from "./mouse/CursorTrackDifferenceCalculator.js"
-import { MouseButton, MouseControllable, MouseControllableCallbackFunction } from "./mouse/MouseControllable.js"
+import { MouseButton, MouseControllableCallbackFunction, WindowCursor } from "./mouse/MouseControllable.js"
 import { Coordinate } from './Coordinate.js'
 import { CallbackFunctions } from './CallbackFunctions.js'
 
 export type LookAtCameraHandlerMode = 'direction' | 'target'
 
-class LookAtRotation implements MouseControllable {
+class LookAtRotation {
   #rotation
   #cursorTrackDifference = new CursorTrackDifferentialCalculator()
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
@@ -51,13 +51,13 @@ class LookAtRotation implements MouseControllable {
     return this.#rotation
   }
 
-  start(cursorX: number, cursorY: number) {
-    this.#cursorTrackDifference.start(cursorX, cursorY)
+  start(screenX: number, screenY: number) {
+    this.#cursorTrackDifference.start(screenX, screenY)
     this.#startedCallbacks.call()
   }
 
-  move(cursorX: number, cursorY: number) {
-    const [dx, dy] = this.#cursorTrackDifference.calculate(cursorX, cursorY)
+  move(screenX: number, screenY: number) {
+    const [dx, dy] = this.#cursorTrackDifference.calculate(screenX, screenY)
 
     if (dx === 0 && dy === 0) return
 
@@ -70,7 +70,7 @@ class LookAtRotation implements MouseControllable {
   }
 }
 
-class LookAtTarget implements MouseControllable {
+class LookAtTarget {
   #target: VectorArray3
   #cursorTrackDifference = new CursorTrackDifferentialCalculator()
   #matrix: MatrixArray4
@@ -122,13 +122,13 @@ class LookAtTarget implements MouseControllable {
     this.#transformDirectionalMat = Mat4.convertToDirectionalTransformMatrix(this.#matrix)
   }
 
-  start(cursorX: number, cursorY: number) {
-    this.#cursorTrackDifference.start(cursorX, cursorY)
+  start(screenX: number, screenY: number) {
+    this.#cursorTrackDifference.start(screenX, screenY)
     this.#startedCallbacks.call()
   }
 
-  move(cursorX: number, cursorY: number) {
-    const [dx, dy] = this.#cursorTrackDifference.calculate(cursorX, cursorY)
+  move(screenX: number, screenY: number) {
+    const [dx, dy] = this.#cursorTrackDifference.calculate(screenX, screenY)
 
     if (dx === 0 && dy === 0) return
 
@@ -143,13 +143,13 @@ class LookAtTarget implements MouseControllable {
   }
 }
 
-export class LookAtCameraHandler implements MouseControllable {
+export class LookAtCamera {
   #distance
   #changed: boolean
   #isLocked: boolean
   #rotationHandler: LookAtRotation
   #targetPositionHandler: LookAtTarget
-  #currentHandler: MouseControllable
+  #currentHandler: LookAtRotation | LookAtTarget
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
 
   constructor() {
@@ -261,19 +261,19 @@ export class LookAtCameraHandler implements MouseControllable {
     return Mat4.lookAt(this.#targetPositionHandler.target, this.#getCameraPosition())
   }
 
-  start(cursorX: number, cursorY: number, button: MouseButton, cameraCoordinate: Coordinate) {
+  start(screenX: number, screenY: number) {
     this.#targetPositionHandler.setMatrix(Mat4.lookAt(this.#targetPositionHandler.target, this.#getCameraPosition()))
-    this.#currentHandler.start(cursorX, cursorY, button, cameraCoordinate)
+    this.#currentHandler.start(screenX, screenY)
     this.#startedCallbacks.call()
   }
 
-  move(cursorX: number, cursorY: number, button: MouseButton, cameraCoordinate: Coordinate) {
+  move(screenX: number, screenY: number) {
     if (this.#isLocked) {
       this.end()
       return
     }
 
-    this.#currentHandler.move(cursorX, cursorY, button, cameraCoordinate)
+    this.#currentHandler.move(screenX, screenY)
 
     this.#changed = true
   }

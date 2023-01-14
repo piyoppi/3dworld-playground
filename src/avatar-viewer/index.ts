@@ -1,4 +1,4 @@
-import { LookAtCameraHandler } from '../lib/LookAtCameraHandler.js'
+import { LookAtCamera } from '../lib/LookAtCamera.js'
 import { loadGlb } from '../lib/threeAdapter/ThreeLoaderHelper.js'
 import { extractItemsFromThreeBones } from '../lib/threeAdapter/ThreeBonePointExtractor.js'
 import { MouseCapturer } from '../lib/mouse/MouseCapturer.js'
@@ -12,7 +12,7 @@ import { DirectionalMarker } from '../lib/markers/DirectionalMarker.js'
 import { ThreeGroup, ThreeRenderingObject } from '../lib/threeAdapter/ThreeRenderingObject.js'
 import { convertButtonNumberToMouseButtonsType } from '../lib/mouse/ConvertMouseButtonIdToMouseButtonType.js'
 
-const lookAtCameraHandler = new LookAtCameraHandler()
+const lookAtCameraHandler = new LookAtCamera()
 const mouseHandler = new MouseCapturer(window.innerWidth, window.innerHeight)
 const factory = new Factory()
 const renderer = factory.makeRenderer({fov: 100, aspect: window.innerWidth / window.innerHeight, near: 0.001, far: 10})
@@ -84,9 +84,9 @@ async function run() {
   window.addEventListener('resize', () => renderer.resize(window.innerWidth, window.innerHeight))
   window.addEventListener('click', e => mouseHandler.setPosition(e.clientX, e.clientY))
   window.addEventListener('mousedown', e => {
-    lookAtCameraHandler.start(e.screenX, e.screenY, convertButtonNumberToMouseButtonsType(e.button), renderer.camera.coordinate)
+    lookAtCameraHandler.start(e.screenX, e.screenY)
   })
-  window.addEventListener('mousemove', e => lookAtCameraHandler.move(e.screenX, e.screenY, convertButtonNumberToMouseButtonsType(e.button), renderer.camera.coordinate))
+  window.addEventListener('mousemove', e => lookAtCameraHandler.move(e.screenX, e.screenY))
   window.addEventListener('wheel', e => lookAtCameraHandler.addDistance(e.deltaY * 0.001))
   window.addEventListener('mouseup', () => lookAtCameraHandler.end())
 }

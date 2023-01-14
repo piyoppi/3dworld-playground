@@ -1,4 +1,4 @@
-import type { MouseButton, MouseControllable, MouseControllableCallbackFunction } from "../../mouse/MouseControllable"
+import type { MouseButton, MouseControllable, MouseControllableCallbackFunction, WindowCursor } from "../../mouse/MouseControllable"
 import { CallbackFunctions } from "../../CallbackFunctions.js"
 import type { Coordinate } from "../../Coordinate.js"
 import type { Raycaster } from "../../Raycaster"
@@ -51,7 +51,7 @@ export class RotateHandler implements MouseControllable {
     this.#startingCallbacks.remove(func)
   }
 
-  start(cursorX: number, cursorY: number, _button: MouseButton, cameraCoordinate: Coordinate) {
+  start(_params: WindowCursor, _button: MouseButton, cameraCoordinate: Coordinate) {
     if (this.#startingCallbacks.call().some(val => val === false)) return
     if (this.#raycaster.colidedDetails[0].colider.uuid !== this.#targetColider.uuid) return
 
@@ -71,7 +71,7 @@ export class RotateHandler implements MouseControllable {
     this.#startedCallbacks.call()
   }
 
-  move(cursorX: number, cursorY: number) {
+  move(_params: WindowCursor) {
     const planeColider = this.#planeColider
     if (!planeColider) return
     if (this.#raycaster.colidedDetails.length === 0) return

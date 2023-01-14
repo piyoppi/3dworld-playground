@@ -1,6 +1,6 @@
 import type { LineItem, LineItemConnection } from "../../../../lib/LineItem"
 import type { Raycaster } from "../../../../lib/Raycaster"
-import { PlaneMoveHandler } from "../../../../lib/mouse/handlers/PlaneMoveHandler.js"
+import { RaycastMoveHandler } from "../../../../lib/mouse/handlers/RaycastMoveHandler.js"
 import { JointHandler } from "../../../../lib/mouse/handlers/JointHandler.js"
 import { CursorSnapColiderModifier } from "../../../../lib/mouse/handlers/cursorModifiers/CursorSnapColiderModifier.js"
 import type { ColiderItemMap } from "../../../../lib/ColiderItemMap"
@@ -10,7 +10,7 @@ import { SingleMarker } from "../../../../lib/markers/Marker"
 
 export function markerJointable(
   marker: SingleMarker, 
-  handler: PlaneMoveHandler,
+  handler: RaycastMoveHandler,
   connection: LineItemConnection,
   lineItem: LineItem,
   markerRaycaster: Raycaster,

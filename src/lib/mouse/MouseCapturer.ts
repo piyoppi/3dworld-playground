@@ -1,8 +1,9 @@
 import type { VectorArray2 } from "../Matrix"
+import { getNormalizedScreenPosition } from "./NormalizedScreenPosition.js"
 
 export class MouseCapturer {
-  #position
-  #renderingAreaSize
+  #position: VectorArray2
+  #renderingAreaSize: VectorArray2
   #updated
 
   constructor(boundingWidth: number, boundingHeight: number) {
@@ -28,10 +29,8 @@ export class MouseCapturer {
 
   getNormalizedPosition(): VectorArray2 {
     this.#updated = false
-    return [
-       (this.#position[0] / this.#renderingAreaSize[0]) * 2 - 1,
-      -(this.#position[1] / this.#renderingAreaSize[1]) * 2 + 1
-    ]
+
+    return getNormalizedScreenPosition(this.#position, this.#renderingAreaSize)
   }
 
   capture() {

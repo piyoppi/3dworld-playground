@@ -1,14 +1,14 @@
-import { LookAtCameraHandler } from "./LookAtCameraHandler"
+import { LookAtCamera } from "./LookAtCamera"
 
 export class CameraKeyboardHandler {
-  #lookAtCameraHandler: LookAtCameraHandler | null
+  #lookAtCamera: LookAtCamera | null
 
   constructor() {
-    this.#lookAtCameraHandler = null 
+    this.#lookAtCamera = null 
   }
 
-  setLookAtCameraHandler(handler: LookAtCameraHandler) {
-    this.#lookAtCameraHandler = handler
+  setLookAtCameraHandler(handler: LookAtCamera) {
+    this.#lookAtCamera = handler
   }
 
   keyDown(keyName: string) {
@@ -20,37 +20,37 @@ export class CameraKeyboardHandler {
   }
 
   private handleLookAtCamera(keyName: string) {
-    if (!this.#lookAtCameraHandler) return
+    if (!this.#lookAtCamera) return
     switch(keyName) {
       case '1':
-        this.#lookAtCameraHandler.setXYRotation(Math.PI / 2.0)
-        this.#lookAtCameraHandler.setYZRotation(0)
+        this.#lookAtCamera.setXYRotation(Math.PI / 2.0)
+        this.#lookAtCamera.setYZRotation(0)
         break
 
       case '2':
-        this.#lookAtCameraHandler.addYZRotation(-Math.PI / 12.0)
+        this.#lookAtCamera.addYZRotation(-Math.PI / 12.0)
         break
 
       case '3':
-        this.#lookAtCameraHandler.setXYRotation(0)
-        this.#lookAtCameraHandler.setYZRotation(0)
+        this.#lookAtCamera.setXYRotation(0)
+        this.#lookAtCamera.setYZRotation(0)
         break
 
       case '4':
-        this.#lookAtCameraHandler.addXYRotation(Math.PI / 12.0)
+        this.#lookAtCamera.addXYRotation(Math.PI / 12.0)
         break
 
       case '6':
-        this.#lookAtCameraHandler.addXYRotation(-Math.PI / 12.0)
+        this.#lookAtCamera.addXYRotation(-Math.PI / 12.0)
         break
 
       case '7':
-        this.#lookAtCameraHandler.setXYRotation(Math.PI / 2.0)
-        this.#lookAtCameraHandler.setYZRotation(Math.PI / 2.0)
+        this.#lookAtCamera.setXYRotation(Math.PI / 2.0)
+        this.#lookAtCamera.setYZRotation(Math.PI / 2.0)
         break
 
       case '8':
-        this.#lookAtCameraHandler.addYZRotation(Math.PI / 12.0)
+        this.#lookAtCamera.addYZRotation(Math.PI / 12.0)
         break
     }
   }

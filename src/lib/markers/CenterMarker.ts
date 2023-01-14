@@ -1,4 +1,4 @@
-import { BallColider, Colider } from "../Colider.js"
+import { BallColider } from "../Colider.js"
 import { Coordinate } from "../Coordinate.js"
 import { MouseControllable } from "../mouse/MouseControllable.js"
 import { Raycaster } from "../Raycaster.js"

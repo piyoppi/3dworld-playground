@@ -7,7 +7,7 @@ import {
   HaconiwaItemGeneratorClonedItem,
 } from './HaconiwaItemGenerator'
 import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
-import { MouseButton, MouseControllableCallbackFunction } from "../../../../lib/mouse/MouseControllable.js"
+import { MouseButton, MouseControllableCallbackFunction, WindowCursor } from "../../../../lib/mouse/MouseControllable.js"
 import type { Raycaster } from "../../../../lib/Raycaster"
 import type { Renderer } from "../../../../lib/Renderer"
 import { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder.js"
@@ -17,6 +17,8 @@ import { ProxyHandler } from "../../../../lib/mouse/handlers/ProxyHandler.js"
 import { Marker, MarkerRenderable } from "../../../../lib/markers/Marker.js"
 import { makeCoordinateMover } from "../../../../lib/markers/generators/CoordinateMover.js"
 import { HaconiwaItemGeneratorBase } from "./HaconiwaItemGeneratorBase.js"
+import { PlaneMoveHandler } from "../../../../lib/mouse/handlers/PlaneMoveHandler.js"
+import { PlaneMarker } from "../../../../lib/markers/PlaneMarker.js"
 
 export class MeshItemGenerator<T extends RenderingObject>
   extends HaconiwaItemGeneratorBase<T>
@@ -67,7 +69,7 @@ export class MeshItemGenerator<T extends RenderingObject>
     this.original = original
   }
 
-  start(x: number, y: number, button: MouseButton, cameraCoordinate: Coordinate) {
+  start(cursor: WindowCursor, button: MouseButton, cameraCoordinate: Coordinate) {
     if (!this.#planeRaycaster.hasColided || this.#isStarted) {
       return false
     }
