@@ -18,7 +18,7 @@ export class PlaneMarker implements SingleMarker, MarkerRenderable {
   #handledColiders = new HandledColiders()
   #colider: PlaneColider
 
-  constructor(size: number, norm: VectorArray3, parentCoordinate: Coordinate) {
+  constructor(size: number, norm: VectorArray3, axis: VectorArray3, parentCoordinate: Coordinate) {
     this.#size = size
 
     this.#parentCoordinate = parentCoordinate
@@ -29,12 +29,12 @@ export class PlaneMarker implements SingleMarker, MarkerRenderable {
     this.#colider.setEdgeEvaluator((dist, ray) => {
       const vec = Vec3.subtract(this.#parentCoordinate.position, Vec3.add(ray.position, Vec3.mulScale(ray.direction, dist)))
       const vecLength = Vec3.norm(vec)
-      const angle = Math.acos(Vec3.dotprod(vec, norm) / vecLength)
+      const angle = Math.acos(Vec3.dotprod(vec, axis) / vecLength)
 
-      const x = vecLength * Math.cos(angle)
-      const y = vecLength * Math.sin(angle)
+      const x = Math.abs(vecLength * Math.cos(angle))
+      const y = Math.abs(vecLength * Math.sin(angle))
 
-      return x <= size && y <= size
+      return x <= size / 2 && y <= size / 2
     })
 
     this.#parentCoordinate.addChild(this.#markerCoordinate)

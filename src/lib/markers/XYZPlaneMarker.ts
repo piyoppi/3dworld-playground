@@ -14,9 +14,9 @@ export class XYZPlaneMarker implements Marker, MarkerRenderable {
   #xyPlaneMarker: PlaneMarker
 
   constructor(size: number, parentCoordinate: Coordinate) {
-    this.#yzPlaneMarker = new PlaneMarker(size, [1, 0, 0], parentCoordinate)
-    this.#zxPlaneMarker = new PlaneMarker(size, [0, 1, 0], parentCoordinate)
-    this.#xyPlaneMarker = new PlaneMarker(size, [0, 0, 1], parentCoordinate)
+    this.#yzPlaneMarker = new PlaneMarker(size, [1, 0, 0], [0, 1, 0], parentCoordinate)
+    this.#zxPlaneMarker = new PlaneMarker(size, [0, 1, 0], [0, 0, 1], parentCoordinate)
+    this.#xyPlaneMarker = new PlaneMarker(size, [0, 0, 1], [1, 0, 0], parentCoordinate)
   }
 
   get coliders() {
