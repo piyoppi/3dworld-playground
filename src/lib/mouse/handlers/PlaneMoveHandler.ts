@@ -1,7 +1,6 @@
 import type { MouseButton, MouseControllable, MouseControllableCallbackFunction, WindowCursor } from "../../mouse/MouseControllable.js"
-import type { CursorModifier } from "./cursorModifiers/CursorModifier.js"
 import type { Coordinate } from "../../Coordinate"
-import type { VectorArray3 } from "../../Matrix"
+import { Vec3, VectorArray3 } from "../../Matrix.js"
 import type { Camera } from "../../Camera"
 import { CallbackFunctions } from "../../CallbackFunctions.js"
 import { Raycaster } from "../../Raycaster.js"
@@ -12,14 +11,13 @@ type StartingCallbackFunction = () => boolean
 export class PlaneMoveHandler implements MouseControllable {
   manipulateCoordinate: Coordinate
   #isStart = false
-  #direction: VectorArray3
   #startingCallbacks = new CallbackFunctions<StartingCallbackFunction>()
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   #raycaster: Raycaster
+  #offset = [0, 0, 0]
 
-  constructor(manipulateCoordinate: Coordinate, position: VectorArray3, directionInLocal: VectorArray3, camera: Camera) {
+  constructor(manipulateCoordinate: Coordinate, directionInLocal: VectorArray3, camera: Camera) {
     this.manipulateCoordinate = manipulateCoordinate
-    this.#direction = directionInLocal
 
     this.#raycaster = new Raycaster(camera)
     this.#raycaster.addTarget(new PlaneColider(manipulateCoordinate, directionInLocal))
@@ -45,8 +43,13 @@ export class PlaneMoveHandler implements MouseControllable {
     this.#startingCallbacks.remove(func)
   }
 
-  start(_cursor: WindowCursor, _button: MouseButton, _cameraCoordinate: Coordinate) {
+  start({normalizedX, normalizedY}: WindowCursor, _button: MouseButton, _cameraCoordinate: Coordinate) {
     if (this.#startingCallbacks.call().some(val => val === false)) return
+
+    this.#raycaster.check(normalizedX, normalizedY)
+    if (this.#raycaster.colidedDetails.length === 0) return
+
+    this.#offset = Vec3.subtract(this.manipulateCoordinate.position, this.#raycaster.colidedDetails[0].position)
 
     this.#isStart = true
 
@@ -61,9 +64,9 @@ export class PlaneMoveHandler implements MouseControllable {
 
     const position = this.#raycaster.colidedDetails[0].position
 
-    this.manipulateCoordinate.x = position[0]
-    this.manipulateCoordinate.y = position[1]
-    this.manipulateCoordinate.z = position[2]
+    this.manipulateCoordinate.x = position[0] + this.#offset[0]
+    this.manipulateCoordinate.y = position[1] + this.#offset[1]
+    this.manipulateCoordinate.z = position[2] + this.#offset[2]
   }
 
   end() {

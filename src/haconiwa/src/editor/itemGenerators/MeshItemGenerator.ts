@@ -104,7 +104,7 @@ export class MeshItemGenerator<T extends RenderingObject>
 
       const renderingObject = this.makeRenderingObject()
       this.#renderer.addItem(coordinateForRendering, renderingObject)
-      renderingObject.material.setOpacity(0.7)
+      renderingObject.material.setOpacity(0.4)
 
       this.#itemMarker = new BoxMarker(renderingObject.size)
       const itemMarker = this.#itemMarker
