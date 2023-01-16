@@ -24,6 +24,9 @@ import { HaconiwaItemGeneratorBase } from "./HaconiwaItemGeneratorBase.js"
 import { RaycastMoveHandler } from "../../../../lib/mouse/handlers/RaycastMoveHandler.js"
 import { CenterMarker } from "../../../../lib/markers/CenterMarker.js"
 import { makeCoordinateDirectionalMover } from "../../../../lib/markers/generators/CoordinateDirectionalMover.js"
+import { ProxyHandler } from "../../../../lib/mouse/handlers/ProxyHandler.js"
+import { PlaneMoveHandler } from "../../../../lib/mouse/handlers/PlaneMoveHandler.js"
+import { Marker, MarkerRenderable } from "../../../../lib/markers/Marker.js"
 
 export class RouteItemGenerator<T extends RenderingObject>
   extends HaconiwaItemGeneratorBase<T>
@@ -36,6 +39,7 @@ export class RouteItemGenerator<T extends RenderingObject>
   #renderer: Renderer<T>
   #coliderConnectionMap: ColiderItemMap<LineItemConnection> | null = null
   #jointFactory: JointFactory<T>
+  #handlingMarkers: Array<Marker & MarkerRenderable> = []
   private original: HaconiwaItemGeneratorClonedItem<T> | null = null
 
   constructor(
@@ -78,6 +82,16 @@ export class RouteItemGenerator<T extends RenderingObject>
 
   start(cursor: WindowCursor, button: MouseButton, cameraCoordinate: Coordinate) {
     if (!this.#planeRaycaster.hasColided || !this.#coliderConnectionMap || this.#isStarted) return
+
+    if (this.isSelected) {
+      const markerSelected = this.#handlingMarkers.some(handlingMarker => this.#markerRaycaster.colidedColiders.has(...handlingMarker.coliders))
+
+      if (!markerSelected) {
+        this.removeHandlingMarker()
+        this.unselected(this)
+      }
+    }
+
     if (this.generated) return
 
     this.#isStarted = true
@@ -89,17 +103,25 @@ export class RouteItemGenerator<T extends RenderingObject>
     const lineGenerator = new LineSegmentGenerator()
     lineGenerator.setStartPosition(startPosition)
     lineGenerator.setEndPosition(endPosition)
-    const line = lineGenerator.getLine()
-
-    const item = new LineItem(line)
+    const item = new LineItem(lineGenerator.getLine())
 
     const jointableMarkers = item.connections.map(connection => {
-      //const markers = makeCoordinateDirectionalMover(connection.edge.coordinate, this.#renderingObjectBuilder, this.#renderer)
       const marker = new CenterMarker(0.5)
-      const handler = new RaycastMoveHandler(connection.edge.coordinate, this.#planeRaycaster, this.#markerRaycaster)
-      marker.addHandler(handler)
-      const jointableHandler = markerJointable(marker, handler, connection, item, this.#markerRaycaster, coliderConnectionMap)
+      const handler = new PlaneMoveHandler(connection.edge.coordinate, [0, 1, 0], this.#renderer.camera)
+      const proxyHandler = new ProxyHandler(this.#markerRaycaster, marker.coliders)
 
+      proxyHandler.setStartedCallback(() => {
+        const mover = makeCoordinateDirectionalMover(connection.edge.coordinate, this.#renderingObjectBuilder, this.#renderer, () => !handler.isStart)
+        this.registerMarker(mover.marker)
+        this.#handlingMarkers.push(mover.marker)
+
+        this.selected(this)
+      })
+
+      marker.addHandler(handler)
+      marker.addHandler(proxyHandler)
+
+      const jointableHandler = markerJointable(marker, handler, connection, item, this.#markerRaycaster, coliderConnectionMap)
       item.connections.filter(conn => conn !== connection).forEach(conn => jointableHandler.addIgnoredConnection(conn))
 
       marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#renderer)
@@ -220,6 +242,14 @@ export class RouteItemGenerator<T extends RenderingObject>
         )
       )
     coordinate.setDirectionZAxis(direction, position)
+  }
+
+  private removeHandlingMarker() {
+    this.#handlingMarkers.forEach(marker => {
+      this.removeMarker(marker)
+      marker.markerCoordinates.forEach(coord => this.#renderer.removeItem(coord))
+    })
+    this.#handlingMarkers = []
   }
 }
 

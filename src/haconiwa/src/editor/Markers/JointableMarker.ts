@@ -7,10 +7,12 @@ import type { ColiderItemMap } from "../../../../lib/ColiderItemMap"
 import { Coordinate } from "../../../../lib/Coordinate"
 import { VectorArray3 } from "../../../../lib/Matrix"
 import { SingleMarker } from "../../../../lib/markers/Marker"
+import { MouseControllable } from "../../../../lib/mouse/MouseControllable"
+import { PositionChangable } from "../../../../lib/mouse/handlers/PositionChangable"
 
 export function markerJointable(
   marker: SingleMarker, 
-  handler: RaycastMoveHandler,
+  handler: MouseControllable & PositionChangable,
   connection: LineItemConnection,
   lineItem: LineItem,
   markerRaycaster: Raycaster,

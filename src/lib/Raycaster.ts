@@ -36,16 +36,21 @@ export class ColidedDetails {
   }
 }
 
+export class Coliders extends Array<Colider> {
+  has(...targets: Colider[]) {
+    return this.some(item => targets.some(target => item.uuid === target.uuid))
+  }
+}
+
 export class Raycaster {
   #camera: Camera
   #colidedDetails: Array<ColidedDetails>
-  #colidedColiders: Array<Colider>
+  #colidedColiders = new Coliders()
   #targetColiders: Array<Colider>
 
   constructor(camera: Camera) {
     this.#camera = camera
     this.#targetColiders = []
-    this.#colidedColiders = []
     this.#colidedDetails = []
   }
 
@@ -99,7 +104,7 @@ export class Raycaster {
       .filter(prop => prop.distance >= 0)
       .sort((a, b) => a.distance - b.distance)
 
-    this.#colidedColiders = colided.map(item => item.colider)
+    this.#colidedColiders = new Coliders(...colided.map(item => item.colider))
     this.#colidedDetails = colided.map(item => new ColidedDetails(item.colider, item.distance, ray))
 
     return this.#colidedColiders

@@ -6,11 +6,11 @@ import { CallbackFunctions } from "../../CallbackFunctions.js"
 import type { Raycaster } from "../../Raycaster"
 import { VectorArray3 } from "../../Matrix"
 import { Colider } from "../../Colider"
+import type { PositionApplyer, PositionChangable } from "./PositionChangable"
 
-export type RaycastMoveHandlerApplyer = (coordinate: Coordinate, position: VectorArray3) => void
 type StartingCallbackFunction = () => boolean
 
-export class RaycastMoveHandler implements MouseControllable {
+export class RaycastMoveHandler implements MouseControllable, PositionChangable {
   manipulateCoordinate: Coordinate
   #cursorModifier: CursorModifier
   #beforeUpdateCallbacks = new CallbackFunctions<() => void>()
@@ -19,7 +19,7 @@ export class RaycastMoveHandler implements MouseControllable {
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   #raycaster: Raycaster
   #markerRaycaster: Raycaster
-  #applyer: RaycastMoveHandlerApplyer = (coordinate: Coordinate, position: VectorArray3) => coordinate.position = position
+  #applyer: PositionApplyer = (coordinate: Coordinate, position: VectorArray3) => coordinate.position = position
   #isStart = false
   #targetColiders: Colider[]
   #handlingParams = {
@@ -66,7 +66,7 @@ export class RaycastMoveHandler implements MouseControllable {
     this.#cursorModifier = modifier
   }
 
-  setApplyer(applyer: RaycastMoveHandlerApplyer) {
+  setApplyer(applyer: PositionApplyer) {
     this.#applyer = applyer
   }
 

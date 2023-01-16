@@ -22,6 +22,7 @@ export class HaconiwaItemGeneratorBase<T> {
   #unselectedCallbacks = new CallbackFunctions<SelectedCallbackFunction<T>>()
   #generatedItem: HaconiwaWorldItem | null = null
   #uuid = uuidv4()
+  #selected = false
 
   get generatedItem() {
     return this.#generatedItem
@@ -33,6 +34,10 @@ export class HaconiwaItemGeneratorBase<T> {
 
   get uuid() {
     return this.#uuid
+  }
+
+  get isSelected() {
+    return this.#selected
   }
 
   registerOnGeneratedCallback(callback: HaconiwaItemGeneratedCallback<T>) {
@@ -78,10 +83,12 @@ export class HaconiwaItemGeneratorBase<T> {
 
   protected selected(self: HaconiwaItemGenerator<T>) {
     this.#selectedCallbacks.call(self)
+    this.#selected = true
   }
 
   protected unselected(self: HaconiwaItemGenerator<T>) {
     this.#unselectedCallbacks.call(self)
+    this.#selected = false
   }
 
   end() {

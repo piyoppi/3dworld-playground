@@ -58,6 +58,7 @@ export class ProxyHandler implements MouseControllable {
 
   start(_cursor: WindowCursor, _button: MouseButton, _cameraCoordinate: Coordinate) {
     if (this.#startingCallbacks.call().some(val => val === false)) return
+    if (this.#raycaster.colidedDetails.length === 0) return
     if (!this.#targetColiders.find(colider => colider.uuid === this.#raycaster.colidedDetails[0].colider.uuid)) return
 
     this.#isStart = true

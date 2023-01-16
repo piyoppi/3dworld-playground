@@ -69,21 +69,16 @@ export class MeshItemGenerator<T extends RenderingObject>
     this.original = original
   }
 
-  start(cursor: WindowCursor, button: MouseButton, cameraCoordinate: Coordinate) {
+  start() {
     if (!this.#planeRaycaster.hasColided || this.#isStarted) {
       return false
     }
 
     const itemClicked = this.#markerRaycaster.colidedColiders.some(item => item.uuid === this.#itemMarker?.coliders[0].uuid)
-    const myMarkersClicked =
-      this.#handlingMarkers.some(handlingMarker =>
-        this.#markerRaycaster.colidedColiders.some(colidedColider =>
-          handlingMarker.coliders.some(markersColider => colidedColider.uuid === markersColider.uuid)
-        )
-      ) ||
-      itemClicked
 
-    if (this.mounted) {
+    if (this.isSelected) {
+      const myMarkersClicked = this.#handlingMarkers.some(handlingMarker => this.#markerRaycaster.colidedColiders.has(...handlingMarker.coliders)) || itemClicked
+        
       if (!myMarkersClicked) {
         this.removeHandlingMarker()
         this.unselected(this)
