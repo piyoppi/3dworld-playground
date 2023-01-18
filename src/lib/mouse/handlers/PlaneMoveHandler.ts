@@ -21,12 +21,12 @@ export class PlaneMoveHandler implements MouseControllable, PositionChangable {
   #offset: VectorArray3 = [0, 0, 0]
   #applyer: PositionApplyer = (coordinate: Coordinate, position: VectorArray3) => coordinate.position = position
 
-  constructor(manipulateCoordinate: Coordinate, directionInLocal: VectorArray3, camera: Camera) {
+  constructor(manipulateCoordinate: Coordinate, direction: VectorArray3, inLocal: boolean, camera: Camera) {
     this.manipulateCoordinate = manipulateCoordinate
     this.#cursorModifier = new CursorNoneModifier()
 
     this.#raycaster = new Raycaster(camera)
-    this.#raycaster.addTarget(new PlaneColider(manipulateCoordinate, directionInLocal))
+    this.#raycaster.addTarget(new PlaneColider(manipulateCoordinate, direction, inLocal))
   }
 
   get isStart() {

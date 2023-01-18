@@ -107,7 +107,7 @@ export class RouteItemGenerator<T extends RenderingObject>
 
     const jointableMarkers = item.connections.map(connection => {
       const marker = new CenterMarker(0.5)
-      const handler = new PlaneMoveHandler(connection.edge.coordinate, [0, 1, 0], this.#renderer.camera)
+      const handler = new PlaneMoveHandler(connection.edge.coordinate, [0, 1, 0], false, this.#renderer.camera)
       const proxyHandler = new ProxyHandler(this.#markerRaycaster, marker.coliders)
 
       proxyHandler.setStartedCallback(() => {

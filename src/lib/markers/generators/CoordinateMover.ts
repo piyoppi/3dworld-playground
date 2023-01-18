@@ -9,7 +9,7 @@ import { RenderingObject } from "../../RenderingObject.js"
 
 export function makeCoordinateMover<T extends RenderingObject>(planeRaycaster: Raycaster, markerRaycaster: Raycaster, parentCoordinate: Coordinate, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
   const directionalMover = makeCoordinateDirectionalMover(parentCoordinate, builder, renderer)
-  const planeMover = makeCoordinatePlanesMover(parentCoordinate, builder, renderer)
+  const planeMover = makeCoordinatePlanesMover(parentCoordinate, builder, renderer, true)
   const rotator = makeCoordinateRotator(markerRaycaster, parentCoordinate, builder, renderer)
 
   const startingHookFn = () => !planeMover.handlers.some(handler => handler.isStart) &&

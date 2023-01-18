@@ -5,12 +5,12 @@ import type { Renderer } from "../../Renderer"
 import { RenderingObject } from "../../RenderingObject.js"
 import { XYZPlaneMarker } from "../XYZPlaneMarker.js"
 
-export function makeCoordinatePlanesMover<T extends RenderingObject>(parentCoordinate: Coordinate, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>, startingHookFunction: (() => boolean) | null = null) {
+export function makeCoordinatePlanesMover<T extends RenderingObject>(parentCoordinate: Coordinate, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>, inLocal: boolean, startingHookFunction: (() => boolean) | null = null) {
   const marker = new XYZPlaneMarker(1.5, parentCoordinate)
   const handlers = [
-    new PlaneMoveHandler(parentCoordinate, [1, 0, 0], renderer.camera),
-    new PlaneMoveHandler(parentCoordinate, [0, 1, 0], renderer.camera),
-    new PlaneMoveHandler(parentCoordinate, [0, 0, 1], renderer.camera),
+    new PlaneMoveHandler(parentCoordinate, [1, 0, 0], inLocal, renderer.camera),
+    new PlaneMoveHandler(parentCoordinate, [0, 1, 0], inLocal, renderer.camera),
+    new PlaneMoveHandler(parentCoordinate, [0, 0, 1], inLocal, renderer.camera),
   ]
   const startingHookFn = startingHookFunction || (() => !handlers.some(handler => handler.isStart))
 

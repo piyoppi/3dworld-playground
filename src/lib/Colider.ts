@@ -163,11 +163,13 @@ export class PlaneColider extends ColiderBase implements Colider {
   #edgeEvaluator: (distance: number, ray: Ray) => boolean = () => true
   #parentCoordinate: Coordinate
   #norm: VectorArray3
+  #inLocal = false
 
-  constructor(parentCoordinate: Coordinate, norm: VectorArray3) {
+  constructor(parentCoordinate: Coordinate, norm: VectorArray3, inLocal = false) {
     super()
     this.#norm = norm
     this.#parentCoordinate = parentCoordinate
+    this.#inLocal = inLocal
   }
 
   get parentCoordinate() {
@@ -186,8 +188,12 @@ export class PlaneColider extends ColiderBase implements Colider {
     if (!this.enabled) return -1
 
     const position = this.#parentCoordinate.position
-    const transformToTargetItem = this.#parentCoordinate.getTransformMatrixToWorld()
-    const normConverted = Vec3.normalize(Mat3.mulVec3(Mat4.convertToDirectionalTransformMatrix(transformToTargetItem), this.#norm))
+    let normConverted: VectorArray3 = this.#norm
+
+    if (this.#inLocal) {
+      const transformToTargetItem = this.#parentCoordinate.getTransformMatrixToWorld()
+      normConverted = Vec3.normalize(Mat3.mulVec3(Mat4.convertToDirectionalTransformMatrix(transformToTargetItem), this.#norm))
+    }
 
     const parallel = Vec3.dotprod(normConverted, ray.direction)
     if (Math.abs(parallel) < 0.00001) return -1

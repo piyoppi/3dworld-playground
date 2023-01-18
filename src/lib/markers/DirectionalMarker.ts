@@ -18,11 +18,12 @@ export class DirectionalMarker implements SingleMarker, MarkerRenderable {
   #handledColiders: HandledColiders
   #colider: Colider
 
-  constructor(norm: number, radius: number, direction: VectorArray3) {
+  constructor(norm: number, radius: number, direction: VectorArray3, offset: number = 1) {
     this.#norm = norm
     this.#radius = radius
+    const offsetVec = Vec3.mulScale(direction, offset)
 
-    this.#markerCoordinate.setDirectionYAxis(direction, Vec3.mulScale(direction, norm / 2))
+    this.#markerCoordinate.setDirectionYAxis(direction, Vec3.add(Vec3.mulScale(direction, norm / 2), offsetVec))
 
     this.#handledColiders = new HandledColiders()
     this.#colider = new BoxColider(this.#radius, this.#norm, this.#radius, this.#markerCoordinate)
