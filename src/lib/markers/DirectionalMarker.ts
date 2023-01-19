@@ -17,13 +17,15 @@ export class DirectionalMarker implements SingleMarker, MarkerRenderable {
   #markerCoordinate = new Coordinate()
   #handledColiders: HandledColiders
   #colider: Colider
+  #isGlobal = false
+  #offsetVec = [0, 0, 0] as VectorArray3
 
-  constructor(norm: number, radius: number, direction: VectorArray3, offset: number = 1) {
+  constructor(norm: number, radius: number, direction: VectorArray3, offset: number = 0, isGlobal = false) {
     this.#norm = norm
     this.#radius = radius
-    const offsetVec = Vec3.mulScale(direction, offset)
-
-    this.#markerCoordinate.setDirectionYAxis(direction, Vec3.add(Vec3.mulScale(direction, norm / 2), offsetVec))
+    this.#isGlobal = isGlobal
+    this.#offsetVec = Vec3.mulScale(direction, offset)
+    this.#markerCoordinate.setDirectionYAxis(direction, Vec3.add(Vec3.mulScale(direction, norm / 2), this.#offsetVec))
 
     this.#handledColiders = new HandledColiders()
     this.#colider = new BoxColider(this.#radius, this.#norm, this.#radius, this.#markerCoordinate)
@@ -64,7 +66,15 @@ export class DirectionalMarker implements SingleMarker, MarkerRenderable {
 
     this.#parentCoordinate = coordinate
 
-    this.#parentCoordinate.addChild(this.#markerCoordinate)
+    if (this.#isGlobal) {
+      const updateFunc = () => this.#markerCoordinate.position = Vec3.add(this.#parentCoordinate.getGlobalPosition(), this.#offsetVec)
+      this.#parentCoordinate.setUpdateCallback(() => {
+        updateFunc()
+      })
+      updateFunc()
+    } else {
+      this.#parentCoordinate.addChild(this.#markerCoordinate)
+    }
   }
 
   attachRenderingObject<T>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {

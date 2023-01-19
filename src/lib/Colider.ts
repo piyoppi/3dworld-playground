@@ -165,7 +165,7 @@ export class PlaneColider extends ColiderBase implements Colider {
   #norm: VectorArray3
   #inLocal = false
 
-  constructor(parentCoordinate: Coordinate, norm: VectorArray3, inLocal = false) {
+  constructor(parentCoordinate: Coordinate, norm: VectorArray3, inLocal = true) {
     super()
     this.#norm = norm
     this.#parentCoordinate = parentCoordinate

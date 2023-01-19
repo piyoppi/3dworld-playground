@@ -27,6 +27,8 @@ import { makeCoordinateDirectionalMover } from "../../../../lib/markers/generato
 import { ProxyHandler } from "../../../../lib/mouse/handlers/ProxyHandler.js"
 import { PlaneMoveHandler } from "../../../../lib/mouse/handlers/PlaneMoveHandler.js"
 import { Marker, MarkerRenderable } from "../../../../lib/markers/Marker.js"
+import { DirectionalMarker } from "../../../../lib/markers/DirectionalMarker.js"
+import { DirectionalMoveHandler } from "../../../../lib/mouse/handlers/DirectionalMoveHandler.js"
 
 export class RouteItemGenerator<T extends RenderingObject>
   extends HaconiwaItemGeneratorBase<T>
@@ -111,9 +113,14 @@ export class RouteItemGenerator<T extends RenderingObject>
       const proxyHandler = new ProxyHandler(this.#markerRaycaster, marker.coliders)
 
       proxyHandler.setStartedCallback(() => {
-        const mover = makeCoordinateDirectionalMover(connection.edge.coordinate, this.#renderingObjectBuilder, this.#renderer, () => !handler.isStart)
-        this.registerMarker(mover.marker)
-        this.#handlingMarkers.push(mover.marker)
+        const heightMarker = new DirectionalMarker(1, 0.1, [0, 1, 0], 1, true)
+        const heightHandler = new DirectionalMoveHandler(connection.edge.coordinate, [0, 1, 0], 0.1)
+
+        heightMarker.setParentCoordinate(connection.edge.coordinate)
+        heightMarker.addHandler(heightHandler)
+        heightMarker.attachRenderingObject({r: 0, g: 255, b: 0}, this.#renderingObjectBuilder, this.#renderer)
+        this.registerMarker(heightMarker)
+        this.#handlingMarkers.push(heightMarker)
 
         this.selected(this)
       })
