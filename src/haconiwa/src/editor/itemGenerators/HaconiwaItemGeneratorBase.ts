@@ -2,6 +2,8 @@ import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
 import { Marker } from "../../../../lib/markers/Marker"
 import { HaconiwaWorldItem } from "../../world.js"
 import { Item } from "../../../../lib/Item.js"
+import { Coordinate } from "../../../../lib/Coordinate.js"
+import { MouseButton, MouseControllableCallbackFunction, WindowCursor } from "../../../../lib/mouse/MouseControllable.js"
 import {
   HaconiwaItemGeneratedCallback,
   AddMarkerCallbackFunction,
@@ -13,7 +15,7 @@ import {
 } from './HaconiwaItemGenerator'
 import { v4 as uuidv4 } from 'uuid'
 
-export class HaconiwaItemGeneratorBase<T> {
+export abstract class HaconiwaItemGeneratorBase<T> {
   #onGeneratedCallbacks: Array<HaconiwaItemGeneratedCallback<T>> = []
   #addMarkerCallbacks = new CallbackFunctions<AddMarkerCallbackFunction>()
   #removeMarkerCallbacks = new CallbackFunctions<RemoveMarkerCallbackFunction>()
@@ -21,8 +23,10 @@ export class HaconiwaItemGeneratorBase<T> {
   #selectedCallbacks = new CallbackFunctions<SelectedCallbackFunction<T>>()
   #unselectedCallbacks = new CallbackFunctions<SelectedCallbackFunction<T>>()
   #generatedItem: HaconiwaWorldItem | null = null
+  #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   #uuid = uuidv4()
   #selected = false
+  #isStart = false
 
   get generatedItem() {
     return this.#generatedItem
@@ -38,6 +42,10 @@ export class HaconiwaItemGeneratorBase<T> {
 
   get isSelected() {
     return this.#selected
+  }
+
+  get isStart() {
+    return this.#isStart
   }
 
   registerOnGeneratedCallback(callback: HaconiwaItemGeneratedCallback<T>) {
@@ -63,6 +71,31 @@ export class HaconiwaItemGeneratorBase<T> {
   addUnselectedCallback(func: UnselectedCallbackFunction<T>) {
     this.#unselectedCallbacks.add(func)
   }
+
+  setStartedCallback(func: MouseControllableCallbackFunction) {
+    this.#startedCallbacks.add(func)
+  }
+
+  removeStartedCallback(func: MouseControllableCallbackFunction) {
+    this.#startedCallbacks.remove(func)
+  }
+
+  start(cursor: WindowCursor, button: MouseButton, cameraCoordinate: Coordinate) {
+    if (this.#isStart) return
+
+    const result = this.create(cursor, button, cameraCoordinate)
+
+    if (result) {
+      this.#startedCallbacks.call()
+      this.#isStart = true
+    }
+  }
+
+  move() {
+
+  }
+
+  protected abstract create(cursor: WindowCursor, button: MouseButton, cameraCoordinate: Coordinate): boolean | undefined
 
   protected registerMarker(marker: Marker) {
     this.#addMarkerCallbacks.call(marker)
@@ -93,6 +126,7 @@ export class HaconiwaItemGeneratorBase<T> {
 
   end() {
     this.#endedCallbacks.call()
+    this.#isStart = false
   }
 
   dispose() {

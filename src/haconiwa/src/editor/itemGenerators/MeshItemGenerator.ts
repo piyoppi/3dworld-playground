@@ -6,8 +6,7 @@ import {
   HaconiwaItemGeneratorFactory,
   HaconiwaItemGeneratorClonedItem,
 } from './HaconiwaItemGenerator'
-import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
-import { MouseButton, MouseControllableCallbackFunction, WindowCursor } from "../../../../lib/mouse/MouseControllable.js"
+import { MouseButton, WindowCursor } from "../../../../lib/mouse/MouseControllable.js"
 import type { Raycaster } from "../../../../lib/Raycaster"
 import type { Renderer } from "../../../../lib/Renderer"
 import { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder.js"
@@ -17,20 +16,16 @@ import { ProxyHandler } from "../../../../lib/mouse/handlers/ProxyHandler.js"
 import { Marker, MarkerRenderable } from "../../../../lib/markers/Marker.js"
 import { makeCoordinateMover } from "../../../../lib/markers/generators/CoordinateMover.js"
 import { HaconiwaItemGeneratorBase } from "./HaconiwaItemGeneratorBase.js"
-import { PlaneMoveHandler } from "../../../../lib/mouse/handlers/PlaneMoveHandler.js"
-import { PlaneMarker } from "../../../../lib/markers/PlaneMarker.js"
 
 export class MeshItemGenerator<T extends RenderingObject>
   extends HaconiwaItemGeneratorBase<T>
   implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorItemClonable<T> {
 
   private original: HaconiwaItemGeneratorClonedItem<T> | null = null
-  #isStarted = false
   #planeRaycaster: Raycaster
   #markerRaycaster: Raycaster
   #renderer: Renderer<T>
   #renderingObjectBuilder: RenderingObjectBuilder<T>
-  #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   #handlingMarkers: Array<Marker & MarkerRenderable> = []
   #itemMarker: BoxMarker | null = null
 
@@ -49,28 +44,16 @@ export class MeshItemGenerator<T extends RenderingObject>
     this.#renderingObjectBuilder = renderingObjectBuilder
   }
 
-  get isStart() {
-    return this.#isStarted
-  }
-
   get mounted() {
     return this.#handlingMarkers.length > 0
-  }
-
-  setStartedCallback(func: MouseControllableCallbackFunction) {
-    this.#startedCallbacks.add(func)
-  }
-
-  removeStartedCallback(func: MouseControllableCallbackFunction) {
-    this.#startedCallbacks.remove(func)
   }
 
   setOriginal(original: HaconiwaItemGeneratorClonedItem<T>) {
     this.original = original
   }
 
-  start() {
-    if (!this.#planeRaycaster.hasColided || this.#isStarted) {
+  create() {
+    if (!this.#planeRaycaster.hasColided) {
       return false
     }
 
@@ -123,19 +106,7 @@ export class MeshItemGenerator<T extends RenderingObject>
       return false
     }
 
-    this.#startedCallbacks.call()
-
-    this.#isStarted = true
     return true
-  }
-
-  move() {
-    // noop
-  }
-
-  end() {
-    super.end()
-    this.#isStarted = false
   }
 
   dispose() {

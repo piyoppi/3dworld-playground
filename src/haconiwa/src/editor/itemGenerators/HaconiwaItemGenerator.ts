@@ -14,8 +14,6 @@ export type EndedCallbackFunction = () => void
 export type SelectedCallbackFunction<T> = (item: HaconiwaItemGenerator<T>) => void
 export type UnselectedCallbackFunction<T> = (item: HaconiwaItemGenerator<T>) => void
 
-// 選択アイテムフック
-// 削除
 export interface HaconiwaItemGenerator<T> extends MouseControllable {
   registerOnGeneratedCallback: (callback: HaconiwaItemGeneratedCallback<T>) => void
   addMarkerCallback: (callback: AddMarkerCallbackFunction) => void

@@ -13,8 +13,7 @@ import type {
 import { Coordinate } from "../../../../lib/Coordinate.js"
 import { LineItemGenerator } from "../../../../lib/itemGenerators/lineItemGenerator/LineItemGenerator.js"
 import type { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder.js"
-import { MouseButton, MouseControllableCallbackFunction, WindowCursor } from "../../../../lib/mouse/MouseControllable.js"
-import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
+import { MouseButton, WindowCursor } from "../../../../lib/mouse/MouseControllable.js"
 import type { ColiderItemMap } from "../../../../lib/ColiderItemMap.js"
 import { makeConnectionMarker } from './Helpers/MakeConnectionMarker.js'
 import { RenderingObject } from "../../../../lib/RenderingObject.js"
@@ -26,9 +25,7 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject>
   #planeRaycaster: Raycaster
   #markerRaycaster: Raycaster
   #renderingObjectBuilder: RenderingObjectBuilder<T>
-  #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   private original: HaconiwaItemGeneratorClonedItem<T> | null = null
-  #isStarted = false
   #renderer
   #coliderConnectionMap: ColiderItemMap<LineItemConnection> | null = null
   #generatedItem: LineItem | null = null
@@ -40,10 +37,6 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject>
     this.#markerRaycaster = markerRaycaster
     this.#renderingObjectBuilder = renderingObjectBuilder
     this.#renderer = renderer
-  }
-
-  get isStart() {
-    return this.#isStarted
   }
 
   get generated() {
@@ -58,19 +51,9 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject>
     this.original = original
   }
 
-  setStartedCallback(func: MouseControllableCallbackFunction) {
-    this.#startedCallbacks.add(func)
-  }
-
-  removeStartedCallback(func: MouseControllableCallbackFunction) {
-    this.#startedCallbacks.remove(func)
-  }
-
-  start(cursor: WindowCursor, button: MouseButton, cameraCoordinate: Coordinate) {
+  create(cursor: WindowCursor, button: MouseButton, cameraCoordinate: Coordinate) {
     if (!this.original) throw new Error('Item and RenderingObject is not set.')
-    if (!this.#planeRaycaster.hasColided || !this.#coliderConnectionMap || this.#isStarted) return
-
-    this.#isStarted = true
+    if (!this.#planeRaycaster.hasColided || !this.#coliderConnectionMap) return
 
     const itemGenerator = new LineRenderingItemGenerator(this.#renderer)
     const lineGenerator = new LineSegmentGenerator()
@@ -98,21 +81,9 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject>
     this.registerItem(item)
     markers.forEach(marker => this.registerMarker(marker))
 
-    this.#startedCallbacks.call()
-
     markers[1]?.handlers.forEach(handler => handler.start(cursor, button, cameraCoordinate))
 
     return true
-  }
-
-  move() {
-    // noop
-  }
-
-  end() {
-    super.end()
-
-    this.#isStarted = false
   }
 
   private itemFactory() {
