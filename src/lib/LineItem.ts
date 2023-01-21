@@ -3,6 +3,7 @@ import { Item } from "./Item.js"
 import { LineEdge } from "./lines/lineEdge.js"
 import { CallbackFunctions } from "./CallbackFunctions.js"
 import { MouseControllableCallbackFunction } from "./mouse/MouseControllable.js"
+import { Vec3 } from "./Matrix.js"
 
 export class LineItem extends Item {
   #line: Line
@@ -31,6 +32,7 @@ export class LineItemConnection {
   #connectedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   #disconnectedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
 
+  protected _updatedCallbacks = new Map<LineItemConnection, () => void>()
   protected _connections: LineItemConnection[] = []
 
   constructor(edge: LineEdge) {
@@ -73,9 +75,32 @@ export class LineItemConnection {
     return this._connections.indexOf(connection) >= 0
   }
 
+  private setSyncPairConnectionCoordinate(pair: LineItemConnection) {
+    const callback = () => {
+      if (Vec3.norm(Vec3.subtract(this.edge.coordinate.position, pair.edge.coordinate.position)) < 0.0001) return
+      this.edge.coordinate.position = pair.edge.coordinate.position
+    }
+
+    this._updatedCallbacks.set(pair, callback)
+    pair.edge.coordinate.setUpdateCallback(callback)
+  }
+
+  private removeSyncPairConnectionCoordinate(pair: LineItemConnection) {
+    const callback = this._updatedCallbacks.get(pair)
+
+    if (callback) {
+      pair.edge.coordinate.removeUpdateCallback(callback)
+
+      this._updatedCallbacks.delete(pair)
+    }
+  }
+
   connect(connection: LineItemConnection) {
     this._connections.push(connection)
     connection._connections.push(this)
+
+    this.setSyncPairConnectionCoordinate(connection)
+    connection.setSyncPairConnectionCoordinate(this)
 
     this.#connectedCallbacks.call()
     connection.#connectedCallbacks.call()
@@ -85,6 +110,9 @@ export class LineItemConnection {
     const itemIndex = this._connections.indexOf(connection)
 
     if (itemIndex < 0) return
+
+    this.removeSyncPairConnectionCoordinate(connection)
+    connection.removeSyncPairConnectionCoordinate(this)
 
     this._connections.splice(itemIndex, 1)
 

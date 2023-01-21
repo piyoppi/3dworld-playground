@@ -1,5 +1,4 @@
 import type { ColiderItemMap } from "../../ColiderItemMap"
-import type { Coordinate } from "../../Coordinate"
 import { LineItemConnection } from "../../LineItem"
 import type { MouseButton, MouseControllable, MouseControllableCallbackFunction, WindowCursor } from "../../mouse/MouseControllable"
 import { CallbackFunctions } from "../../CallbackFunctions.js"

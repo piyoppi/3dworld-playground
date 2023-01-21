@@ -101,6 +101,10 @@ export class Coordinate {
     this.#updatedCallbacks.add(func)
   }
 
+  removeUpdateCallback(func: () => void) {
+    this.#updatedCallbacks.remove(func)
+  }
+
   setSetChildCallback(func: (parent: Coordinate, child: Coordinate) => void) {
     this.#setChildCallback = func
   }
