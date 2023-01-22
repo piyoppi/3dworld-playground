@@ -37,6 +37,7 @@ export class RouteItemGenerator<T extends RenderingObject>
   #coliderConnectionMap: ColiderItemMap<LineItemConnection> | null = null
   #jointFactory: JointFactory<T>
   #handlingMarkers: Array<Marker & MarkerRenderable> = []
+  #jointableMarkers: Array<CenterMarker> = []
   private original: HaconiwaItemGeneratorClonedItem<T> | null = null
 
   constructor(
@@ -133,6 +134,7 @@ export class RouteItemGenerator<T extends RenderingObject>
 
       return {marker, handler: jointableHandler}
     })
+    this.#jointableMarkers = jointableMarkers.map(item => item.marker)
 
     //
     // Connection events
@@ -167,6 +169,17 @@ export class RouteItemGenerator<T extends RenderingObject>
     jointableMarkers[1].marker.handlers.forEach(handler => handler.start(cursor, button, cameraCoordinate))
 
     return true
+  }
+
+  dispose() {
+    if (!this.generated) return
+
+    this.removeHandlingMarker()
+    this.#jointableMarkers.forEach(marker => {
+      this.removeMarker(marker)
+      marker.markerCoordinates.forEach(coord => this.#renderer.removeItem(coord))
+    })
+    this.#jointableMarkers = []
   }
 
   private updateJoint(givenJoint: Joint<T>, connection: LineItemConnection) {
