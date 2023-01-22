@@ -15,12 +15,21 @@ export class JointHandler implements MouseControllable {
   #connection: LineItemConnection
   #ignoredConnections: LineItemConnection[]
   #connecting: LineItemConnection[] = []
+  #disconnectable = false
 
   constructor(connection: LineItemConnection, raycaster: Raycaster, coliderItemMap: ColiderItemMap<LineItemConnection>) {
     this.#raycaster = raycaster
     this.#coliderItemMap = coliderItemMap
     this.#connection = connection
     this.#ignoredConnections = [connection]
+  }
+
+  get disconnectable() {
+    return this.#disconnectable
+  }
+
+  set disconnectable(val: boolean) {
+    this.#disconnectable = val
   }
 
   get isStart() {
@@ -71,6 +80,10 @@ export class JointHandler implements MouseControllable {
   move() {
     if (!this.#isStart) return
 
+  }
+
+  end() {
+    this.#isStart = false
     const connections = this.#raycaster.colidedColiders.map(colider => {
       const connection = this.#coliderItemMap.getItem(colider)
 
@@ -89,18 +102,17 @@ export class JointHandler implements MouseControllable {
       }
     })
 
-    this.#connecting.forEach(connection => {
-      if (connections.indexOf(connection) >= 0 || !connection.isConnected(this.#connection)) return
+    if (this.#disconnectable) {
+      this.#connecting.forEach(connection => {
+        if (connections.indexOf(connection) >= 0 || !connection.isConnected(this.#connection)) return
 
-      connection.disconnect(this.#connection)
-      this.#connection.disconnect(connection)
+        connection.disconnect(this.#connection)
+        this.#connection.disconnect(connection)
 
-      this.#disconnectedCallbacks.call()
-    })
-  }
+        this.#disconnectedCallbacks.call()
+      })
+    }
 
-  end() {
-    this.#isStart = false
     this.#endedCallbacks.call()
   }
 }
