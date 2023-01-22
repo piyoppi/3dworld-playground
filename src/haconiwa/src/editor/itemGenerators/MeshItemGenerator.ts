@@ -6,7 +6,6 @@ import {
   HaconiwaItemGeneratorFactory,
   HaconiwaItemGeneratorClonedItem,
 } from './HaconiwaItemGenerator'
-import { MouseButton, WindowCursor } from "../../../../lib/mouse/MouseControllable.js"
 import type { Raycaster } from "../../../../lib/Raycaster"
 import type { Renderer } from "../../../../lib/Renderer"
 import { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder.js"

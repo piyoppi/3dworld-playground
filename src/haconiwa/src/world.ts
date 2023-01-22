@@ -40,6 +40,8 @@ export class HaconiwaWorldItems {
 
     if (index < 0) return
 
+    this.#items[index].dispose()
+
     this.#items.splice(index, 1)
   }
 
@@ -81,5 +83,9 @@ export class HaconiwaWorldItem {
 
   removeRenderingItem<T>(renderer: Renderer<T>) {
     renderer.removeItem(this.#item.parentCoordinate)
+  }
+
+  dispose() {
+    this.#item.dispose()
   }
 }

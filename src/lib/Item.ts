@@ -22,6 +22,10 @@ export class Item {
     return this.#parentCoordinate
   }
 
+  dispose() {
+
+  }
+
   clone() {
     return new Item()
   }

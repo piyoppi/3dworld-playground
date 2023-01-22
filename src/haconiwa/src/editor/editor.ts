@@ -11,7 +11,7 @@ import type { RenderingObjectBuilder } from '../../../lib/RenderingObjectBuilder
 import type { MouseButton } from '../../../lib/mouse/MouseControllable'
 import { Raycaster } from '../../../lib/Raycaster.js'
 import { Colider, PlaneColider } from '../../../lib/Colider.js'
-import { HaconiwaWorld, HaconiwaWorldItem, HaconiwaWorldItems } from '../world.js'
+import { HaconiwaWorld } from '../world.js'
 import { ControlHandle, MouseControlHandles } from '../../../lib/mouse/MouseControlHandles.js'
 import { Raycasters } from '../../../lib/Raycasters.js'
 import { ColiderItemMap } from '../../../lib/ColiderItemMap.js'

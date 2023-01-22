@@ -25,12 +25,16 @@ export class LineItem extends Item {
   get line() {
     return this.#line
   }
+
+  dispose() {
+    this.#connections.forEach(connection => connection.disconnectAll())
+  }
 }
 
 export class LineItemConnection {
   #edge: LineEdge
   #connectedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
-  #disconnectedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
+  private disconnectedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
 
   protected _updatedCallbacks = new Map<LineItemConnection, () => void>()
   protected _connections: LineItemConnection[] = []
@@ -60,11 +64,11 @@ export class LineItemConnection {
   }
 
   setDisconnectedCallbacks(func: MouseControllableCallbackFunction) {
-    this.#disconnectedCallbacks.add(func)
+    this.disconnectedCallbacks.add(func)
   }
 
   removeDisconnectedCallbacks(func: MouseControllableCallbackFunction) {
-    this.#disconnectedCallbacks.remove(func)
+    this.disconnectedCallbacks.remove(func)
   }
 
   hasConnections() {
@@ -108,14 +112,21 @@ export class LineItemConnection {
 
   disconnect(connection: LineItemConnection) {
     const itemIndex = this._connections.indexOf(connection)
+    const pairItemIndex = connection._connections.indexOf(this)
 
-    if (itemIndex < 0) return
+    if (itemIndex < 0 || pairItemIndex < 0) return
 
     this.removeSyncPairConnectionCoordinate(connection)
     connection.removeSyncPairConnectionCoordinate(this)
 
     this._connections.splice(itemIndex, 1)
+    connection._connections.splice(pairItemIndex, 1)
 
-    this.#disconnectedCallbacks.call()
+    this.disconnectedCallbacks.call()
+    connection.disconnectedCallbacks.call()
+  }
+
+  disconnectAll() {
+    this._connections.forEach(conn => this.disconnect(conn))
   }
 }

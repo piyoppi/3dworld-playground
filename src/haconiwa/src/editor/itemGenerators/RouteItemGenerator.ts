@@ -156,6 +156,7 @@ export class RouteItemGenerator<T extends RenderingObject>
           joint.dispose(this.#renderer)
           const recreatedJoint = this.updateJoint(joint, connection)
           joints.set(connection, recreatedJoint)
+          this.updateRenderingObject(coordinateForRendering, item, item.line.length, Array.from(joints.values()))
         }
       })
     })
