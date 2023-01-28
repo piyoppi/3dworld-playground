@@ -34,7 +34,7 @@ export class MeshItemGenerator<T extends RenderingObject>
     markerRaycaster: Raycaster,
     renderingObjectBuilder: RenderingObjectBuilder<T>
   ) {
-    super()
+    super(markerRaycaster)
 
     this.#planeRaycaster = planeRaycaster
     this.#markerRaycaster = markerRaycaster
@@ -56,9 +56,8 @@ export class MeshItemGenerator<T extends RenderingObject>
       return false
     }
 
-    const itemClicked = this.#markerRaycaster.colidedColiders.some(item => item.uuid === this.#itemMarker?.coliders[0].uuid)
-
     if (this.isSelected) {
+      const itemClicked = this.#markerRaycaster.colidedColiders.some(item => item.uuid === this.#itemMarker?.coliders[0].uuid)
       const myMarkersClicked = this.#handlingMarkers.some(handlingMarker => this.#markerRaycaster.colidedColiders.has(...handlingMarker.coliders)) || itemClicked
         
       if (!myMarkersClicked) {
@@ -67,10 +66,6 @@ export class MeshItemGenerator<T extends RenderingObject>
       }
 
       return false
-    } else {
-      if (this.#markerRaycaster.colidedColiders.length > 0) {
-        return false
-      }
     }
 
     if (!this.generated) {

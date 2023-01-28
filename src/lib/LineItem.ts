@@ -19,7 +19,7 @@ export class LineItem extends Item {
 
     this.#line.setUpdatedCallback(() => {
       this.connections.forEach(childConnection => {
-        childConnection.connections.forEach((connection, index) => {
+        childConnection.connections.forEach(connection => {
           connection.edge.updateCoordinate()
         })
       })

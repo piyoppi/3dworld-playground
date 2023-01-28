@@ -31,7 +31,7 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject>
   #generatedItem: LineItem | null = null
 
   constructor(renderer: Renderer<T>, planeRaycaster: Raycaster, markerRaycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) {
-    super()
+    super(markerRaycaster)
 
     this.#planeRaycaster = planeRaycaster
     this.#markerRaycaster = markerRaycaster

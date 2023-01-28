@@ -14,6 +14,7 @@ import {
   HaconiwaItemGenerator
 } from './HaconiwaItemGenerator'
 import { v4 as uuidv4 } from 'uuid'
+import type { Raycaster } from "../../../../lib/Raycaster"
 
 export abstract class HaconiwaItemGeneratorBase<T> {
   #onGeneratedCallbacks: Array<HaconiwaItemGeneratedCallback<T>> = []
@@ -27,6 +28,11 @@ export abstract class HaconiwaItemGeneratorBase<T> {
   #uuid = uuidv4()
   #selected = false
   #isStart = false
+  protected markerRaycaster: Raycaster
+
+  constructor(markerRaycaster: Raycaster) {
+    this.markerRaycaster = markerRaycaster
+  }
 
   get generatedItem() {
     return this.#generatedItem
@@ -81,7 +87,8 @@ export abstract class HaconiwaItemGeneratorBase<T> {
   }
 
   start(cursor: WindowCursor, button: MouseButton, cameraCoordinate: Coordinate) {
-    if (this.#isStart) return
+    if (this.#isStart) return false
+    if (this.markerRaycaster.colidedColiders.length > 0) return false
 
     const result = this.create(cursor, button, cameraCoordinate)
 

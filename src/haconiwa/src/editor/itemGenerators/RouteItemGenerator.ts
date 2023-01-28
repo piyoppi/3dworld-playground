@@ -48,7 +48,7 @@ export class RouteItemGenerator<T extends RenderingObject>
     renderingObjectBuilder: RenderingObjectBuilder<T>,
     jointFactory: JointFactory<T>
   ) {
-    super()
+    super(markerRaycaster)
 
     this.#planeRaycaster = planeRaycaster
     this.#markerRaycaster = markerRaycaster
