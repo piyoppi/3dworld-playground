@@ -73,6 +73,7 @@ export class MeshItemGenerator<T extends RenderingObject>
       this.registerItem(item)
       const coordinateForRendering = new Coordinate()
       item.parentCoordinate.addChild(coordinateForRendering)
+      item.parentCoordinate.position = this.#planeRaycaster.colidedDetails[0].position
 
       const renderingObject = this.makeRenderingObject()
       this.#renderer.addItem(coordinateForRendering, renderingObject)
