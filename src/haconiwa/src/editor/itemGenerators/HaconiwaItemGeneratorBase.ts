@@ -28,6 +28,7 @@ export abstract class HaconiwaItemGeneratorBase<T> {
   #uuid = uuidv4()
   #selected = false
   #isStart = false
+  #markers: Marker[] = []
   protected markerRaycaster: Raycaster
 
   constructor(markerRaycaster: Raycaster) {
@@ -88,7 +89,11 @@ export abstract class HaconiwaItemGeneratorBase<T> {
 
   start(cursor: WindowCursor, button: MouseButton, cameraCoordinate: Coordinate) {
     if (this.#isStart) return false
-    if (this.markerRaycaster.colidedColiders.length > 0) return false
+    if (this.markerRaycaster.colidedColiders.length > 0 && !this.isOwnMarkerSelected()) {
+      this.unselect()
+      this.unselected(this)
+      return false
+    }
 
     const result = this.create(cursor, button, cameraCoordinate)
 
@@ -103,8 +108,10 @@ export abstract class HaconiwaItemGeneratorBase<T> {
   }
 
   protected abstract create(cursor: WindowCursor, button: MouseButton, cameraCoordinate: Coordinate): boolean | undefined
+  protected abstract unselect(): void
 
   protected registerMarker(marker: Marker) {
+    this.#markers.push(marker)
     this.#addMarkerCallbacks.call(marker)
   }
 
@@ -118,7 +125,12 @@ export abstract class HaconiwaItemGeneratorBase<T> {
   }
 
   protected removeMarker(marker: Marker) {
-    this.#removeMarkerCallbacks.call(marker)
+    const index = this.#markers.findIndex(found => found === marker)
+
+    if (index >= 0) {
+      this.#markers.splice(index, 1)
+      this.#removeMarkerCallbacks.call(marker)
+    }
   }
 
   protected selected(self: HaconiwaItemGenerator<T>) {
@@ -129,6 +141,10 @@ export abstract class HaconiwaItemGeneratorBase<T> {
   protected unselected(self: HaconiwaItemGenerator<T>) {
     this.#unselectedCallbacks.call(self)
     this.#selected = false
+  }
+
+  private isOwnMarkerSelected() {
+    return this.#markers.some(handlingMarker => this.markerRaycaster.colidedColiders.has(...handlingMarker.coliders))
   }
 
   end() {

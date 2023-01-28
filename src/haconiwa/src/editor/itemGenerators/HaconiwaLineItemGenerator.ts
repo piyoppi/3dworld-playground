@@ -86,6 +86,10 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject>
     return true
   }
 
+  unselect() {
+
+  }
+
   private itemFactory() {
     if (!this.original) throw new Error('Item and RenderingObject is not set.')
 

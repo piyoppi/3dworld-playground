@@ -56,18 +56,6 @@ export class MeshItemGenerator<T extends RenderingObject>
       return false
     }
 
-    if (this.isSelected) {
-      const itemClicked = this.#markerRaycaster.colidedColiders.some(item => item.uuid === this.#itemMarker?.coliders[0].uuid)
-      const myMarkersClicked = this.#handlingMarkers.some(handlingMarker => this.#markerRaycaster.colidedColiders.has(...handlingMarker.coliders)) || itemClicked
-        
-      if (!myMarkersClicked) {
-        this.removeHandlingMarker()
-        this.unselected(this)
-      }
-
-      return false
-    }
-
     if (!this.generated) {
       const item = new Item()
       this.registerItem(item)
@@ -102,6 +90,10 @@ export class MeshItemGenerator<T extends RenderingObject>
     }
 
     return true
+  }
+
+  unselect() {
+    this.removeHandlingMarker()
   }
 
   dispose() {

@@ -177,6 +177,10 @@ export class RouteItemGenerator<T extends RenderingObject>
     return true
   }
 
+  unselect() {
+    this.removeHandlingMarker()
+  }
+
   dispose() {
     if (!this.generated) return
 
