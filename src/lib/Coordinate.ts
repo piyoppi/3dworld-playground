@@ -14,9 +14,11 @@ export class Coordinate {
   #mirrorMatrix: MatrixArray4
   #beforeUpdateCallbacks = new CallbackFunctions<() => void>()
   #updatedCallbacks = new CallbackFunctions<() => void>()
+  #constraintCallbacks = new CallbackFunctions<() => void>()
   #setChildCallback: (parent: Coordinate, child: Coordinate) => void
   #removeChildCallback: (parent: Coordinate, child: Coordinate) => void
   #uuid: string
+  #disabledUpdateCallack = false
 
   constructor() {
     this._parent = null
@@ -64,9 +66,13 @@ export class Coordinate {
     return Eular.fromMatrix(Mat3.fromMatrixArray4(this.#matrix))
   }
 
+  get hasConstraint() {
+    return this.#constraintCallbacks.length > 0
+  }
+
   setMatrix(array: MatrixArray4) {
     this.#matrix = array
-    this.#updatedCallbacks.call()
+    this.callUpdatedCallback()
   }
 
   getTransformMatrixToWorld(mat: MatrixArray4 = Mat4.getIdentityMatrix()) {
@@ -105,6 +111,14 @@ export class Coordinate {
     this.#updatedCallbacks.remove(func)
   }
 
+  setConstraintCallback(func: () => void) {
+    this.#constraintCallbacks.add(func)
+  }
+
+  removeConstraintCallback(func: () => void) {
+    this.#constraintCallbacks.remove(func)
+  }
+
   setSetChildCallback(func: (parent: Coordinate, child: Coordinate) => void) {
     this.#setChildCallback = func
   }
@@ -139,22 +153,22 @@ export class Coordinate {
 
   lookAt(targetPoint: VectorArray3) {
     this.#matrix = Mat4.lookAt(targetPoint, this.position)  
-    this.#updatedCallbacks.call()
+    this.callUpdatedCallback()
   }
 
   rotateX(rad: number) {
     this.#matrix = Mat4.mul(this.#matrix, Mat4.rotateX(rad))
-    this.#updatedCallbacks.call()
+    this.callUpdatedCallback()
   }
 
   rotateY(rad: number) {
     this.#matrix = Mat4.mul(this.#matrix, Mat4.rotateY(rad))
-    this.#updatedCallbacks.call()
+    this.callUpdatedCallback()
   }
 
   rotateZ(rad: number) {
     this.#matrix = Mat4.mul(this.#matrix, Mat4.rotateZ(rad))
-    this.#updatedCallbacks.call()
+    this.callUpdatedCallback()
   }
 
   rotate(direction: VectorArray3, angle: number) {
@@ -170,49 +184,49 @@ export class Coordinate {
     this.#matrix[9] = mat[9]
     this.#matrix[10] = mat[10]
 
-    this.#updatedCallbacks.call()
+    this.callUpdatedCallback()
   }
 
   addRotate(direction: VectorArray3, angleDiff: number) {
     const mat = Mat4.rotate(direction, angleDiff)
 
     this.#matrix = Mat4.mul(this.#matrix, mat)
-    this.#updatedCallbacks.call()
+    this.callUpdatedCallback()
   }
 
   setDirectionYAxis(direction: VectorArray3, position: VectorArray3) {
     this.#matrix = Mat4.transformYAxis(direction, position)
-    this.#updatedCallbacks.call()
+    this.callUpdatedCallback()
   }
 
   setDirectionZAxis(direction: VectorArray3, position: VectorArray3) {
     this.#matrix = Mat4.transformZAxis(direction, position)
-    this.#updatedCallbacks.call()
+    this.callUpdatedCallback()
   }
 
   scale(a: VectorArray3) {
     this.#scaleMatrix = Mat4.scale(a[0], a[1], a[2])
-    this.#updatedCallbacks.call()
+    this.callUpdatedCallback()
   }
 
   mirrorZ() {
     this.#mirrorMatrix = Mat4.mirrorZ()
-    this.#updatedCallbacks.call()
+    this.callUpdatedCallback()
   }
 
   mirrorX() {
     this.#mirrorMatrix = Mat4.mirrorX()
-    this.#updatedCallbacks.call()
+    this.callUpdatedCallback()
   }
 
   mirrorY() {
     this.#mirrorMatrix = Mat4.mirrorY()
-    this.#updatedCallbacks.call()
+    this.callUpdatedCallback()
   }
 
   resetMirror() {
     this.#mirrorMatrix = Mat4.getIdentityMatrix()
-    this.#updatedCallbacks.call()
+    this.callUpdatedCallback()
   }
 
   get position(): VectorArray3 {
@@ -223,24 +237,36 @@ export class Coordinate {
     this.#matrix[12] = val[0]
     this.#matrix[13] = val[1]
     this.#matrix[14] = val[2]
-    this.#updatedCallbacks.call()
+    this.callUpdatedCallback()
   }
 
   set x(val) {
     this.#matrix[12] = val
-    this.#updatedCallbacks.call()
+    this.callUpdatedCallback()
   }
   set y(val) {
     this.#matrix[13] = val
-    this.#updatedCallbacks.call()
+    this.callUpdatedCallback()
   }
   set z(val) {
     this.#matrix[14] = val
-    this.#updatedCallbacks.call()
+    this.callUpdatedCallback()
   }
 
   //get items() { return this.#items }
   get x() { return this.#matrix[12] }
   get y() { return this.#matrix[13] }
   get z() { return this.#matrix[14] }
+
+  private callUpdatedCallback() {
+    if (this.#disabledUpdateCallack) return
+
+    if (this.hasConstraint) {
+      this.#disabledUpdateCallack = true
+      this.#constraintCallbacks.call()
+      this.#disabledUpdateCallack = false
+    }
+
+    this.#updatedCallbacks.call()
+  }
 }

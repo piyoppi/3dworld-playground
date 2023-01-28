@@ -1,5 +1,5 @@
 import { Quaternion } from '../lib/Quaternion.js'
-import { attachCoordinateRenderingItem } from "../lib/CoordinateRenderingObject.js"
+import { attachCoordinateRenderingItem } from "../lib/helpers/CoordinateRenderingObject.js"
 import { Mat4 } from '../lib/Matrix.js'
 import { Coordinate } from '../lib/Coordinate.js'
 import { ThreeRenderingObjectBuilder } from '../lib/threeAdapter/ThreeRenderingObjectBuilder.js'

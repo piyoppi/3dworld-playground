@@ -1,6 +1,7 @@
 import { Line } from "./line.js"
 import { Vec3, VectorArray3 } from "../Matrix.js"
 import { LineEdge } from "./lineEdge.js"
+import { CallbackFunctions } from '../CallbackFunctions.js'
 
 export class LineSegment implements Line {
   #edges: LineEdge[]
@@ -8,6 +9,7 @@ export class LineSegment implements Line {
   #end: LineEdge
   #length = 0
   #direction: VectorArray3 = [0, 0, 0]
+  #updatedCallbacks = new CallbackFunctions<() => void>()
 
   constructor(start: VectorArray3, end: VectorArray3) {
     this.#start = new LineEdge(start, 0, this)
@@ -16,6 +18,14 @@ export class LineSegment implements Line {
     this.#end.setUpdateCallback(() => this.#setup())
     this.#edges = [this.#start, this.#end]
     this.#setup()
+
+    this.#edges.forEach(edge => 
+      edge.coordinate.setConstraintCallback(() => {
+        this.#edges.forEach(edge => edge.updateCoordinate())
+
+        this.#updatedCallbacks.call()
+      })
+    )
   }
 
   get controlPoints() {
@@ -28,6 +38,10 @@ export class LineSegment implements Line {
 
   get length() {
     return this.#length
+  }
+
+  setUpdatedCallback(func: () => void) {
+    this.#updatedCallbacks.add(func)
   }
 
   setControlPoint(index: number, val: VectorArray3) {

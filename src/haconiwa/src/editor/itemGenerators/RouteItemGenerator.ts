@@ -26,6 +26,7 @@ import { PlaneMoveHandler } from "../../../../lib/mouse/handlers/PlaneMoveHandle
 import { Marker, MarkerRenderable } from "../../../../lib/markers/Marker.js"
 import { DirectionalMarker } from "../../../../lib/markers/DirectionalMarker.js"
 import { DirectionalMoveHandler } from "../../../../lib/mouse/handlers/DirectionalMoveHandler.js"
+import { attachCoordinateRenderingItem } from "../../../../lib/helpers/CoordinateRenderingObject.js"
 
 export class RouteItemGenerator<T extends RenderingObject>
   extends HaconiwaItemGeneratorBase<T>
@@ -104,10 +105,13 @@ export class RouteItemGenerator<T extends RenderingObject>
       const marker = new CenterMarker(0.5)
       const handler = new PlaneMoveHandler(connection.edge.coordinate, [0, 1, 0], false, this.#renderer.camera)
       const proxyHandler = new ProxyHandler(this.#markerRaycaster, marker.coliders)
+      let heightHandler: DirectionalMoveHandler | null = null
+      handler.setStartingCallback(() => !heightHandler?.isStart)
 
       proxyHandler.setStartedCallback(() => {
-        const heightMarker = new DirectionalMarker(1, 0.1, [0, 1, 0], 1, true)
-        const heightHandler = new DirectionalMoveHandler(connection.edge.coordinate, [0, 1, 0], 0.1)
+        const heightMarker = new DirectionalMarker(1, 0.1, [0, 1, 0], 1.5, true)
+        heightHandler = new DirectionalMoveHandler(connection.edge.coordinate, [0, 1, 0], 0.1)
+        heightHandler.setStartingCallback(() => !handler.isStart)
 
         heightMarker.setParentCoordinate(connection.edge.coordinate)
         heightMarker.addHandler(heightHandler)
@@ -121,11 +125,12 @@ export class RouteItemGenerator<T extends RenderingObject>
       marker.addHandler(handler)
       marker.addHandler(proxyHandler)
 
-      const jointableHandler = markerJointable(marker, handler, connection, item, this.#markerRaycaster, coliderConnectionMap)
+      const jointableHandler = markerJointable(marker, handler, connection, this.#markerRaycaster, coliderConnectionMap)
       item.connections.filter(conn => conn !== connection).forEach(conn => jointableHandler.addIgnoredConnection(conn))
 
       marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#renderer)
-      marker.parentCoordinate.setUpdateCallback(() => {
+
+     item.line.setUpdatedCallback(() => { 
         const jointsArray = Array.from(joints.values())
         this.updateRenderingObject(coordinateForRendering, item, item.line.length, jointsArray)
 
@@ -220,6 +225,7 @@ export class RouteItemGenerator<T extends RenderingObject>
     const itemScale = (length - offset) / (this.original?.renderingObject.size[0] || 1)
     coordinate.scale([1, 1, itemScale])
 
+    //joints.forEach(joint => joint.updateRenderingObject(this.#renderingObjectBuilder, this.#renderer))
     const renderingItem = this.#renderer.renderingObjectFromCoordinate(coordinate)
 
     if (renderingItem) {

@@ -16,6 +16,14 @@ export class LineItem extends Item {
       new LineItemConnection(this.#line.edges[0]),
       new LineItemConnection(this.#line.edges[1])
     ]
+
+    this.#line.setUpdatedCallback(() => {
+      this.connections.forEach(childConnection => {
+        childConnection.connections.forEach((connection, index) => {
+          connection.edge.updateCoordinate()
+        })
+      })
+    })
   }
 
   get connections() {
@@ -80,9 +88,14 @@ export class LineItemConnection {
   }
 
   private setSyncPairConnectionCoordinate(pair: LineItemConnection) {
+    let pairPosition = pair.edge.coordinate.position
+
     const callback = () => {
-      if (Vec3.norm(Vec3.subtract(this.edge.coordinate.position, pair.edge.coordinate.position)) < 0.0001) return
+      if (Vec3.norm(Vec3.subtract(pairPosition, pair.edge.coordinate.position)) < 0.001) return
+      if (Vec3.norm(Vec3.subtract(this.edge.coordinate.position, pair.edge.coordinate.position)) < 0.001) return
+
       this.edge.coordinate.position = pair.edge.coordinate.position
+      pairPosition = pair.edge.coordinate.position
     }
 
     this._updatedCallbacks.set(pair, callback)

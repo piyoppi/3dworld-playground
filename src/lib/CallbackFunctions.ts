@@ -5,6 +5,10 @@ export type CallbackFunctionReturned<T> = T extends CallbackFunction<any, infer 
 export class CallbackFunctions<T extends CallbackFunction<Array<any>, V>, U extends Array<unknown> = CallbackFunctionParams<T>, V = CallbackFunctionReturned<T>> {
   #functions: Array<T> = []
 
+  get length() {
+    return this.#functions.length
+  }
+
   add(func: T) {
     this.#functions.push(func)
   }
