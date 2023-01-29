@@ -190,8 +190,9 @@ export class EditingPlane {
 
   constructor(camera: Camera) {
     this.#raycaster = new Raycaster(camera)
-    this.#colider = new PlaneColider(new Coordinate(), this.#editingPlane.normal)
+    this.#colider = new PlaneColider(new Coordinate(), this.#editingPlane.normal, false)
     this.#raycaster.addTarget(this.#colider)
+    console.log(this.#colider.parentCoordinate?.uuid)
   }
 
   get raycaster() {

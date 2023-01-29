@@ -26,7 +26,6 @@ import { PlaneMoveHandler } from "../../../../lib/mouse/handlers/PlaneMoveHandle
 import { Marker, MarkerRenderable } from "../../../../lib/markers/Marker.js"
 import { DirectionalMarker } from "../../../../lib/markers/DirectionalMarker.js"
 import { DirectionalMoveHandler } from "../../../../lib/mouse/handlers/DirectionalMoveHandler.js"
-import { attachCoordinateRenderingItem } from "../../../../lib/helpers/CoordinateRenderingObject.js"
 
 export class RouteItemGenerator<T extends RenderingObject>
   extends HaconiwaItemGeneratorBase<T>

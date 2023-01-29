@@ -128,8 +128,8 @@ export class MouseControlHandles {
   }
 
   captureMouseEvent() {
-    window.addEventListener('mousedown', e => this.start(e.screenX, e.screenY, e.button))
-    window.addEventListener('mousemove', e => this.move(e.screenX, e.screenY, e.button))
+    window.addEventListener('mousedown', e => this.start(e.clientX, e.clientY, e.button))
+    window.addEventListener('mousemove', e => this.move(e.clientX, e.clientY, e.button))
     window.addEventListener('mouseup', _ => this.end())
     window.addEventListener('wheel', e => this.mouseWheel(e.deltaY))
   }
