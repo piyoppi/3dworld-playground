@@ -129,18 +129,18 @@ export class RouteItemGenerator<T extends RenderingObject>
 
       marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#renderer)
 
-      const refreshLine = () => {
-        const jointsArray = Array.from(joints.values())
-        this.updateRenderingObject(coordinateForRendering, item, item.line.length, jointsArray)
-
-        jointsArray.forEach(joint => joint.updateRenderingObject(this.#renderingObjectBuilder, this.#renderer))
-      }
-      item.setUpdatedCallback(() => refreshLine())
-      item.setConnectedLineUpdatedCallback(() => refreshLine())
-
       return {marker, handler: jointableHandler}
     })
     this.#jointableMarkers = jointableMarkers.map(item => item.marker)
+
+    const refreshLine = () => {
+      const jointsArray = Array.from(joints.values())
+      this.updateRenderingObject(coordinateForRendering, item, item.line.length, jointsArray)
+
+      jointsArray.forEach(joint => joint.updateRenderingObject(this.#renderingObjectBuilder, this.#renderer))
+    }
+    item.setUpdatedCallback(() => refreshLine())
+    item.setConnectedLineUpdatedCallback(() => refreshLine())
 
     //
     // Connection events
