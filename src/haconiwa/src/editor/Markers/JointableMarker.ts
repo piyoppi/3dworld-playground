@@ -9,6 +9,7 @@ import { PositionChangable } from "../../../../lib/mouse/handlers/PositionChanga
 
 export function markerJointable(
   marker: SingleMarker, 
+  pairMarkers: SingleMarker[],
   handler: MouseControllable & PositionChangable,
   connection: LineItemConnection,
   markerRaycaster: Raycaster,
@@ -16,7 +17,7 @@ export function markerJointable(
 ) {
   marker.setParentCoordinate(connection.edge.coordinate)
 
-  const snapModifier = new CursorSnapColiderModifier(markerRaycaster, marker.coliders)
+  const snapModifier = new CursorSnapColiderModifier(markerRaycaster, pairMarkers.map(marker => marker.coliders).flat())
   handler.setCursorModifier(snapModifier)
 
   const jointHandler = new JointHandler(connection, markerRaycaster, coliderConnectionMap)

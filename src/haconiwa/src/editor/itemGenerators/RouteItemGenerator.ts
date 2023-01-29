@@ -124,14 +124,23 @@ export class RouteItemGenerator<T extends RenderingObject>
       marker.addHandler(handler)
       marker.addHandler(proxyHandler)
 
-      const jointableHandler = markerJointable(marker, handler, connection, this.#markerRaycaster, coliderConnectionMap)
+      return {
+        marker,
+        handler,
+        connection
+      }
+    }).map((created, _, arr) => {
+      const {marker, handler, connection} = created
+      const markers = arr.map(elm => elm.marker)
+      const jointableHandler = markerJointable(marker, markers, handler, connection, this.#markerRaycaster, coliderConnectionMap)
       item.connections.filter(conn => conn !== connection).forEach(conn => jointableHandler.addIgnoredConnection(conn))
 
       marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#renderer)
 
-      return {marker, handler: jointableHandler}
+      return marker
     })
-    this.#jointableMarkers = jointableMarkers.map(item => item.marker)
+
+    this.#jointableMarkers = jointableMarkers
 
     const refreshLine = () => {
       const jointsArray = Array.from(joints.values())
@@ -171,9 +180,9 @@ export class RouteItemGenerator<T extends RenderingObject>
 
     this.registerItem(item)
 
-    jointableMarkers.forEach(item => this.registerMarker(item.marker))
+    jointableMarkers.forEach(item => this.registerMarker(item))
 
-    jointableMarkers[1].marker.handlers.forEach(handler => handler.start(cursor, button, cameraCoordinate))
+    jointableMarkers[1].handlers.forEach(handler => handler.start(cursor, button, cameraCoordinate))
 
     return true
   }
