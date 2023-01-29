@@ -27,7 +27,7 @@ const cameraController = new CameraController(renderer.camera)
 const raycasters = new Raycasters()
 const mouseControlHandles = new MouseControlHandles(renderer.camera, raycasters, window.innerWidth, window.innerHeight)
 const mouseCapturer = new MouseCapturer(window.innerWidth, window.innerHeight)
-mouseControlHandles.captureMouseEvent()
+mouseControlHandles.captureMouseEvent('primary')
 cameraController.setMouseHandlers(mouseControlHandles)
 cameraController.setDefaultMouseDownHandler(mouseControlHandles)
 

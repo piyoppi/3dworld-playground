@@ -127,8 +127,12 @@ export class MouseControlHandles {
     this.#handleItems.forEach(item => item.controlHandle.handled.wheel && item.controlHandle.handled.wheel(delta))
   }
 
-  captureMouseEvent() {
-    window.addEventListener('mousedown', e => this.start(e.clientX, e.clientY, e.button))
+  captureMouseEvent(mouseButton: MouseButton | null = null) {
+    window.addEventListener('mousedown', e => {
+      const triggered = !mouseButton || convertButtonNumberToMouseButtonsType(e.button) === mouseButton
+
+      if (triggered) this.start(e.clientX, e.clientY, e.button)
+    })
     window.addEventListener('mousemove', e => this.move(e.clientX, e.clientY, e.button))
     window.addEventListener('mouseup', _ => this.end())
     window.addEventListener('wheel', e => this.mouseWheel(e.deltaY))

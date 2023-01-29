@@ -81,7 +81,7 @@ export class HaconiwaEditor<T extends RenderingObject> {
 
   captureMouseEvent() {
     this.#mouseControlHandles.captureMouseEvent()
-    this.#itemGeneratorsMouseControlHandles.captureMouseEvent()
+    this.#itemGeneratorsMouseControlHandles.captureMouseEvent('primary')
   }
 
   setItemGeneratorFactory(generator: HaconiwaItemGeneratorFactory<T>) {
