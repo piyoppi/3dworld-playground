@@ -64,6 +64,11 @@ export class LineEdge {
     //   t : 0   ....   1
     //
     let direction = this.#parent.getDirection(this.#tValue)
+    const currentDirection = this.#coordinate.zAxis
+
+    if (Vec3.dotprod(direction, currentDirection) > 0.99999) {
+      return false
+    }
 
     if (Vec3.norm(direction) < 0.1) {
       direction = [0, 0, 1]
@@ -75,5 +80,7 @@ export class LineEdge {
 
     this.#coordinate.setDirectionZAxis(direction, position)
     this.#updatedCallbacks.call()
+
+    return true
   }
 }

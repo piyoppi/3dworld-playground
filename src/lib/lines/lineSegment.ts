@@ -21,9 +21,16 @@ export class LineSegment implements Line {
 
     this.#edges.forEach(edge => 
       edge.coordinate.setConstraintCallback(() => {
-        this.#edges.forEach(edge => edge.updateCoordinate())
+        let updated = false
 
-        this.#updatedCallbacks.call()
+        this.#edges.forEach(edge => {
+          const result = edge.updateCoordinate()
+          updated ||= result
+        })
+
+        if (updated) {
+          this.#updatedCallbacks.call()
+        }
       })
     )
   }
