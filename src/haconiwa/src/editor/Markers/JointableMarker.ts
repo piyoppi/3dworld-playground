@@ -1,4 +1,4 @@
-import type { LineItem, LineItemConnection } from "../../../../lib/LineItem"
+import type { LineItemConnection } from "../../../../lib/LineItem/index.js"
 import type { Raycaster } from "../../../../lib/Raycaster"
 import { JointHandler } from "../../../../lib/mouse/handlers/JointHandler.js"
 import { CursorSnapColiderModifier } from "../../../../lib/mouse/handlers/cursorModifiers/CursorSnapColiderModifier.js"

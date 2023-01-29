@@ -5,7 +5,7 @@ import type { MouseControllable } from "../../../../lib/mouse/MouseControllable"
 import type { HaconiwaWorldItem } from "../../world"
 import type { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder"
 import type { ColiderItemMap } from "../../../../lib/ColiderItemMap"
-import type { LineItemConnection } from "../../../../lib/LineItem"
+import type { LineItemConnection } from "../../../../lib/LineItem/index.js"
 import { Marker } from "../../../../lib/markers/Marker"
 
 export type AddMarkerCallbackFunction = (marker: Marker) => void

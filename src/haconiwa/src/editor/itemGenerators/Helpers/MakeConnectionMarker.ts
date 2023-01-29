@@ -2,7 +2,7 @@ import { CenterMarker } from "../../../../../lib/markers/CenterMarker.js"
 import { RaycastMoveHandler } from "../../../../../lib/mouse/handlers/RaycastMoveHandler.js"
 import { JointHandler } from "../../../../../lib/mouse/handlers/JointHandler.js"
 import { CursorSnapColiderModifier } from "../../../../../lib/mouse/handlers/cursorModifiers/CursorSnapColiderModifier.js"
-import type { LineItem, LineItemConnection } from "../../../../../lib/LineItem"
+import type { LineItem, LineItemConnection } from "../../../../../lib/LineItem/index.js"
 import type { Raycaster } from "../../../../../lib/Raycaster"
 import type { ColiderItemMap } from "../../../../../lib/ColiderItemMap"
 

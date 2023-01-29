@@ -1,4 +1,4 @@
-import { LineItem, LineItemConnection } from "../../../../lib/LineItem.js"
+import { LineItem, LineItemConnection } from "../../../../lib/LineItem/index.js"
 import type { Raycaster } from "../../../../lib/Raycaster"
 import type { Renderer } from "../../../../lib/Renderer"
 import { LineRenderingItemGenerator } from '../../../../lib/itemGenerators/lineItemGenerator/LineRenderingItemGenerator.js'

@@ -1,43 +1,7 @@
-import { Line } from "./lines/line.js"
-import { Item } from "./Item.js"
-import { LineEdge } from "./lines/lineEdge.js"
-import { CallbackFunctions } from "./CallbackFunctions.js"
-import { MouseControllableCallbackFunction } from "./mouse/MouseControllable.js"
-import { Vec3 } from "./Matrix.js"
-
-export class LineItem extends Item {
-  #line: Line
-  #connections: [LineItemConnection, LineItemConnection]
-
-  constructor(line: Line) {
-    super()
-    this.#line = line
-    this.#connections = [
-      new LineItemConnection(this.#line.edges[0]),
-      new LineItemConnection(this.#line.edges[1])
-    ]
-
-    this.#line.setUpdatedCallback(() => {
-      this.connections.forEach(childConnection => {
-        childConnection.connections.forEach(connection => {
-          connection.edge.updateCoordinate()
-        })
-      })
-    })
-  }
-
-  get connections() {
-    return this.#connections
-  }
-
-  get line() {
-    return this.#line
-  }
-
-  dispose() {
-    this.#connections.forEach(connection => connection.disconnectAll())
-  }
-}
+import { LineEdge } from "../lines/lineEdge.js"
+import { CallbackFunctions } from "../CallbackFunctions.js"
+import { MouseControllableCallbackFunction } from "../mouse/MouseControllable.js"
+import { Vec3 } from "../Matrix.js"
 
 export class LineItemConnection {
   #edge: LineEdge
