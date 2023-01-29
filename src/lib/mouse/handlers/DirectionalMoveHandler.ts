@@ -19,6 +19,7 @@ export class DirectionalMoveHandler implements MouseControllable {
   #cursorModifier: CursorModifier 
   #startingCallbacks = new CallbackFunctions<StartingCallbackFunction>()
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
+  #endedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
 
   constructor(manipulateCoordinate: Coordinate, directionInLocal: VectorArray3, scale: number) {
     this.manipulateCoordinate = manipulateCoordinate
@@ -38,6 +39,10 @@ export class DirectionalMoveHandler implements MouseControllable {
 
   setStartingCallback(func: StartingCallbackFunction) {
     this.#startingCallbacks.add(func)
+  }
+
+  setEndedCallback(func: MouseControllableCallbackFunction) {
+    this.#endedCallbacks.add(func)
   }
 
   removeStartedCallback(func: MouseControllableCallbackFunction) {
@@ -83,5 +88,6 @@ export class DirectionalMoveHandler implements MouseControllable {
 
   end() {
     this.#cursorTrackDifference.end()
+    this.#endedCallbacks.call()
   }
 }

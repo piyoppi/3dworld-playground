@@ -111,7 +111,6 @@ export class ThreeWayJunction<T extends RenderingObject> implements Joint<T> {
 
       const corner1 = corner1normIndex >= 0 ? corners[corner1normIndex / 2] : corners[(corner2normIndex - 1) / 2 ? 0 : 1]
       const corner2 = corner2normIndex >= 0 ? corners[(corner2normIndex - 1) / 2] : corners[corner1normIndex / 2 ? 0 : 1]
-      console.log(corner1normIndex, corner2normIndex, norms, minNorm)
 
       const points1 = [[0, 0, 0], [-this.#width / 2, 0, -offset], corner1] as VectorArray3[]
       const points2 = [[0, 0, 0], corner2, [ this.#width / 2, 0, -offset]] as VectorArray3[]

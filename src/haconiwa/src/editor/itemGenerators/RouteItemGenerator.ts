@@ -108,6 +108,7 @@ export class RouteItemGenerator<T extends RenderingObject>
       handler.setStartingCallback(() => !heightHandler?.isStart)
 
       proxyHandler.setStartedCallback(() => {
+        // このマーカーにスナップしちゃっていてよくないので、どうにかしてスナップしないようにする
         const heightMarker = new DirectionalMarker(1, 0.1, [0, 1, 0], 1.5, true)
         heightHandler = new DirectionalMoveHandler(connection.edge.coordinate, [0, 1, 0], 0.1)
         heightHandler.setStartingCallback(() => !handler.isStart)
@@ -115,6 +116,7 @@ export class RouteItemGenerator<T extends RenderingObject>
         heightMarker.setParentCoordinate(connection.edge.coordinate)
         heightMarker.addHandler(heightHandler)
         heightMarker.attachRenderingObject({r: 0, g: 255, b: 0}, this.#renderingObjectBuilder, this.#renderer)
+
         this.registerMarker(heightMarker)
         this.#handlingMarkers.push(heightMarker)
 
@@ -134,7 +136,6 @@ export class RouteItemGenerator<T extends RenderingObject>
       const markers = arr.map(elm => elm.marker)
       const jointableHandler = markerJointable(marker, markers, handler, connection, this.#markerRaycaster, coliderConnectionMap)
       item.connections.filter(conn => conn !== connection).forEach(conn => jointableHandler.addIgnoredConnection(conn))
-
       marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#renderer)
 
       return marker
