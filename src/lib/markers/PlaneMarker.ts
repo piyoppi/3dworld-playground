@@ -68,15 +68,6 @@ export class PlaneMarker implements SingleMarker, MarkerRenderable {
     this.#handledColiders.detach(raycaster, interactionHandler)
   }
 
-  setParentCoordinate(coordinate: Coordinate) {
-    this.#parentCoordinate.removeChild(this.#markerCoordinate)
-
-    this.#parentCoordinate = coordinate
-    this.#colider.parentCoordinate = coordinate
-
-    this.#parentCoordinate.addChild(this.#markerCoordinate)
-  }
-
   attachRenderingObject<T extends RenderingObject>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
     const renderingItem = builder.makePlane(this.#size, this.#size, color)
     renderingItem.material.setSide('both')

@@ -1,14 +1,14 @@
 import type { Coordinate } from "../Coordinate"
 import type { MouseControlHandles } from "../mouse/MouseControlHandles"
 import type { Raycaster } from "../Raycaster"
-import type { Colider } from "../Colider"
+import type { CoordinatedColider } from "../Colider"
 import { MouseControllable } from "../mouse/MouseControllable"
 
 export interface Marker {
-  readonly coliders: Colider[]
-  attach: (raycaster: Raycaster, mouseHandlers: MouseControlHandles) => void
-  detach: (raycaster: Raycaster, mouseHandlers: MouseControlHandles) => void
-  setParentCoordinate: (coordinate: Coordinate) => void
+  readonly coliders: CoordinatedColider[]
+  readonly handlers: MouseControllable[]
+  attach: (raycaster: Raycaster<CoordinatedColider>, mouseHandlers: MouseControlHandles) => void
+  detach: (raycaster: Raycaster<CoordinatedColider>, mouseHandlers: MouseControlHandles) => void
 }
 
 export interface SingleMarker extends Marker {

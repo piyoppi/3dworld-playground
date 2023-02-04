@@ -10,7 +10,7 @@ import type { Camera } from '../../../lib/Camera'
 import type { RenderingObjectBuilder } from '../../../lib/RenderingObjectBuilder'
 import type { MouseButton } from '../../../lib/mouse/MouseControllable'
 import { Raycaster } from '../../../lib/Raycaster.js'
-import { Colider, PlaneColider } from '../../../lib/Colider.js'
+import { Colider, PlaneColider, CoordinatedColider } from '../../../lib/Colider.js'
 import { HaconiwaWorld } from '../world.js'
 import { ControlHandle, MouseControlHandles } from '../../../lib/mouse/MouseControlHandles.js'
 import { Raycasters } from '../../../lib/Raycasters.js'
@@ -30,7 +30,7 @@ export class HaconiwaEditor<T extends RenderingObject> {
   #mouseControlHandles: MouseControlHandles
   #itemGeneratorsMouseControlHandles: MouseControlHandles
   #editingPlane: EditingPlane
-  #markerRaycaster: Raycaster
+  #markerRaycaster: Raycaster<CoordinatedColider>
   #renderer: HaconiwaRenderer<T>
   #mouseCapturer: MouseCapturer
   #raycasters = new Raycasters()
@@ -192,7 +192,6 @@ export class EditingPlane {
     this.#raycaster = new Raycaster(camera)
     this.#colider = new PlaneColider(new Coordinate(), this.#editingPlane.normal, false)
     this.#raycaster.addTarget(this.#colider)
-    console.log(this.#colider.parentCoordinate?.uuid)
   }
 
   get raycaster() {

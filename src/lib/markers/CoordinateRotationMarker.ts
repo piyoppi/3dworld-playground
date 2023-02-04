@@ -13,10 +13,10 @@ export class CoordinateRotationMarker implements Marker, MarkerRenderable {
   #xzPlaneMarker: RotateMarker
   #xyPlaneMarker: RotateMarker
 
-  constructor(outerRadius: number, innerRadius: number) {
-    this.#yzPlaneMarker = new RotateMarker(outerRadius, innerRadius, [0, 0, 0], [1, 0, 0])
-    this.#xzPlaneMarker = new RotateMarker(outerRadius, innerRadius, [0, 0, 0], [0, 1, 0])
-    this.#xyPlaneMarker = new RotateMarker(outerRadius, innerRadius, [0, 0, 0], [0, 0, 1])
+  constructor(outerRadius: number, innerRadius: number, parentCoordinate: Coordinate) {
+    this.#yzPlaneMarker = new RotateMarker(outerRadius, innerRadius, [0, 0, 0], [1, 0, 0], parentCoordinate)
+    this.#xzPlaneMarker = new RotateMarker(outerRadius, innerRadius, [0, 0, 0], [0, 1, 0], parentCoordinate)
+    this.#xyPlaneMarker = new RotateMarker(outerRadius, innerRadius, [0, 0, 0], [0, 0, 1], parentCoordinate)
   }
 
   get markerCoordinates() {
@@ -32,6 +32,14 @@ export class CoordinateRotationMarker implements Marker, MarkerRenderable {
       ...this.#yzPlaneMarker.coliders,
       ...this.#xzPlaneMarker.coliders,
       ...this.#xyPlaneMarker.coliders,
+    ]
+  }
+
+  get handlers() {
+    return [
+      ...this.#yzPlaneMarker.handlers,
+      ...this.#xzPlaneMarker.handlers,
+      ...this.#xyPlaneMarker.handlers
     ]
   }
 
@@ -51,12 +59,6 @@ export class CoordinateRotationMarker implements Marker, MarkerRenderable {
     this.#yzPlaneMarker.detach(raycaster, interactionHandler)
     this.#xzPlaneMarker.detach(raycaster, interactionHandler)
     this.#xyPlaneMarker.detach(raycaster, interactionHandler)
-  }
-
-  setParentCoordinate(coordinate: Coordinate) {
-    this.#yzPlaneMarker.setParentCoordinate(coordinate)
-    this.#xzPlaneMarker.setParentCoordinate(coordinate)
-    this.#xyPlaneMarker.setParentCoordinate(coordinate)
   }
 
   attachRenderingObject<T extends RenderingObject>(builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {

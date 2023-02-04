@@ -8,8 +8,9 @@ import { Item } from '../lib/Item.js'
 import { DirectionalMoveHandler } from '../lib/mouse/handlers/DirectionalMoveHandler.js'
 import { MouseControlHandles } from '../lib/mouse/MouseControlHandles.js'
 import { CameraKeyboardHandler } from '../lib/CameraKeyboardHandler.js'
-import { BoxColider } from '../lib/Colider.js'
+import { BoxColider, CoordinatedColider } from '../lib/Colider.js'
 import { Raycasters } from '../lib/Raycasters.js'
+import { VectorArray3 } from '../lib/Matrix'
 
 const lookAtCameraHandler = new LookAtCamera()
 const cameraKeyBoardHandler = new CameraKeyboardHandler()
@@ -24,12 +25,13 @@ const renderer = factory.makeRenderer({fov: 100, aspect: window.innerWidth / win
 const primitiveRenderingObjectBuilder = factory.makeRenderingObjectBuilder()
 renderer.initialize(window.innerWidth, window.innerHeight)
 
-const raycaster = new Raycaster(renderer.camera)
+const raycaster = new Raycaster<CoordinatedColider>(renderer.camera)
 const axesRaycaster = new Raycaster(renderer.camera)
 const raycasters = new Raycasters()
 raycasters.add(axesRaycaster)
 const mouseInteractionHandler = new MouseControlHandles(renderer.camera, raycasters, window.innerWidth, window.innerHeight)
 
+let markers: DirectionalMarker[] = []
 const lightCoordinate = new Coordinate()
 lightCoordinate.y = 1
 lightCoordinate.lookAt([0, 0, 0])
@@ -48,14 +50,6 @@ for (let x = -3; x < 3; x+=0.2) {
   }
 }
 
-const markerX = new DirectionalMarker(0.1, 0.01, [1, 0, 0])
-const markerY = new DirectionalMarker(0.1, 0.01, [0, 1, 0])
-const markerZ = new DirectionalMarker(0.1, 0.01, [0, 0, 1])
-
-markerX.attachRenderingObject({r: 255, g: 0, b: 0}, primitiveRenderingObjectBuilder, renderer)
-markerY.attachRenderingObject({r: 0, g: 255, b: 0}, primitiveRenderingObjectBuilder, renderer)
-markerZ.attachRenderingObject({r: 0, g: 0, b: 255}, primitiveRenderingObjectBuilder, renderer)
-
 function captureMouseClicked() {
   if (!mouseHandler.updated) return
   const pos = mouseHandler.getNormalizedPosition()
@@ -65,20 +59,27 @@ function captureMouseClicked() {
 
   if (axesRaycaster.colidedColiders.length === 0 && raycaster.colidedColiders.length > 0) {
     const box = raycaster.colidedColiders[0]
-    if (!box.parentCoordinate) return
 
-    markerX.setParentCoordinate(box.parentCoordinate)
-    markerY.setParentCoordinate(box.parentCoordinate)
-    markerZ.setParentCoordinate(box.parentCoordinate)
-    markerX.detach(axesRaycaster, mouseInteractionHandler)
-    markerY.detach(axesRaycaster, mouseInteractionHandler)
-    markerZ.detach(axesRaycaster, mouseInteractionHandler)
-    markerX.addHandler(new DirectionalMoveHandler(box.parentCoordinate, [1, 0, 0], 0.01))
-    markerY.addHandler(new DirectionalMoveHandler(box.parentCoordinate, [0, 1, 0], 0.01))
-    markerZ.addHandler(new DirectionalMoveHandler(box.parentCoordinate, [0, 0, 1], 0.01))
-    markerX.attach(axesRaycaster, mouseInteractionHandler)
-    markerY.attach(axesRaycaster, mouseInteractionHandler)
-    markerZ.attach(axesRaycaster, mouseInteractionHandler)
+    markers.forEach(marker => {
+      marker.markerCoordinates.forEach(coord => renderer.removeItem(coord))
+      marker.detach(raycaster, mouseInteractionHandler)
+    })
+
+    markers = [
+      {color: {r: 255, g: 0,   b: 0  }, axis: [1, 0, 0] as VectorArray3},
+      {color: {r: 0,   g: 255, b: 0  }, axis: [0, 1, 0] as VectorArray3},
+      {color: {r: 0,   g: 0,   b: 255}, axis: [0, 0, 1] as VectorArray3}
+    ].map(({color, axis}) => {
+      const marker = new DirectionalMarker(0.1, 0.01, axis, box.parentCoordinate)
+
+      return {marker, axis, color}
+    }).map(({marker, axis, color}) => {
+      marker.attachRenderingObject(color, primitiveRenderingObjectBuilder, renderer)
+
+      marker.addHandler(new DirectionalMoveHandler(box.parentCoordinate, axis, 0.01))
+      marker.attach(axesRaycaster, mouseInteractionHandler)
+      return marker
+    })
   }
 }
 

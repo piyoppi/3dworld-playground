@@ -6,7 +6,7 @@ import { makeItem } from '../lib/ItemFactory.js'
 import { ThreeFactory as Factory } from '../lib/threeAdapter/ThreeFactory.js'
 import { Coordinate } from '../lib/Coordinate.js'
 import { Raycaster } from '../lib/Raycaster.js'
-import { BoxColider } from '../lib/Colider.js'
+import { BoxColider, CoordinatedColider } from '../lib/Colider.js'
 import { setRenderer } from '../lib/Debugger.js'
 import { DirectionalMarker } from '../lib/markers/DirectionalMarker.js'
 import { ThreeGroup, ThreeRenderingObject } from '../lib/threeAdapter/ThreeRenderingObject.js'
@@ -20,23 +20,19 @@ renderer.initialize(window.innerWidth, window.innerHeight)
 
 setRenderer(renderer)
 
-const raycaster = new Raycaster(renderer.camera)
+const raycaster = new Raycaster<CoordinatedColider>(renderer.camera)
 
 async function run() {
   const lightCoordinate = new Coordinate()
   lightCoordinate.y = 1
   lightCoordinate.lookAt([0, 0, 0])
   renderer.addLight(lightCoordinate)
-
+  const primitiveRenderingObjectBuilder = factory.makeRenderingObjectBuilder()
   const avatarRenderingObject = await loadGlb('./assets/avatar.glb')
   const avatar = makeItem()
   avatar.parentCoordinate.z = 0
   avatar.parentCoordinate.y = -1
   renderer.addItem(avatar.parentCoordinate, new ThreeRenderingObject(new ThreeGroup(avatarRenderingObject)))
-
-  const markerX = new DirectionalMarker(0.1, 0.01, [1, 0, 0])
-  const markerY = new DirectionalMarker(0.1, 0.01, [0, 1, 0])
-  const markerZ = new DirectionalMarker(0.1, 0.01, [0, 0, 1])
 
   setTimeout(() => {
     const bones = extractItemsFromThreeBones(avatarRenderingObject, avatar)
@@ -46,10 +42,10 @@ async function run() {
       raycaster.addTarget(colider)
     })
 
-    const primitiveRenderingObjectBuilder = factory.makeRenderingObjectBuilder()
-    markerX.setParentCoordinate(bones[2].item.parentCoordinate)
-    markerY.setParentCoordinate(bones[2].item.parentCoordinate)
-    markerZ.setParentCoordinate(bones[2].item.parentCoordinate)
+    const markerX = new DirectionalMarker(0.1, 0.01, [1, 0, 0], bones[2].item.parentCoordinate)
+    const markerY = new DirectionalMarker(0.1, 0.01, [0, 1, 0], bones[2].item.parentCoordinate)
+    const markerZ = new DirectionalMarker(0.1, 0.01, [0, 0, 1], bones[2].item.parentCoordinate)
+
     markerX.attachRenderingObject({r: 255, g: 0, b: 0}, primitiveRenderingObjectBuilder, renderer)
     markerY.attachRenderingObject({r: 0, g: 255, b: 0}, primitiveRenderingObjectBuilder, renderer)
     markerZ.attachRenderingObject({r: 0, g: 0, b: 255}, primitiveRenderingObjectBuilder, renderer)
@@ -68,9 +64,13 @@ async function run() {
       items.forEach(item => item.parentCoordinate && renderer.setColor(item.parentCoordinate, {r: 255, g: 255, b: 0}))
 
       if (items.length > 0 && items[0].parentCoordinate) {
-        markerX.setParentCoordinate(items[0].parentCoordinate)
-        markerY.setParentCoordinate(items[0].parentCoordinate)
-        markerZ.setParentCoordinate(items[0].parentCoordinate)
+        const markerX = new DirectionalMarker(0.1, 0.01, [1, 0, 0], items[0].parentCoordinate)
+        const markerY = new DirectionalMarker(0.1, 0.01, [0, 1, 0], items[0].parentCoordinate)
+        const markerZ = new DirectionalMarker(0.1, 0.01, [0, 0, 1], items[0].parentCoordinate)
+
+        markerX.attachRenderingObject({r: 255, g: 0, b: 0}, primitiveRenderingObjectBuilder, renderer)
+        markerY.attachRenderingObject({r: 0, g: 255, b: 0}, primitiveRenderingObjectBuilder, renderer)
+        markerZ.attachRenderingObject({r: 0, g: 0, b: 255}, primitiveRenderingObjectBuilder, renderer)
       }
     }
 

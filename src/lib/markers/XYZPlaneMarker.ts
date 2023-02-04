@@ -27,6 +27,14 @@ export class XYZPlaneMarker implements Marker, MarkerRenderable {
     ]
   }
 
+  get handlers() {
+    return [
+      ...this.#yzPlaneMarker.handlers,
+      ...this.#zxPlaneMarker.handlers,
+      ...this.#xyPlaneMarker.handlers
+    ]
+  }
+
   get markerCoordinates() {
     return [
       ...this.#yzPlaneMarker.markerCoordinates,
@@ -45,12 +53,6 @@ export class XYZPlaneMarker implements Marker, MarkerRenderable {
     this.#xyPlaneMarker.detach(raycaster, interactionHandler)
     this.#yzPlaneMarker.detach(raycaster, interactionHandler)
     this.#zxPlaneMarker.detach(raycaster, interactionHandler)
-  }
-
-  setParentCoordinate(coordinate: Coordinate) {
-    this.#xyPlaneMarker.setParentCoordinate(coordinate)
-    this.#yzPlaneMarker.setParentCoordinate(coordinate)
-    this.#zxPlaneMarker.setParentCoordinate(coordinate)
   }
 
   addHandlers(yzHandler: MouseControllable, zxHandler: MouseControllable, xyHandler: MouseControllable) {

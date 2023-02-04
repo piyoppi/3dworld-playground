@@ -7,8 +7,11 @@ export interface Colider {
   readonly uuid: string
   checkRay(ray: Ray): number
   checkColider(colider: Colider): VectorArray3
-  readonly parentCoordinate?: Coordinate
   enabled: boolean
+}
+
+export interface CoordinatedColider extends Colider {
+  readonly parentCoordinate: Coordinate
 }
 
 export class ColiderBase {
@@ -42,7 +45,7 @@ export class InfiniteColider extends ColiderBase implements Colider {
   }
 }
 
-export class BallColider extends ColiderBase implements Colider {
+export class BallColider extends ColiderBase implements CoordinatedColider {
   #radius = 0
   #parentCoordinate: Coordinate
 
@@ -58,10 +61,6 @@ export class BallColider extends ColiderBase implements Colider {
 
   get parentCoordinate() {
     return this.#parentCoordinate
-  }
-
-  set parentCoordinate(value: Coordinate) {
-    this.#parentCoordinate = value
   }
 
   checkRay(ray: Ray): number {
@@ -95,7 +94,7 @@ export class BallColider extends ColiderBase implements Colider {
   }
 }
 
-export class BoxColider extends ColiderBase implements Colider {
+export class BoxColider extends ColiderBase implements CoordinatedColider {
   #halfDimensions: VectorArray3 = [0, 0, 0]
   #parentCoordinate: Coordinate
 
@@ -111,10 +110,6 @@ export class BoxColider extends ColiderBase implements Colider {
 
   get parentCoordinate() {
     return this.#parentCoordinate
-  }
-
-  set parentCoordinate(value: Coordinate) {
-    this.#parentCoordinate = value
   }
 
   checkRay(ray: Ray): number {
@@ -159,7 +154,7 @@ export class BoxColider extends ColiderBase implements Colider {
   }
 }
 
-export class PlaneColider extends ColiderBase implements Colider {
+export class PlaneColider extends ColiderBase implements CoordinatedColider {
   #edgeEvaluator: (distance: number, ray: Ray) => boolean = () => true
   #parentCoordinate: Coordinate
   #norm: VectorArray3
@@ -174,10 +169,6 @@ export class PlaneColider extends ColiderBase implements Colider {
 
   get parentCoordinate() {
     return this.#parentCoordinate
-  }
-
-  set parentCoordinate(value: Coordinate) {
-    this.#parentCoordinate = value
   }
 
   setEdgeEvaluator(func: (distance: number, ray: Ray) => boolean) {

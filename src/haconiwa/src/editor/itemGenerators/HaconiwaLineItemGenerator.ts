@@ -18,19 +18,20 @@ import type { ColiderItemMap } from "../../../../lib/ColiderItemMap.js"
 import { makeConnectionMarker } from './Helpers/MakeConnectionMarker.js'
 import { RenderingObject } from "../../../../lib/RenderingObject.js"
 import { HaconiwaItemGeneratorBase } from "./HaconiwaItemGeneratorBase.js"
+import { CoordinatedColider } from '../../../../lib/Colider.js'
 
 export class HaconiwaLineItemGenerator<T extends RenderingObject>
   extends HaconiwaItemGeneratorBase<T>
   implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorLineConnectable, HaconiwaItemGeneratorItemClonable<T>  {
   #planeRaycaster: Raycaster
-  #markerRaycaster: Raycaster
+  #markerRaycaster: Raycaster<CoordinatedColider>
   #renderingObjectBuilder: RenderingObjectBuilder<T>
   private original: HaconiwaItemGeneratorClonedItem<T> | null = null
   #renderer
   #coliderConnectionMap: ColiderItemMap<LineItemConnection> | null = null
   #generatedItem: LineItem | null = null
 
-  constructor(renderer: Renderer<T>, planeRaycaster: Raycaster, markerRaycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) {
+  constructor(renderer: Renderer<T>, planeRaycaster: Raycaster, markerRaycaster: Raycaster<CoordinatedColider>, renderingObjectBuilder: RenderingObjectBuilder<T>) {
     super(markerRaycaster)
 
     this.#planeRaycaster = planeRaycaster
@@ -66,22 +67,28 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject>
     const line = lineGenerator.getLine()
     const item = new LineItem(line)
     this.#generatedItem = item
-    const markers = makeConnectionMarker(item, this.#markerRaycaster, this.#planeRaycaster, this.#coliderConnectionMap)
 
-    markers.forEach((marker, index) => {
-      marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder,this.#renderer)
+    makeConnectionMarker(item, this.#markerRaycaster, this.#planeRaycaster, this.#coliderConnectionMap)
+      .forEach((generated, index, arr) => {
+        const { marker, connection } = generated
 
-      marker.parentCoordinate.setUpdateCallback(() => {
-        //item.line.setEdge(index, marker.parentCoordinate.position)
-        const generated = lineItemGenerator.update(item.line)
-        itemGenerator.update(generated, item.parentCoordinate)
+        marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, 0.5, this.#renderingObjectBuilder, this.#renderer)
+
+        connection.edge.coordinate.setUpdateCallback(() => {
+          //item.line.setEdge(index, marker.parentCoordinate.position)
+          const generated = lineItemGenerator.update(item.line)
+          itemGenerator.update(generated, item.parentCoordinate)
+        })
+
+        this.registerMarker(marker)
+
+        if (index === 1) {
+          arr[1]?.marker.handlers.forEach(handler => handler.start(cursor, button, cameraCoordinate))
+        }
       })
-    })
+
 
     this.registerItem(item)
-    markers.forEach(marker => this.registerMarker(marker))
-
-    markers[1]?.handlers.forEach(handler => handler.start(cursor, button, cameraCoordinate))
 
     return true
   }
@@ -106,7 +113,7 @@ export class HaconiwaLineItemGeneratorFactory<T extends RenderingObject> impleme
     this.#original = original
   }
 
-  create(renderer: Renderer<T>, raycaster: Raycaster, markerRaycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) {
+  create(renderer: Renderer<T>, raycaster: Raycaster, markerRaycaster: Raycaster<CoordinatedColider>, renderingObjectBuilder: RenderingObjectBuilder<T>) {
     const generator = new HaconiwaLineItemGenerator(renderer, raycaster, markerRaycaster, renderingObjectBuilder)
     generator.setOriginal(this.#original)
 

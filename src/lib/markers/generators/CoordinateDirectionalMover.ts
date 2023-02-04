@@ -6,7 +6,7 @@ import type { Renderer } from "../../Renderer"
 import { RenderingObject } from "../../RenderingObject.js"
 
 export function makeCoordinateDirectionalMover<T extends RenderingObject>(parentCoordinate: Coordinate, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>, startingHookFunction: (() => boolean) | null = null) {
-  const xyzMarker = new CoordinateMarker(3, 0.1)
+  const xyzMarker = new CoordinateMarker(3, 0.1, parentCoordinate)
   const xyzHandlers = [
     new DirectionalMoveHandler(parentCoordinate, [1, 0, 0], 0.1),
     new DirectionalMoveHandler(parentCoordinate, [0, 1, 0], 0.1),
@@ -16,7 +16,6 @@ export function makeCoordinateDirectionalMover<T extends RenderingObject>(parent
 
   xyzMarker.addHandlers(xyzHandlers[0], xyzHandlers[1], xyzHandlers[2])
   xyzMarker.attachRenderingObject(builder, renderer)
-  xyzMarker.setParentCoordinate(parentCoordinate)
   xyzHandlers.forEach(handler => handler.setStartedCallback(startingHookFn))
 
   return {marker: xyzMarker, handlers: xyzHandlers}

@@ -6,7 +6,7 @@ import { Vec3, VectorArray3 } from "../../Matrix.js"
 import type { Camera } from "../../Camera"
 import { CallbackFunctions } from "../../CallbackFunctions.js"
 import { Raycaster } from "../../Raycaster.js"
-import { PlaneColider } from "../../Colider.js"
+import { Colider, PlaneColider } from "../../Colider.js"
 import type { PositionApplyer, PositionChangable } from "./PositionChangable"
 
 type StartingCallbackFunction = () => boolean
@@ -17,7 +17,7 @@ export class PlaneMoveHandler implements MouseControllable, PositionChangable {
   #isStart = false
   #startingCallbacks = new CallbackFunctions<StartingCallbackFunction>()
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
-  #raycaster: Raycaster
+  #raycaster: Raycaster<Colider>
   #offset: VectorArray3 = [0, 0, 0]
   #applyer: PositionApplyer = (coordinate: Coordinate, position: VectorArray3) => coordinate.position = position
 

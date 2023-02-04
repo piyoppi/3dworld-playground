@@ -16,7 +16,6 @@ export function makeCoordinatePlanesMover<T extends RenderingObject>(parentCoord
 
   marker.addHandlers(handlers[0], handlers[1], handlers[2])
   marker.attachRenderingObject(builder, renderer)
-  marker.setParentCoordinate(parentCoordinate)
   handlers.forEach(handler => handler.setStartedCallback(startingHookFn))
 
   return {marker, handlers}

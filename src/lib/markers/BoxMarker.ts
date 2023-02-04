@@ -15,11 +15,10 @@ export class BoxMarker implements Marker {
   #handledColiders: HandledColiders
   #colider: BoxColider 
   #size: VectorArray3
-  #attachedRenderingItem = false
 
-  constructor(size: VectorArray3) {
+  constructor(size: VectorArray3, parentCoordinate: Coordinate) {
     this.#handledColiders = new HandledColiders()
-    this.#colider = new BoxColider(size[0], size[1], size[2], this.#parentCoordinate)
+    this.#colider = new BoxColider(size[0], size[1], size[2], parentCoordinate)
     this.#size = size
   }
 
@@ -49,17 +48,7 @@ export class BoxMarker implements Marker {
     this.#handledColiders.detach(raycaster, interactionHandler)
   }
 
-  setParentCoordinate(coordinate: Coordinate) {
-    if (this.#attachedRenderingItem) {
-      throw new Error('RenderingItem is already attached')
-    }
-
-    this.#parentCoordinate = coordinate
-    this.#colider.parentCoordinate = this.#parentCoordinate
-  }
-
   attachRenderingObject<T>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
     renderer.addItem(this.#parentCoordinate, builder.makeBox(this.#size[0], this.#size[1], this.#size[2], color))
-    this.#attachedRenderingItem = true
   }
 }

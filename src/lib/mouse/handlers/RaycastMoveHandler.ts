@@ -17,8 +17,8 @@ export class RaycastMoveHandler implements MouseControllable, PositionChangable 
   #startingCallbacks = new CallbackFunctions<StartingCallbackFunction>()
   #updatedCallbacks: Array<() => void> = []
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
-  #raycaster: Raycaster
-  #markerRaycaster: Raycaster
+  #raycaster: Raycaster<Colider>
+  #markerRaycaster: Raycaster<Colider>
   #applyer: PositionApplyer = (coordinate: Coordinate, position: VectorArray3) => coordinate.position = position
   #isStart = false
   #targetColiders: Colider[]
@@ -26,7 +26,7 @@ export class RaycastMoveHandler implements MouseControllable, PositionChangable 
     handledColiderUuid: ''
   }
 
-  constructor(manipulateCoordinate: Coordinate, raycaster: Raycaster, markerRaycaster: Raycaster, targetColiders: Colider[] = []) {
+  constructor(manipulateCoordinate: Coordinate, raycaster: Raycaster<Colider>, markerRaycaster: Raycaster<Colider>, targetColiders: Colider[] = []) {
     this.manipulateCoordinate = manipulateCoordinate
     this.#cursorModifier = new CursorNoneModifier()
     this.#raycaster = raycaster

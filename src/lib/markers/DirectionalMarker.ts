@@ -1,4 +1,4 @@
-import { BoxColider, Colider } from "../Colider.js"
+import { BoxColider } from "../Colider.js"
 import { Coordinate } from "../Coordinate.js"
 import { HandledColiders } from "./HandledColiders.js"
 import { Vec3, VectorArray3 } from "../Matrix.js"
@@ -13,28 +13,31 @@ import type { SingleMarker, MarkerRenderable } from "./Marker"
 export class DirectionalMarker implements SingleMarker, MarkerRenderable {
   #norm: number
   #radius: number
-  #parentCoordinate = new Coordinate()
   #markerCoordinate = new Coordinate()
   #handledColiders: HandledColiders
-  #colider: Colider
+  #colider: BoxColider
   #isGlobal = false
   #offsetVec = [0, 0, 0] as VectorArray3
 
-  constructor(norm: number, radius: number, direction: VectorArray3, offset: number = 0, isGlobal = false) {
+  constructor(norm: number, radius: number, direction: VectorArray3, parentCoordinate: Coordinate, offset: number = 0, isGlobal = false) {
     this.#norm = norm
     this.#radius = radius
     this.#isGlobal = isGlobal
     this.#offsetVec = Vec3.mulScale(direction, offset)
     this.#markerCoordinate.setDirectionYAxis(direction, Vec3.add(Vec3.mulScale(direction, norm / 2), this.#offsetVec))
 
+    if (isGlobal) {
+      const updateFunc = () => this.#markerCoordinate.position = Vec3.add(parentCoordinate.getGlobalPosition(), this.#offsetVec)
+      parentCoordinate.setUpdateCallback(() => {
+        updateFunc()
+      })
+      updateFunc()
+    } else {
+      parentCoordinate.addChild(this.#markerCoordinate)
+    }
+
     this.#handledColiders = new HandledColiders()
     this.#colider = new BoxColider(this.#radius, this.#norm, this.#radius, this.#markerCoordinate)
-
-    this.#parentCoordinate.addChild(this.#markerCoordinate)
-  }
-
-  get parentCoordinate() {
-    return this.#parentCoordinate
   }
 
   get markerCoordinates() {
@@ -59,22 +62,6 @@ export class DirectionalMarker implements SingleMarker, MarkerRenderable {
 
   detach(raycaster: Raycaster, interactionHandler: MouseControlHandles) {
     this.#handledColiders.detach(raycaster, interactionHandler)
-  }
-
-  setParentCoordinate(coordinate: Coordinate) {
-    this.#parentCoordinate.removeChild(this.#markerCoordinate)
-
-    this.#parentCoordinate = coordinate
-
-    if (this.#isGlobal) {
-      const updateFunc = () => this.#markerCoordinate.position = Vec3.add(this.#parentCoordinate.getGlobalPosition(), this.#offsetVec)
-      this.#parentCoordinate.setUpdateCallback(() => {
-        updateFunc()
-      })
-      updateFunc()
-    } else {
-      this.#parentCoordinate.addChild(this.#markerCoordinate)
-    }
   }
 
   attachRenderingObject<T>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {

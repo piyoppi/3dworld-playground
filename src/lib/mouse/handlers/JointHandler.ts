@@ -3,10 +3,11 @@ import { LineItemConnection } from "../../LineItem/index.js"
 import type { MouseButton, MouseControllable, MouseControllableCallbackFunction, WindowCursor } from "../../mouse/MouseControllable"
 import { CallbackFunctions } from "../../CallbackFunctions.js"
 import type { Raycaster } from "../../Raycaster"
+import { Colider } from "../../Colider"
 
 export class JointHandler implements MouseControllable {
   #isStart = false
-  #raycaster: Raycaster
+  #raycaster: Raycaster<Colider>
   #coliderItemMap: ColiderItemMap<LineItemConnection>
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   #endedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
@@ -17,7 +18,7 @@ export class JointHandler implements MouseControllable {
   #connecting: LineItemConnection[] = []
   #disconnectable = false
 
-  constructor(connection: LineItemConnection, raycaster: Raycaster, coliderItemMap: ColiderItemMap<LineItemConnection>) {
+  constructor(connection: LineItemConnection, raycaster: Raycaster<Colider>, coliderItemMap: ColiderItemMap<LineItemConnection>) {
     this.#raycaster = raycaster
     this.#coliderItemMap = coliderItemMap
     this.#connection = connection

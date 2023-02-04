@@ -15,10 +15,10 @@ export class CoordinateMarker implements Marker, MarkerRenderable {
   #yAxisMarker: DirectionalMarker
   #zAxisMarker: DirectionalMarker
 
-  constructor(norm: number, radius: number) {
-    this.#xAxisMarker = new DirectionalMarker(norm, radius, [1, 0, 0])
-    this.#yAxisMarker = new DirectionalMarker(norm, radius, [0, 1, 0])
-    this.#zAxisMarker = new DirectionalMarker(norm, radius, [0, 0, 1])
+  constructor(norm: number, radius: number, parentCoordinate: Coordinate) {
+    this.#xAxisMarker = new DirectionalMarker(norm, radius, [1, 0, 0], parentCoordinate)
+    this.#yAxisMarker = new DirectionalMarker(norm, radius, [0, 1, 0], parentCoordinate)
+    this.#zAxisMarker = new DirectionalMarker(norm, radius, [0, 0, 1], parentCoordinate)
   }
 
   get parentCoordinate() {
@@ -41,6 +41,14 @@ export class CoordinateMarker implements Marker, MarkerRenderable {
     ]
   }
 
+  get handlers() {
+    return [
+      ...this.#xAxisMarker.handlers,
+      ...this.#yAxisMarker.handlers,
+      ...this.#zAxisMarker.handlers
+    ]
+  }
+
   addHandlers(xHandler: MouseControllable, yHandler: MouseControllable, zHandler: MouseControllable) {
     this.#xAxisMarker.addHandler(xHandler)
     this.#yAxisMarker.addHandler(yHandler)
@@ -57,12 +65,6 @@ export class CoordinateMarker implements Marker, MarkerRenderable {
     this.#xAxisMarker.detach(raycaster, interactionHandler)
     this.#yAxisMarker.detach(raycaster, interactionHandler)
     this.#zAxisMarker.detach(raycaster, interactionHandler)
-  }
-
-  setParentCoordinate(coordinate: Coordinate) {
-    this.#xAxisMarker.setParentCoordinate(coordinate)
-    this.#yAxisMarker.setParentCoordinate(coordinate)
-    this.#zAxisMarker.setParentCoordinate(coordinate)
   }
 
   attachRenderingObject<T>(builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {

@@ -12,10 +12,10 @@ export class ProxyHandler implements MouseControllable {
   #movingCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   #endingCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   #isStart = false
-  #raycaster: Raycaster
+  #raycaster: Raycaster<Colider>
   #targetColiders: Colider[]
 
-  constructor(raycaster: Raycaster, targetColiders: Colider[]) {
+  constructor(raycaster: Raycaster<Colider>, targetColiders: Colider[]) {
     this.#raycaster = raycaster
     this.#targetColiders = targetColiders
   }

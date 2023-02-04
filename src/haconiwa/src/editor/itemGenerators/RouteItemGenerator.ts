@@ -20,30 +20,31 @@ import { NoneJoint } from "./Joints/NoneJoint.js"
 import { RenderingObject } from "../../../../lib/RenderingObject.js"
 import { JointFactory } from "./Joints/JointFactory.js"
 import { HaconiwaItemGeneratorBase } from "./HaconiwaItemGeneratorBase.js"
-import { CenterMarker } from "../../../../lib/markers/CenterMarker.js"
 import { ProxyHandler } from "../../../../lib/mouse/handlers/ProxyHandler.js"
 import { PlaneMoveHandler } from "../../../../lib/mouse/handlers/PlaneMoveHandler.js"
 import { Marker, MarkerRenderable } from "../../../../lib/markers/Marker.js"
 import { DirectionalMarker } from "../../../../lib/markers/DirectionalMarker.js"
 import { DirectionalMoveHandler } from "../../../../lib/mouse/handlers/DirectionalMoveHandler.js"
+import { JointMarker } from "../../../../lib/markers/JointMarker.js"
+import { CoordinatedColider } from "../../../../lib/Colider.js"
 
 export class RouteItemGenerator<T extends RenderingObject>
   extends HaconiwaItemGeneratorBase<T>
   implements HaconiwaItemGenerator<T>, HaconiwaItemGeneratorLineConnectable, HaconiwaItemGeneratorItemClonable<T> {
   #planeRaycaster: Raycaster
-  #markerRaycaster: Raycaster
+  #markerRaycaster: Raycaster<CoordinatedColider>
   #renderingObjectBuilder: RenderingObjectBuilder<T>
   #renderer: Renderer<T>
   #coliderConnectionMap: ColiderItemMap<LineItemConnection> | null = null
   #jointFactory: JointFactory<T>
   #handlingMarkers: Array<Marker & MarkerRenderable> = []
-  #jointableMarkers: Array<CenterMarker> = []
+  #jointableMarkers: Array<JointMarker> = []
   private original: HaconiwaItemGeneratorClonedItem<T> | null = null
 
   constructor(
     renderer: Renderer<T>,
     planeRaycaster: Raycaster,
-    markerRaycaster: Raycaster,
+    markerRaycaster: Raycaster<CoordinatedColider>,
     renderingObjectBuilder: RenderingObjectBuilder<T>,
     jointFactory: JointFactory<T>
   ) {
@@ -101,7 +102,7 @@ export class RouteItemGenerator<T extends RenderingObject>
     // Jointable markers
     //
     const jointableMarkers = item.connections.map(connection => {
-      const marker = new CenterMarker(0.5)
+      const marker = new JointMarker(0.5, connection.edge.coordinate)
       const handler = new PlaneMoveHandler(connection.edge.coordinate, [0, 1, 0], false, this.#renderer.camera)
       const proxyHandler = new ProxyHandler(this.#markerRaycaster, marker.coliders)
       let heightHandler: DirectionalMoveHandler | null = null
@@ -109,11 +110,10 @@ export class RouteItemGenerator<T extends RenderingObject>
 
       proxyHandler.setStartedCallback(() => {
         // このマーカーにスナップしちゃっていてよくないので、どうにかしてスナップしないようにする
-        const heightMarker = new DirectionalMarker(1, 0.1, [0, 1, 0], 1.5, true)
+        const heightMarker = new DirectionalMarker(1, 0.1, [0, 1, 0], connection.edge.coordinate, 1.5, true)
         heightHandler = new DirectionalMoveHandler(connection.edge.coordinate, [0, 1, 0], 0.1)
         heightHandler.setStartingCallback(() => !handler.isStart)
 
-        heightMarker.setParentCoordinate(connection.edge.coordinate)
         heightMarker.addHandler(heightHandler)
         heightMarker.attachRenderingObject({r: 0, g: 255, b: 0}, this.#renderingObjectBuilder, this.#renderer)
 
@@ -283,7 +283,7 @@ export class RouteItemGeneratorFactory<T extends RenderingObject> implements Hac
     this.#original = original
   }
 
-  create(renderer: Renderer<T>, raycaster: Raycaster, markerRaycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) {
+  create(renderer: Renderer<T>, raycaster: Raycaster, markerRaycaster: Raycaster<CoordinatedColider>, renderingObjectBuilder: RenderingObjectBuilder<T>) {
     const generator = new RouteItemGenerator(renderer, raycaster, markerRaycaster, renderingObjectBuilder, this.#jointFactory)
     generator.setOriginal(this.#original)
 

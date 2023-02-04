@@ -7,6 +7,7 @@ import type { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuil
 import type { ColiderItemMap } from "../../../../lib/ColiderItemMap"
 import type { LineItemConnection } from "../../../../lib/LineItem/index.js"
 import { Marker } from "../../../../lib/markers/Marker"
+import { Colider, CoordinatedColider } from "../../../../lib/Colider.js"
 
 export type AddMarkerCallbackFunction = (marker: Marker) => void
 export type RemoveMarkerCallbackFunction = (marker: Marker) => void
@@ -35,7 +36,7 @@ export type HaconiwaItemGeneratorClonedItem<T> = {
 }
 
 export interface HaconiwaItemGeneratorFactory<T> {
-  create: (renderer: Renderer<T>, raycaster: Raycaster, markerRaycaster: Raycaster, renderingObjectBuilder: RenderingObjectBuilder<T>) => HaconiwaItemGenerator<T>
+  create: (renderer: Renderer<T>, raycaster: Raycaster, markerRaycaster: Raycaster<CoordinatedColider>, renderingObjectBuilder: RenderingObjectBuilder<T>) => HaconiwaItemGenerator<T>
 }
 
 export interface HaconiwaItemGeneratorLineConnectable {

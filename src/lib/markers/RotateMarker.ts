@@ -12,23 +12,22 @@ import { VectorArray3, Vec3 } from "../Matrix.js"
 import { RenderingObject } from "../RenderingObject.js"
 
 export class RotateMarker implements SingleMarker, MarkerRenderable {
-  #parentCoordinate = new Coordinate()
+  #parentCoordinate: Coordinate
   #markerCoordinate = new Coordinate()
   #handledColiders = new HandledColiders()
   #colider: PlaneColider
   #innerRadius: number
   #outerRadius: number
-  #planePosition: VectorArray3
-  #planeNorm: VectorArray3
 
-  constructor(outerRadius: number, innerRadius: number, planePosition: VectorArray3, planeNorm: VectorArray3) {
+  constructor(outerRadius: number, innerRadius: number, planePosition: VectorArray3, planeNorm: VectorArray3, parentCoordinate: Coordinate) {
     this.#outerRadius = outerRadius
     this.#innerRadius = innerRadius
-    this.#planePosition = planePosition
-    this.#planeNorm = planeNorm
     this.#markerCoordinate.setDirectionZAxis(planeNorm, planePosition)
 
+    this.#parentCoordinate = parentCoordinate
     this.#colider = new PlaneColider(this.#parentCoordinate, planeNorm)
+    this.#parentCoordinate.addChild(this.#markerCoordinate)
+
     this.#colider.setEdgeEvaluator((dist, ray) => {
       const val = Vec3.norm(
         Vec3.subtract(this.#parentCoordinate.position, Vec3.add(ray.position, Vec3.mulScale(ray.direction, dist)))
@@ -64,12 +63,6 @@ export class RotateMarker implements SingleMarker, MarkerRenderable {
 
   addHandler(handler: MouseControllable) {
     this.#handledColiders.addHandler({colider: this.#colider, handled: handler})
-  }
-
-  setParentCoordinate(coordinate: Coordinate) {
-    this.#parentCoordinate = coordinate
-    this.#parentCoordinate.addChild(this.#markerCoordinate)
-    this.#colider.parentCoordinate = coordinate
   }
 
   attachRenderingObject<T extends RenderingObject>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {

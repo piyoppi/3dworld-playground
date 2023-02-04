@@ -1,14 +1,14 @@
-import { Colider } from "../../../Colider"
+import { Colider, CoordinatedColider } from "../../../Colider"
 import { VectorArray3 } from "../../../Matrix"
 import { Raycaster } from "../../../Raycaster"
 import type { CursorModifier } from './CursorModifier'
 
 export class CursorSnapColiderModifier implements CursorModifier {
   #currentPosition: VectorArray3
-  #raycaster: Raycaster
-  #ignoredColiders: Array<Colider>
+  #raycaster: Raycaster<CoordinatedColider>
+  #ignoredColiders: Array<CoordinatedColider>
 
-  constructor(raycaster: Raycaster, ignoredColiders: Array<Colider>) {
+  constructor(raycaster: Raycaster<CoordinatedColider>, ignoredColiders: Array<CoordinatedColider>) {
     this.#currentPosition = [0, 0, 0]
     this.#raycaster = raycaster
     this.#ignoredColiders = ignoredColiders
@@ -19,9 +19,9 @@ export class CursorSnapColiderModifier implements CursorModifier {
       return this.#currentPosition
     }
 
-    const colidedDetail = this.#raycaster.colidedDetails.find(colidedDetail => this.#ignoredColiders.every(ignoredColider => ignoredColider !== colidedDetail.colider) && colidedDetail.colider.parentCoordinate)
+    const colidedDetail = this.#raycaster.colidedDetails.find(colidedDetail => this.#ignoredColiders.every(ignoredColider => ignoredColider !== colidedDetail.colider))
 
-    if (!colidedDetail || !colidedDetail.colider.parentCoordinate) {
+    if (!colidedDetail) {
       return this.#currentPosition
     }
 

@@ -8,12 +8,12 @@ type ColidedItem<T> = {
   item: T
 }
 
-export class ColidedDetails {
-  #colider: Colider
+export class ColidedDetails<T extends Colider> {
+  #colider: T
   #distance: number
   #ray: Ray
 
-  constructor(colider: Colider, distance: number, ray: Ray) {
+  constructor(colider: T, distance: number, ray: Ray) {
     this.#colider = colider
     this.#distance = distance
     this.#ray = ray
@@ -36,17 +36,17 @@ export class ColidedDetails {
   }
 }
 
-export class Coliders extends Array<Colider> {
-  has(...targets: Colider[]) {
+export class Coliders<T extends Colider> extends Array<T> {
+  has(...targets: T[]) {
     return this.some(item => targets.some(target => item.uuid === target.uuid))
   }
 }
 
-export class Raycaster {
+export class Raycaster<T extends Colider = Colider> {
   #camera: Camera
-  #colidedDetails: Array<ColidedDetails>
-  #colidedColiders = new Coliders()
-  #targetColiders: Array<Colider>
+  #colidedDetails: Array<ColidedDetails<T>>
+  #colidedColiders = new Coliders<T>()
+  #targetColiders: Array<T>
 
   constructor(camera: Camera) {
     this.#camera = camera
@@ -66,11 +66,11 @@ export class Raycaster {
     return this.#colidedColiders.length > 0
   }
 
-  addTarget(colider: Colider) {
+  addTarget(colider: T) {
     this.#targetColiders.push(colider)
   }
 
-  removeTarget(colider: Colider) {
+  removeTarget(colider: T) {
     this.#targetColiders.map((targetColider, index) => targetColider === colider ? index : -1)
       .filter(index => index >= 0)
       .sort((a, b) => b - a)
@@ -105,7 +105,7 @@ export class Raycaster {
       .sort((a, b) => a.distance - b.distance)
 
     this.#colidedColiders = new Coliders(...colided.map(item => item.colider))
-    this.#colidedDetails = colided.map(item => new ColidedDetails(item.colider, item.distance, ray))
+    this.#colidedDetails = colided.map(item => new ColidedDetails<T>(item.colider, item.distance, ray))
 
     return this.#colidedColiders
   }

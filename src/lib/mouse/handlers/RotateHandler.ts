@@ -14,7 +14,7 @@ export class RotateHandler implements MouseControllable {
   #manipulateCoordinate: Coordinate
   #cursorDirectionConverter = new CursorDirectionScreenToWorldConverter()
   #isStart = false
-  #raycaster: Raycaster
+  #raycaster: Raycaster<Colider>
   #direction: VectorArray3
   #startPosition: VectorArray3 = [0, 0, 0]
   #handlingParams = {
@@ -24,7 +24,7 @@ export class RotateHandler implements MouseControllable {
   #planeColider: PlaneColider | null = null
   #targetColider: Colider
 
-  constructor(manipulateCoordinate: Coordinate, raycaster: Raycaster, direction: VectorArray3, targetColider: Colider) {
+  constructor(manipulateCoordinate: Coordinate, raycaster: Raycaster<Colider>, direction: VectorArray3, targetColider: Colider) {
     this.#manipulateCoordinate = manipulateCoordinate
     this.#raycaster = raycaster
     this.#direction = direction

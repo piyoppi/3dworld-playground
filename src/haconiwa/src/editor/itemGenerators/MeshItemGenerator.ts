@@ -67,10 +67,9 @@ export class MeshItemGenerator<T extends RenderingObject>
       this.#renderer.addItem(coordinateForRendering, renderingObject)
       renderingObject.material.setOpacity(0.4)
 
-      this.#itemMarker = new BoxMarker(renderingObject.size)
+      this.#itemMarker = new BoxMarker(renderingObject.size, item.parentCoordinate)
       const itemMarker = this.#itemMarker
       const proxyHandler = new ProxyHandler(this.#markerRaycaster, itemMarker.coliders)
-      itemMarker.setParentCoordinate(item.parentCoordinate)
       itemMarker.addHandler(proxyHandler)
       this.registerMarker(itemMarker)
 

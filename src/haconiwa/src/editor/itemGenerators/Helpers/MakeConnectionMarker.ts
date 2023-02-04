@@ -5,16 +5,18 @@ import { CursorSnapColiderModifier } from "../../../../../lib/mouse/handlers/cur
 import type { LineItem, LineItemConnection } from "../../../../../lib/LineItem/index.js"
 import type { Raycaster } from "../../../../../lib/Raycaster"
 import type { ColiderItemMap } from "../../../../../lib/ColiderItemMap"
+import { BallColider, CoordinatedColider } from "../../../../../lib/Colider.js"
+import { CoordinateMarker } from "../../../../../lib/markers/CoordinateMarker.js"
 
 export function makeConnectionMarker<T>(
   item: LineItem,
-  markerRaycaster: Raycaster,
+  markerRaycaster: Raycaster<CoordinatedColider>,
   planeRaycaster: Raycaster,
   coliderConnectionMap: ColiderItemMap<LineItemConnection>
 ) {
   return item.connections.map(connection => {
-    const marker = new CenterMarker(0.5)
-    const moveHandler = new RaycastMoveHandler(marker.parentCoordinate, planeRaycaster, markerRaycaster, marker.coliders)
+    const marker = new CenterMarker(new BallColider(0.5, connection.edge.coordinate))
+    const moveHandler = new RaycastMoveHandler(connection.edge.coordinate, planeRaycaster, markerRaycaster, marker.coliders)
     const snapModifier = new CursorSnapColiderModifier(markerRaycaster, marker.coliders)
     const jointHandler = new JointHandler(connection, markerRaycaster, coliderConnectionMap)
 
@@ -30,8 +32,7 @@ export function makeConnectionMarker<T>(
     marker.addHandler(moveHandler)
 
     moveHandler.setCursorModifier(snapModifier)
-    marker.parentCoordinate.position = connection.edge.position
 
-    return marker
+    return {connection, marker}
   }) || []
 }

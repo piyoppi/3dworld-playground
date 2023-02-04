@@ -3,20 +3,19 @@ import type { Raycaster } from "../../../../lib/Raycaster"
 import { JointHandler } from "../../../../lib/mouse/handlers/JointHandler.js"
 import { CursorSnapColiderModifier } from "../../../../lib/mouse/handlers/cursorModifiers/CursorSnapColiderModifier.js"
 import type { ColiderItemMap } from "../../../../lib/ColiderItemMap"
-import { SingleMarker } from "../../../../lib/markers/Marker"
+import { JointMarker } from "../../../../lib/markers/JointMarker"
 import { MouseControllable } from "../../../../lib/mouse/MouseControllable"
 import { PositionChangable } from "../../../../lib/mouse/handlers/PositionChangable"
+import { CoordinatedColider } from "../../../../lib/Colider.js"
 
 export function markerJointable(
-  marker: SingleMarker, 
-  pairMarkers: SingleMarker[],
+  marker: JointMarker, 
+  pairMarkers: JointMarker[],
   handler: MouseControllable & PositionChangable,
   connection: LineItemConnection,
-  markerRaycaster: Raycaster,
+  markerRaycaster: Raycaster<CoordinatedColider>,
   coliderConnectionMap: ColiderItemMap<LineItemConnection>
 ) {
-  marker.setParentCoordinate(connection.edge.coordinate)
-
   const snapModifier = new CursorSnapColiderModifier(markerRaycaster, pairMarkers.map(marker => marker.coliders).flat())
   handler.setCursorModifier(snapModifier)
 
