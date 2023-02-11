@@ -17,7 +17,11 @@ export function makeConnectionMarker<T>(
   return item.connections.map(connection => {
     const marker = new CenterMarker(new BallColider(0.5, connection.edge.coordinate))
     const moveHandler = new RaycastMoveHandler(connection.edge.coordinate, planeRaycaster, markerRaycaster, marker.coliders)
-    const snapModifier = new CursorSnapColiderModifier(markerRaycaster, marker.coliders)
+    const ignoringColiders = marker.coliders
+    const snapModifier = new CursorSnapColiderModifier(
+      markerRaycaster,
+      (colidedDetails) => colidedDetails.find(colidedDetail => ignoringColiders.every(ignoredColider => ignoredColider !== colidedDetail.colider))
+    )
     const jointHandler = new JointHandler(connection, markerRaycaster, coliderConnectionMap)
 
     jointHandler.setEndedCallback(() => {

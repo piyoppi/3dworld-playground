@@ -3,7 +3,7 @@ import type { Raycaster } from "../../../../lib/Raycaster"
 import { JointHandler } from "../../../../lib/mouse/handlers/JointHandler.js"
 import { CursorSnapColiderModifier } from "../../../../lib/mouse/handlers/cursorModifiers/CursorSnapColiderModifier.js"
 import type { ColiderItemMap } from "../../../../lib/ColiderItemMap"
-import { JointMarker } from "../../../../lib/markers/JointMarker"
+import { JointColider, JointMarker } from "../../../../lib/markers/JointMarker.js"
 import { MouseControllable } from "../../../../lib/mouse/MouseControllable"
 import { PositionChangable } from "../../../../lib/mouse/handlers/PositionChangable"
 import { CoordinatedColider } from "../../../../lib/Colider.js"
@@ -16,7 +16,11 @@ export function markerJointable(
   markerRaycaster: Raycaster<CoordinatedColider>,
   coliderConnectionMap: ColiderItemMap<LineItemConnection>
 ) {
-  const snapModifier = new CursorSnapColiderModifier(markerRaycaster, pairMarkers.map(marker => marker.coliders).flat())
+  const ignoringColiders = pairMarkers.map(marker => marker.coliders).flat()
+  const snapModifier = new CursorSnapColiderModifier(
+    markerRaycaster,
+    (colidedDetails) => colidedDetails.find(colidedDetail => colidedDetail.colider instanceof JointColider && ignoringColiders.every(ignoredColider => ignoredColider !== colidedDetail.colider))
+  )
   handler.setCursorModifier(snapModifier)
 
   const jointHandler = new JointHandler(connection, markerRaycaster, coliderConnectionMap)
