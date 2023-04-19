@@ -15,10 +15,9 @@ import {
 } from './HaconiwaItemGenerator'
 import { v4 as uuidv4 } from 'uuid'
 import type { Raycaster } from "../../../../lib/Raycaster"
-import { Colider, CoordinatedColider } from "../../../../lib/Colider.js"
 
 export abstract class HaconiwaItemGeneratorBase<T> {
-  #onGeneratedCallbacks: Array<HaconiwaItemGeneratedCallback<T>> = []
+  #onGeneratedCallbacks: Array<HaconiwaItemGeneratedCallback> = []
   #addMarkerCallbacks = new CallbackFunctions<AddMarkerCallbackFunction>()
   #removeMarkerCallbacks = new CallbackFunctions<RemoveMarkerCallbackFunction>()
   #endedCallbacks = new CallbackFunctions<EndedCallbackFunction>()
@@ -56,7 +55,7 @@ export abstract class HaconiwaItemGeneratorBase<T> {
     return this.#isStart
   }
 
-  registerOnGeneratedCallback(callback: HaconiwaItemGeneratedCallback<T>) {
+  registerOnGeneratedCallback(callback: HaconiwaItemGeneratedCallback) {
     this.#onGeneratedCallbacks.push(callback)
   }
 

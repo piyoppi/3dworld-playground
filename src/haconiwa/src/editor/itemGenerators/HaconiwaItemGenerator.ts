@@ -7,7 +7,7 @@ import type { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuil
 import type { ColiderItemMap } from "../../../../lib/ColiderItemMap"
 import type { LineItemConnection } from "../../../../lib/LineItem/index.js"
 import { Marker } from "../../../../lib/markers/Marker"
-import { Colider, CoordinatedColider } from "../../../../lib/Colider.js"
+import { CoordinatedColider } from "../../../../lib/Colider.js"
 
 export type AddMarkerCallbackFunction = (marker: Marker) => void
 export type RemoveMarkerCallbackFunction = (marker: Marker) => void
@@ -16,7 +16,7 @@ export type SelectedCallbackFunction<T> = (item: HaconiwaItemGenerator<T>) => vo
 export type UnselectedCallbackFunction<T> = (item: HaconiwaItemGenerator<T>) => void
 
 export interface HaconiwaItemGenerator<T> extends MouseControllable {
-  registerOnGeneratedCallback: (callback: HaconiwaItemGeneratedCallback<T>) => void
+  registerOnGeneratedCallback: (callback: HaconiwaItemGeneratedCallback) => void
   addMarkerCallback: (callback: AddMarkerCallbackFunction) => void
   removeMarkerCallback: (callback: RemoveMarkerCallbackFunction) => void
   addEndedCallback: (callback: EndedCallbackFunction) => void
@@ -28,7 +28,7 @@ export interface HaconiwaItemGenerator<T> extends MouseControllable {
   readonly uuid: string
 }
 
-export type HaconiwaItemGeneratedCallback<T> = (generates: Array<HaconiwaWorldItem>) => void
+export type HaconiwaItemGeneratedCallback = (generates: Array<HaconiwaWorldItem>) => void
 
 export type HaconiwaItemGeneratorClonedItem<T> = {
   item: Item,

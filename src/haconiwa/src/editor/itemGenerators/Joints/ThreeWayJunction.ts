@@ -133,10 +133,6 @@ export class ThreeWayJunction<T extends RenderingObject> implements Joint<T> {
     )
   }
 
-  private get jointPosition() {
-    return this.#edges[0].position
-  }
-
   private removePolygones(renderer: Renderer<T>) {
     if (renderer.renderingObjectFromCoordinate(this.#junctionCoordinate)) {
       renderer.removeItem(this.#junctionCoordinate)

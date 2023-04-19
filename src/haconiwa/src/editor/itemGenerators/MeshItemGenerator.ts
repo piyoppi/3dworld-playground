@@ -38,7 +38,6 @@ export class MeshItemGenerator<T extends RenderingObject>
 
     this.#planeRaycaster = planeRaycaster
     this.#markerRaycaster = markerRaycaster
-
     this.#renderer = renderer
     this.#renderingObjectBuilder = renderingObjectBuilder
   }
@@ -84,11 +83,10 @@ export class MeshItemGenerator<T extends RenderingObject>
 
         this.selected(this)
       })
-    } else {
-      return false
+      return true
     }
 
-    return true
+    return false
   }
 
   unselect() {

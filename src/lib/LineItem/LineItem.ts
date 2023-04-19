@@ -18,7 +18,7 @@ export class LineItem extends Item {
     ]
 
     this.#line.setUpdatedCallback(() => {
-      this.connections.forEach(childConnection => {
+      this.connections.forEach(() => {
         this.#updatedCallbacks.call()
 
         this.connections.forEach(connection => {

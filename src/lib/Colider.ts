@@ -6,7 +6,8 @@ import { v4 as uuidv4 } from 'uuid'
 export interface Colider {
   readonly uuid: string
   checkRay(ray: Ray): number
-  checkColider(colider: Colider): VectorArray3
+  checkColided(colider: Colider): boolean
+  checkColidedDistance(colider: Colider): VectorArray3 | null
   enabled: boolean
 }
 
@@ -40,8 +41,12 @@ export class InfiniteColider extends ColiderBase implements Colider {
     return 0.01
   }
 
-  checkColider(colider: Colider): VectorArray3 {
-    return [0, 0, 0]
+  checkColided(_: Colider): boolean {
+    return false
+  }
+
+  checkColidedDistance(_: Colider): VectorArray3 | null {
+    return null
   }
 }
 
@@ -51,7 +56,7 @@ export class BallColider extends ColiderBase implements CoordinatedColider {
 
   constructor(radius: number, parentCoordinate: Coordinate) {
     super()
-    this.#radius = radius  
+    this.#radius = radius
     this.#parentCoordinate = parentCoordinate
   }
 
@@ -77,20 +82,32 @@ export class BallColider extends ColiderBase implements CoordinatedColider {
     return (d >= 0) ? Math.min((-b + d) / 2 * a, (-b - d) / 2 * a) : -1
   }
 
-  checkColider(colider: Colider): VectorArray3 {
+  checkColided(colider: Colider): boolean {
     if (colider instanceof BallColider) {
-      const radiusColided = colider.radius + this.#radius
-      const vec = Vec3.subtract(colider.parentCoordinate.getGlobalPosition(), this.#parentCoordinate.getGlobalPosition())
-      const vecNorm = Vec3.norm(vec)
-
-      if (radiusColided <= vecNorm) {
-        return [0, 0, 0]
-      }
-
-      return Vec3.mulScale(Vec3.normalize(vec), (radiusColided - vecNorm))
+      return !!this.checkColidedWithBall(colider)
     }
 
-    return [0, 0, 0]
+    return false
+  }
+
+  checkColidedDistance(colider: Colider): VectorArray3 | null {
+    if (colider instanceof BallColider) {
+      return this.checkColidedWithBall(colider)
+    }
+
+    return null
+  }
+
+  private checkColidedWithBall(pair: BallColider): VectorArray3 | null  {
+    const radiusColided = pair.radius + this.#radius
+    const vec = Vec3.subtract(pair.parentCoordinate.getGlobalPosition(), this.#parentCoordinate.getGlobalPosition())
+    const vecNorm = Vec3.norm(vec)
+
+    if (radiusColided < vecNorm) {
+      return null
+    }
+
+    return Vec3.mulScale(Vec3.normalize(vec), (radiusColided - vecNorm))
   }
 }
 
@@ -149,8 +166,90 @@ export class BoxColider extends ColiderBase implements CoordinatedColider {
     return Math.min(xyRange[0], xyzRange[1])
   }
 
-  checkColider(colider: Colider): VectorArray3 {
+  checkColided(pair: Colider): boolean {
+    if (pair instanceof BoxColider) {
+      return this.checkColidedWithBox(pair)
+    }
+
+    return false
+  }
+
+  checkColidedDistance(_: Colider): VectorArray3 {
     return [0, 0, 0]
+  }
+
+  private checkColidedWithBox(pair: BoxColider): boolean {
+    const distance = Vec3.subtract(this.parentCoordinate.getGlobalPosition(), pair.parentCoordinate.getGlobalPosition())
+    const coord = this.parentCoordinate
+    const pairCoord = pair.parentCoordinate
+
+    const pairDimensions = [
+      Vec3.mulScale(coord.xAxis, this.#halfDimensions[0]),
+      Vec3.mulScale(coord.yAxis, this.#halfDimensions[1]),
+      Vec3.mulScale(coord.zAxis, this.#halfDimensions[2])
+    ]
+
+    const diff1 = this.#halfDimensions[0] + Vec3.dotprod(pairDimensions[0], coord.xAxis) + Vec3.dotprod(pairDimensions[1], coord.xAxis) + Vec3.dotprod(pairDimensions[2], coord.xAxis) - Vec3.dotprod(distance, coord.xAxis)
+    if (diff1 < 0) return false 
+
+    const diff2 = this.#halfDimensions[1] + Vec3.dotprod(pairDimensions[0], coord.yAxis) + Vec3.dotprod(pairDimensions[1], coord.yAxis) + Vec3.dotprod(pairDimensions[2], coord.yAxis) - Vec3.dotprod(distance, coord.yAxis)
+    if (diff2 < 0) return false 
+
+    const diff3 = this.#halfDimensions[2] + Vec3.dotprod(pairDimensions[0], coord.zAxis) + Vec3.dotprod(pairDimensions[1], coord.zAxis) + Vec3.dotprod(pairDimensions[2], coord.zAxis) - Vec3.dotprod(distance, coord.zAxis)
+    if (diff3 < 0) return false 
+
+    const dimensions = [
+      Vec3.mulScale(coord.xAxis, this.#halfDimensions[0]),
+      Vec3.mulScale(coord.yAxis, this.#halfDimensions[1]),
+      Vec3.mulScale(coord.zAxis, this.#halfDimensions[2])
+    ]
+
+    const diff4 = pair.#halfDimensions[0] + Vec3.dotprod(dimensions[0], pairCoord.xAxis) + Vec3.dotprod(dimensions[1], pairCoord.xAxis) + Vec3.dotprod(dimensions[2], pairCoord.xAxis) - Vec3.dotprod(distance, pairCoord.xAxis)
+    if (diff4 < 0) return false 
+
+    const diff5 = pair.#halfDimensions[1] + Vec3.dotprod(dimensions[0], pairCoord.yAxis) + Vec3.dotprod(dimensions[1], pairCoord.yAxis) + Vec3.dotprod(dimensions[2], pairCoord.yAxis) - Vec3.dotprod(distance, pairCoord.yAxis)
+    if (diff5 < 0) return false 
+
+    const diff6 = pair.#halfDimensions[2] + Vec3.dotprod(dimensions[0], pairCoord.zAxis) + Vec3.dotprod(dimensions[1], pairCoord.zAxis) + Vec3.dotprod(dimensions[2], pairCoord.zAxis) - Vec3.dotprod(distance, pairCoord.zAxis)
+    if (diff6 < 0) return false 
+
+    const separatedAxis7 = Vec3.cross(coord.xAxis, pairCoord.xAxis)
+    const diff7 = Vec3.dotprod(dimensions[1], separatedAxis7) + Vec3.dotprod(dimensions[2], separatedAxis7) + Vec3.dotprod(pairDimensions[1], separatedAxis7) + Vec3.dotprod(pairDimensions[2], separatedAxis7) - Math.abs(Vec3.dotprod(distance, separatedAxis7))
+    if (diff7 < 0) return false 
+
+    const separatedAxis8 = Vec3.cross(coord.xAxis, pairCoord.yAxis)
+    const diff8 = Vec3.dotprod(dimensions[1], separatedAxis8) + Vec3.dotprod(dimensions[2], separatedAxis8) + Vec3.dotprod(pairDimensions[0], separatedAxis8) + Vec3.dotprod(pairDimensions[2], separatedAxis8) - Math.abs(Vec3.dotprod(distance, separatedAxis8))
+    if (diff8 < 0) return false
+
+    const separatedAxis9 = Vec3.cross(coord.xAxis, pairCoord.zAxis)
+    const diff9 = Vec3.dotprod(dimensions[1], separatedAxis9) + Vec3.dotprod(dimensions[2], separatedAxis9) + Vec3.dotprod(pairDimensions[0], separatedAxis9) + Vec3.dotprod(pairDimensions[1], separatedAxis9) - Math.abs(Vec3.dotprod(distance, separatedAxis9))
+    if (diff9 < 0) return false
+
+    const separatedAxis10 = Vec3.cross(coord.yAxis, pairCoord.xAxis)
+    const diff10 = Vec3.dotprod(dimensions[0], separatedAxis10) + Vec3.dotprod(dimensions[2], separatedAxis10) + Vec3.dotprod(pairDimensions[1], separatedAxis10) + Vec3.dotprod(pairDimensions[2], separatedAxis10) - Math.abs(Vec3.dotprod(distance, separatedAxis10))
+    if (diff10 < 0) return false
+
+    const separatedAxis11 = Vec3.cross(coord.yAxis, pairCoord.yAxis)
+    const diff11 = Vec3.dotprod(dimensions[0], separatedAxis11) + Vec3.dotprod(dimensions[2], separatedAxis11) + Vec3.dotprod(pairDimensions[0], separatedAxis11) + Vec3.dotprod(pairDimensions[2], separatedAxis11) - Math.abs(Vec3.dotprod(distance, separatedAxis11))
+    if (diff11 < 0) return false
+
+    const separatedAxis12 = Vec3.cross(coord.yAxis, pairCoord.zAxis)
+    const diff12 = Vec3.dotprod(dimensions[0], separatedAxis12) + Vec3.dotprod(dimensions[2], separatedAxis12) + Vec3.dotprod(pairDimensions[0], separatedAxis12) + Vec3.dotprod(pairDimensions[1], separatedAxis12) - Math.abs(Vec3.dotprod(distance, separatedAxis12))
+    if (diff12 < 0) return false
+
+    const separatedAxis13 = Vec3.cross(coord.zAxis, pairCoord.xAxis)
+    const diff13 = Vec3.dotprod(dimensions[0], separatedAxis13) + Vec3.dotprod(dimensions[1], separatedAxis13) + Vec3.dotprod(pairDimensions[1], separatedAxis13) + Vec3.dotprod(pairDimensions[2], separatedAxis13) - Math.abs(Vec3.dotprod(distance, separatedAxis13))
+    if (diff13 < 0) return false
+
+    const separatedAxis14 = Vec3.cross(coord.zAxis, pairCoord.yAxis)
+    const diff14 = Vec3.dotprod(dimensions[0], separatedAxis14) + Vec3.dotprod(dimensions[1], separatedAxis14) + Vec3.dotprod(pairDimensions[0], separatedAxis14) + Vec3.dotprod(pairDimensions[2], separatedAxis14) - Math.abs(Vec3.dotprod(distance, separatedAxis14))
+    if (diff14 < 0) return false
+
+    const separatedAxis15 = Vec3.cross(coord.zAxis, pairCoord.zAxis)
+    const diff15 = Vec3.dotprod(dimensions[0], separatedAxis15) + Vec3.dotprod(dimensions[1], separatedAxis15) + Vec3.dotprod(pairDimensions[0], separatedAxis15) + Vec3.dotprod(pairDimensions[1], separatedAxis15) - Math.abs(Vec3.dotprod(distance, separatedAxis15))
+    if (diff15 < 0) return false
+
+    return true
   }
 }
 
@@ -196,7 +295,11 @@ export class PlaneColider extends ColiderBase implements CoordinatedColider {
     return distance
   }
 
-  checkColider(colider: Colider): VectorArray3 {
-    return [0, 0, 0]
+  checkColided(_: Colider): boolean {
+    return false
+  }
+
+  checkColidedDistance(_: Colider): VectorArray3 | null {
+    return null
   }
 }

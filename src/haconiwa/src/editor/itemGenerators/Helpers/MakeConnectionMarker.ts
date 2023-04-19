@@ -6,9 +6,8 @@ import type { LineItem, LineItemConnection } from "../../../../../lib/LineItem/i
 import type { Raycaster } from "../../../../../lib/Raycaster"
 import type { ColiderItemMap } from "../../../../../lib/ColiderItemMap"
 import { BallColider, CoordinatedColider } from "../../../../../lib/Colider.js"
-import { CoordinateMarker } from "../../../../../lib/markers/CoordinateMarker.js"
 
-export function makeConnectionMarker<T>(
+export function makeConnectionMarker (
   item: LineItem,
   markerRaycaster: Raycaster<CoordinatedColider>,
   planeRaycaster: Raycaster,
