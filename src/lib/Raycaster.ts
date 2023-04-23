@@ -2,6 +2,7 @@ import { Camera } from './Camera.js';
 import { Colider } from './Colider.js';
 import { Mat4, Vec3 } from './Matrix.js';
 import { Ray } from './Ray.js'
+import { ReadOnlyRaycaster } from './ReadOnlyRaycaster.js';
 
 type ColidedItem<T> = {
   colider: Colider,
@@ -64,6 +65,10 @@ export class Raycaster<T extends Colider = Colider> {
 
   get hasColided() {
     return this.#colidedColiders.length > 0
+  }
+
+  getReadonly(): ReadOnlyRaycaster<T> {
+    return new ReadOnlyRaycaster(this)
   }
 
   addTarget(colider: T) {

@@ -1,7 +1,6 @@
 import { Camera } from './Camera.js'
 import { Coordinate } from './Coordinate.js'
 import { RGBColor } from './helpers/color.js'
-import { RenderingObject } from './RenderingObject.js'
 
 export interface Renderer<T> {
   initialize: (width: number, height: number) => void

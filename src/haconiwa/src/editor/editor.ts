@@ -8,10 +8,9 @@ import {
 } from './itemGenerators/HaconiwaItemGenerator.js'
 import type { Camera } from '../../../lib/Camera'
 import type { RenderingObjectBuilder } from '../../../lib/RenderingObjectBuilder'
-import type { MouseButton } from '../../../lib/mouse/MouseControllable'
 import { Raycaster } from '../../../lib/Raycaster.js'
 import { Colider, PlaneColider, CoordinatedColider } from '../../../lib/Colider.js'
-import { HaconiwaWorld } from '../world.js'
+import { HaconiwaWorld } from '../World/index.js'
 import { ControlHandle, MouseControlHandles } from '../../../lib/mouse/MouseControlHandles.js'
 import { Raycasters } from '../../../lib/Raycasters.js'
 import { ColiderItemMap } from '../../../lib/ColiderItemMap.js'
@@ -160,18 +159,6 @@ export class HaconiwaEditor<T extends RenderingObject> {
   handleMouseEvent() {
     const pos = this.#mouseCapturer.getNormalizedPosition()
     this.#raycasters.check(pos)
-  }
-
-  #mouseDownHandler(x: number, y: number, mouseButton: MouseButton) {
-    switch(mouseButton) {
-      case 'primary':
-        this.#cameraController.setTargetPositionHandler()
-        break
-      case 'wheel':
-        this.#cameraController.setRotationHandler()
-        break
-    }
-    this.handleMouseEvent()
   }
 
   #mouseMoveHandler() {

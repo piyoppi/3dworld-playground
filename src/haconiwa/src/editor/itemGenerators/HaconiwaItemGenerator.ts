@@ -2,12 +2,13 @@ import type { Item } from "../../../../lib/Item"
 import type { Renderer } from "../../../../lib/Renderer"
 import type { Raycaster } from "../../../../lib/Raycaster"
 import type { MouseControllable } from "../../../../lib/mouse/MouseControllable"
-import type { HaconiwaWorldItem } from "../../world"
+import type { HaconiwaWorldItem } from "../../World/HaconiwaWorldItem"
 import type { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder"
 import type { ColiderItemMap } from "../../../../lib/ColiderItemMap"
 import type { LineItemConnection } from "../../../../lib/LineItem/index.js"
 import { Marker } from "../../../../lib/markers/Marker"
 import { CoordinatedColider } from "../../../../lib/Colider.js"
+import { ColiderItemResolver } from "../../../../lib/ColiderItemResolver"
 
 export type AddMarkerCallbackFunction = (marker: Marker) => void
 export type RemoveMarkerCallbackFunction = (marker: Marker) => void

@@ -18,10 +18,10 @@ export function makeConnectionMarker (
     const moveHandler = new RaycastMoveHandler(connection.edge.coordinate, planeRaycaster, markerRaycaster, marker.coliders)
     const ignoringColiders = marker.coliders
     const snapModifier = new CursorSnapColiderModifier(
-      markerRaycaster,
+      markerRaycaster.getReadonly(),
       (colidedDetails) => colidedDetails.find(colidedDetail => ignoringColiders.every(ignoredColider => ignoredColider !== colidedDetail.colider))
     )
-    const jointHandler = new JointHandler(connection, markerRaycaster, coliderConnectionMap)
+    const jointHandler = new JointHandler(connection, markerRaycaster.getReadonly(), coliderConnectionMap.getResolver())
 
     jointHandler.setEndedCallback(() => {
       if (connection.connections.length > 0) {

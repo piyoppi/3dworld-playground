@@ -17,8 +17,9 @@ import { MouseButton, WindowCursor } from "../../../../lib/mouse/MouseControllab
 import type { ColiderItemMap } from "../../../../lib/ColiderItemMap.js"
 import { makeConnectionMarker } from './Helpers/MakeConnectionMarker.js'
 import { RenderingObject } from "../../../../lib/RenderingObject.js"
-import { HaconiwaItemGeneratorBase } from "./HaconiwaItemGeneratorBase.js"
+import { CreateParams, HaconiwaItemGeneratorBase } from "./HaconiwaItemGeneratorBase.js"
 import { CoordinatedColider } from '../../../../lib/Colider.js'
+import { ColiderItemResolver } from "../../../../lib/ColiderItemResolver.js"
 
 export class HaconiwaLineItemGenerator<T extends RenderingObject>
   extends HaconiwaItemGeneratorBase<T>
@@ -52,7 +53,7 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject>
     this.original = original
   }
 
-  create(cursor: WindowCursor, button: MouseButton, cameraCoordinate: Coordinate) {
+  create({cursor, button, cameraCoordinate, registerItem}: CreateParams) {
     if (!this.original) throw new Error('Item and RenderingObject is not set.')
     if (!this.#planeRaycaster.hasColided || !this.#coliderConnectionMap) return
 
@@ -88,7 +89,7 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject>
       })
 
 
-    this.registerItem(item)
+    registerItem(item)
 
     return true
   }

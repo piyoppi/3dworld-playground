@@ -1,8 +1,10 @@
 import { Coordinate } from "../../../../../lib/Coordinate"
 import { LineEdge } from "../../../../../lib/lines/lineEdge"
-import { Renderer } from "../../../../../lib/Renderer"
 import { RenderingObject } from "../../../../../lib/RenderingObject"
 import { RenderingObjectBuilder } from "../../../../../lib/RenderingObjectBuilder"
+
+export type JointDisposeCallback = (coordinates: Coordinate[]) => boolean
+export type JointUpdateRenderingObjectResult<T extends RenderingObject> = {renderingObject: T, coordinate: Coordinate}[]
 
 export interface Joint<T extends RenderingObject> {
   readonly coordinate: Coordinate
@@ -12,6 +14,6 @@ export interface Joint<T extends RenderingObject> {
   setEdges: (edges: LineEdge[]) => void
   setWidth: (width: number) => void
   getOffset: () => number
-  updateRenderingObject: (builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) => void
-  dispose: (renderer: Renderer<T>) => void
+  updateRenderingObject: (builder: RenderingObjectBuilder<T>) => JointUpdateRenderingObjectResult<T>
+  dispose: (callback: JointDisposeCallback) => boolean
 }

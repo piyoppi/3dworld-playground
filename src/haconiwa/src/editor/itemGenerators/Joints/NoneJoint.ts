@@ -3,7 +3,7 @@ import { LineEdge } from "../../../../../lib/lines/lineEdge.js"
 import { Renderer } from "../../../../../lib/Renderer.js"
 import { RenderingObject } from "../../../../../lib/RenderingObject.js"
 import type { RenderingObjectBuilder } from "../../../../../lib/RenderingObjectBuilder"
-import type { Joint } from "./Joint"
+import type { Joint, JointDisposeCallback } from "./Joint"
 
 export class NoneJoint<T extends RenderingObject> implements Joint<T> {
   #coordinate: Coordinate = new Coordinate()
@@ -36,11 +36,11 @@ export class NoneJoint<T extends RenderingObject> implements Joint<T> {
     return 0
   }
 
-  updateRenderingObject(_builder: RenderingObjectBuilder<T>, _renderer: Renderer<T>) {
-
+  updateRenderingObject(_builder: RenderingObjectBuilder<T>) {
+    return []
   }
 
-  dispose(_: Renderer<T>) {
-
+  dispose(_callback: JointDisposeCallback) {
+    return true
   }
 }

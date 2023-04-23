@@ -1,10 +1,9 @@
 import { Coordinate } from "../../../../../lib/Coordinate.js"
 import { LineEdge } from "../../../../../lib/lines/lineEdge.js"
 import { Vec3 } from "../../../../../lib/Matrix.js"
-import { Renderer } from "../../../../../lib/Renderer.js"
 import { RenderingObject } from "../../../../../lib/RenderingObject.js"
 import type { RenderingObjectBuilder } from "../../../../../lib/RenderingObjectBuilder"
-import type { Joint } from "./Joint"
+import type { Joint, JointDisposeCallback, JointUpdateRenderingObjectResult } from "./Joint"
 
 export class Corner<T extends RenderingObject> implements Joint<T> {
   #edges: LineEdge[] = []
@@ -60,19 +59,20 @@ export class Corner<T extends RenderingObject> implements Joint<T> {
     return (this.#width / 2) * Math.tan(this.getAngle() / 2)
   }
 
-  updateRenderingObject(builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
-    if (this.disposed) return
+  updateRenderingObject(builder: RenderingObjectBuilder<T>): JointUpdateRenderingObjectResult<T> {
+    if (this.disposed) return []
 
-    this.removeCornerRenderingItem(renderer)
+    const result = []
 
+    // Render corner
     const cornerRenderingObj = this.makeCornerRenderingObject(builder)
-    renderer.addItem(this.#coordinate, cornerRenderingObj)
+    result.push({renderingObject: cornerRenderingObj, coordinate: this.#coordinate})
 
     if (this.#original) {
       if (!this.#fragmentRenderingObject) {
-        const renderingObj = this.#original.clone() as T
-        this.#fragmentRenderingObject = renderingObj
-        renderer.addItem(this.#fragmentCoordinate, renderingObj)
+        
+        this.#fragmentRenderingObject = this.#original.clone() as T
+        result.push({renderingObject: this.#fragmentRenderingObject, coordinate: this.#fragmentCoordinate})
       }
 
       const itemScale = this.getOffset() / this.#original.size[2]
@@ -85,17 +85,25 @@ export class Corner<T extends RenderingObject> implements Joint<T> {
         this.#fragmentCoordinate.resetMirror()
       }
     }
+
+    return result
   }
 
-  dispose(renderer: Renderer<T>) {
-    this.#disposed = true
+  dispose(callback: JointDisposeCallback) {
+    const result = callback([
+      this.#coordinate,
+      this.#fragmentCoordinate
+    ])
 
-    this.removeCornerRenderingItem(renderer)
-
-    if (renderer.renderingObjectFromCoordinate(this.#fragmentCoordinate)) {
-      renderer.removeItem(this.#fragmentCoordinate)
-      this.#fragmentRenderingObject = null
+    if (result) {
+      this.#disposed = true
+    } else {
+      return false
     }
+
+    this.#fragmentRenderingObject = null
+
+    return true
   }
 
   private isAcuteRelation() {
@@ -104,12 +112,6 @@ export class Corner<T extends RenderingObject> implements Joint<T> {
 
   private getAngle() {
     return Math.PI - Math.acos(Vec3.dotprod(this.#edges[0].xAxis, this.#edges[1].xAxis))
-  }
-
-  private removeCornerRenderingItem(renderer: Renderer<T>) {
-    if (renderer.renderingObjectFromCoordinate(this.#coordinate)) {
-      renderer.removeItem(this.#coordinate)
-    }
   }
 
   private makeCornerRenderingObject(builder: RenderingObjectBuilder<T>) {

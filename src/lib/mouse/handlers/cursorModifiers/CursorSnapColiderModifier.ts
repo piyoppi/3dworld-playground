@@ -1,22 +1,25 @@
-import { Colider, CoordinatedColider } from "../../../Colider"
+import { CoordinatedColider } from "../../../Colider"
 import { ColidedDetails } from '../../../Raycaster'
 import { VectorArray3 } from "../../../Matrix"
-import { Raycaster } from "../../../Raycaster"
+import type { ReadOnlyRaycaster } from "../../../ReadOnlyRaycaster"
 import type { CursorModifier } from './CursorModifier'
 
 export class CursorSnapColiderModifier implements CursorModifier {
   #currentPosition: VectorArray3
-  #raycaster: Raycaster<CoordinatedColider>
+  #raycaster: ReadOnlyRaycaster<CoordinatedColider>
   #colidedEvaluator: (colidedDetails: ColidedDetails<CoordinatedColider>[]) => ColidedDetails<CoordinatedColider> | null | undefined
 
-  constructor(raycaster: Raycaster<CoordinatedColider>, colidedEvaluator: (colidedDetails: ColidedDetails<CoordinatedColider>[]) => ColidedDetails<CoordinatedColider> | null | undefined) {
+  constructor(
+    raycaster: ReadOnlyRaycaster<CoordinatedColider>,
+    colidedEvaluator: (colidedDetails: ColidedDetails<CoordinatedColider>[]) => ColidedDetails<CoordinatedColider> | null | undefined
+  ) {
     this.#currentPosition = [0, 0, 0]
     this.#raycaster = raycaster
     this.#colidedEvaluator = colidedEvaluator
   }
 
   get alignedPosition(): VectorArray3 {
-    if (!this.#raycaster.hasColided) {
+    if (!this.#raycaster.colided) {
       return this.#currentPosition
     }
 

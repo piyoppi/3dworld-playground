@@ -1,14 +1,15 @@
-import type { ColiderItemMap } from "../../ColiderItemMap"
+import type { ColiderItemResolver } from "../../ColiderItemResolver"
 import { LineItemConnection } from "../../LineItem/index.js"
-import type { MouseButton, MouseControllable, MouseControllableCallbackFunction, WindowCursor } from "../../mouse/MouseControllable"
+import type { MouseControllable, MouseControllableCallbackFunction } from "../../mouse/MouseControllable"
 import { CallbackFunctions } from "../../CallbackFunctions.js"
 import type { Raycaster } from "../../Raycaster"
 import { Colider } from "../../Colider"
+import { ReadOnlyRaycaster } from "../../ReadOnlyRaycaster"
 
 export class JointHandler implements MouseControllable {
   #isStart = false
-  #raycaster: Raycaster<Colider>
-  #coliderItemMap: ColiderItemMap<LineItemConnection>
+  #raycaster: ReadOnlyRaycaster
+  #coliderItemResolver: ColiderItemResolver<LineItemConnection>
   #startedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   #endedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   #connectedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
@@ -18,9 +19,9 @@ export class JointHandler implements MouseControllable {
   #connecting: LineItemConnection[] = []
   #disconnectable = false
 
-  constructor(connection: LineItemConnection, raycaster: Raycaster<Colider>, coliderItemMap: ColiderItemMap<LineItemConnection>) {
-    this.#raycaster = raycaster
-    this.#coliderItemMap = coliderItemMap
+  constructor(connection: LineItemConnection, readonlyRaycaster: ReadOnlyRaycaster, coliderItemResolver: ColiderItemResolver<LineItemConnection>) {
+    this.#raycaster = readonlyRaycaster
+    this.#coliderItemResolver = coliderItemResolver
     this.#connection = connection
     this.#ignoredConnections = [connection]
   }
@@ -86,7 +87,7 @@ export class JointHandler implements MouseControllable {
   end() {
     this.#isStart = false
     const connections = this.#raycaster.colidedColiders.map(colider => {
-      const connection = this.#coliderItemMap.getItem(colider)
+      const connection = this.#coliderItemResolver.resolve(colider)
 
       if (!connection) return null
       if (this.#ignoredConnections.indexOf(connection) >= 0) return null

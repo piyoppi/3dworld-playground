@@ -2,7 +2,7 @@ import { HaconiwaRenderer } from "./src/renderer.js"
 import { HaconiwaEditor } from "./src/editor/editor.js"
 import { ThreeFactory as Factory } from '../lib/threeAdapter/ThreeFactory.js'
 import { MouseCapturer } from '../lib/mouse/MouseCapturer.js'
-import { HaconiwaWorld } from './src/world.js'
+import { HaconiwaWorld } from './src/World/index.js'
 import { ThreeGroup, ThreeRenderingObject } from "../lib/threeAdapter/ThreeRenderingObject.js"
 import { loadGlb } from '../lib/threeAdapter/ThreeLoaderHelper.js'
 import { Item } from '../lib/Item.js'
@@ -59,6 +59,10 @@ window.addEventListener('keydown', async (e) => {
       )
       editor.setItemGeneratorFactory(meshItemGeneratorFactory)
       break
+
+    case '5':
+      console.log(world.items)
+
     case 'Delete':
       editor.removeSelectedItems()
       break

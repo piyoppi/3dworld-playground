@@ -1,6 +1,6 @@
 import { CallbackFunctions } from "../../../../lib/CallbackFunctions.js"
 import { Marker } from "../../../../lib/markers/Marker"
-import { HaconiwaWorldItem } from "../../world.js"
+import { HaconiwaWorldItem } from "../../World/HaconiwaWorldItem.js"
 import { Item } from "../../../../lib/Item.js"
 import { Coordinate } from "../../../../lib/Coordinate.js"
 import { MouseButton, MouseControllableCallbackFunction, WindowCursor } from "../../../../lib/mouse/MouseControllable.js"
@@ -15,6 +15,16 @@ import {
 } from './HaconiwaItemGenerator'
 import { v4 as uuidv4 } from 'uuid'
 import type { Raycaster } from "../../../../lib/Raycaster"
+
+export type CreateParams = {
+  cursor: WindowCursor,
+  button: MouseButton,
+  cameraCoordinate: Coordinate,
+  unselected: () => void,
+  selected: () => void,
+  registerItem: (item: Item) => void,
+  removeMarker: (marker: Marker) => void,
+}
 
 export abstract class HaconiwaItemGeneratorBase<T> {
   #onGeneratedCallbacks: Array<HaconiwaItemGeneratedCallback> = []
@@ -95,7 +105,17 @@ export abstract class HaconiwaItemGeneratorBase<T> {
       return false
     }
 
-    const result = this.create(cursor, button, cameraCoordinate)
+    const result = this.create(
+      {
+        cursor,
+        button,
+        cameraCoordinate,
+        unselected: () => this.unselected(this),
+        selected: () => this.selected(this),
+        registerItem: (item: Item) => this.registerItem(item),
+        removeMarker: (marker: Marker) => this.removeMarker(marker)
+      }
+    )
 
     if (result) {
       this.#startedCallbacks.call()
@@ -107,7 +127,7 @@ export abstract class HaconiwaItemGeneratorBase<T> {
 
   }
 
-  protected abstract create(cursor: WindowCursor, button: MouseButton, cameraCoordinate: Coordinate): boolean | undefined
+  protected abstract create(params: CreateParams): boolean | undefined
   protected abstract unselect(): void
 
   protected registerMarker(marker: Marker) {
@@ -115,7 +135,7 @@ export abstract class HaconiwaItemGeneratorBase<T> {
     this.#addMarkerCallbacks.call(marker)
   }
 
-  protected registerItem(item: Item) {
+  private registerItem(item: Item) {
     const haconiwaItem = new HaconiwaWorldItem(item, [], [])
 
     this.#onGeneratedCallbacks.forEach(func => func([haconiwaItem]))
@@ -133,12 +153,12 @@ export abstract class HaconiwaItemGeneratorBase<T> {
     }
   }
 
-  protected selected(self: HaconiwaItemGenerator<T>) {
+  private selected(self: HaconiwaItemGenerator<T>) {
     this.#selectedCallbacks.call(self)
     this.#selected = true
   }
 
-  protected unselected(self: HaconiwaItemGenerator<T>) {
+  private unselected(self: HaconiwaItemGenerator<T>) {
     this.#unselectedCallbacks.call(self)
     this.#selected = false
   }

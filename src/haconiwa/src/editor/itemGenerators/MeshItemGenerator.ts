@@ -14,7 +14,7 @@ import { BoxMarker } from "../../../../lib/markers/BoxMarker.js"
 import { ProxyHandler } from "../../../../lib/mouse/handlers/ProxyHandler.js"
 import { Marker, MarkerRenderable } from "../../../../lib/markers/Marker.js"
 import { makeCoordinateMover } from "../../../../lib/markers/generators/CoordinateMover.js"
-import { HaconiwaItemGeneratorBase } from "./HaconiwaItemGeneratorBase.js"
+import { CreateParams, HaconiwaItemGeneratorBase } from "./HaconiwaItemGeneratorBase.js"
 
 export class MeshItemGenerator<T extends RenderingObject>
   extends HaconiwaItemGeneratorBase<T>
@@ -50,43 +50,41 @@ export class MeshItemGenerator<T extends RenderingObject>
     this.original = original
   }
 
-  create() {
-    if (!this.#planeRaycaster.hasColided) {
+  create({selected, registerItem}: CreateParams) {
+    if (!this.#planeRaycaster.hasColided || this.generated) {
       return false
     }
 
-    if (!this.generated) {
-      const item = new Item()
-      this.registerItem(item)
-      const coordinateForRendering = new Coordinate()
-      item.parentCoordinate.addChild(coordinateForRendering)
-      item.parentCoordinate.position = this.#planeRaycaster.colidedDetails[0].position
+    const item = new Item()
+    registerItem(item)
 
-      const renderingObject = this.makeRenderingObject()
-      this.#renderer.addItem(coordinateForRendering, renderingObject)
-      renderingObject.material.setOpacity(0.4)
+    const coordinateForRendering = new Coordinate()
+    item.parentCoordinate.addChild(coordinateForRendering)
+    item.parentCoordinate.position = this.#planeRaycaster.colidedDetails[0].position
 
-      this.#itemMarker = new BoxMarker(renderingObject.size, item.parentCoordinate)
-      const itemMarker = this.#itemMarker
-      const proxyHandler = new ProxyHandler(this.#markerRaycaster, itemMarker.coliders)
-      itemMarker.addHandler(proxyHandler)
-      this.registerMarker(itemMarker)
+    const renderingObject = this.makeRenderingObject()
+    this.#renderer.addItem(coordinateForRendering, renderingObject)
+    renderingObject.material.setOpacity(0.4)
 
-      proxyHandler.setStartedCallback(() => {
-        if (this.mounted) return
+    this.#itemMarker = new BoxMarker(renderingObject.size, item.parentCoordinate)
+    const itemMarker = this.#itemMarker
+    const proxyHandler = new ProxyHandler(this.#markerRaycaster.getReadonly(), itemMarker.coliders)
+    itemMarker.addHandler(proxyHandler)
+    this.registerMarker(itemMarker)
 
-        itemMarker.coliders.forEach(colider => colider.enabled = false)
+    proxyHandler.setStartedCallback(() => {
+      if (this.mounted) return
 
-        const markers = makeCoordinateMover(this.#planeRaycaster, this.#markerRaycaster, item.parentCoordinate, this.#renderingObjectBuilder, this.#renderer)
-        markers.forEach(marker => this.registerMarker(marker))
-        this.#handlingMarkers = markers
+      itemMarker.coliders.forEach(colider => colider.enabled = false)
 
-        this.selected(this)
-      })
-      return true
-    }
+      const markers = makeCoordinateMover(this.#planeRaycaster, this.#markerRaycaster, item.parentCoordinate, this.#renderingObjectBuilder, this.#renderer)
+      markers.forEach(marker => this.registerMarker(marker))
+      this.#handlingMarkers = markers
 
-    return false
+      selected()
+    })
+
+    return true
   }
 
   unselect() {

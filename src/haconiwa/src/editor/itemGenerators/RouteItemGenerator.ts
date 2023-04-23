@@ -11,7 +11,6 @@ import type {
 } from "./HaconiwaItemGenerator"
 import { Coordinate } from "../../../../lib/Coordinate.js"
 import { RenderingObjectBuilder } from "../../../../lib/RenderingObjectBuilder.js"
-import { MouseButton, WindowCursor } from "../../../../lib/mouse/MouseControllable.js"
 import { ColiderItemMap } from "../../../../lib/ColiderItemMap.js"
 import { Vec3 } from "../../../../lib/Matrix.js"
 import { markerJointable } from "../Markers/JointableMarker.js"
@@ -19,7 +18,7 @@ import { Joint } from "./Joints/Joint.js"
 import { NoneJoint } from "./Joints/NoneJoint.js"
 import { RenderingObject } from "../../../../lib/RenderingObject.js"
 import { JointFactory } from "./Joints/JointFactory.js"
-import { HaconiwaItemGeneratorBase } from "./HaconiwaItemGeneratorBase.js"
+import { CreateParams, HaconiwaItemGeneratorBase } from "./HaconiwaItemGeneratorBase.js"
 import { ProxyHandler } from "../../../../lib/mouse/handlers/ProxyHandler.js"
 import { PlaneMoveHandler } from "../../../../lib/mouse/handlers/PlaneMoveHandler.js"
 import { Marker, MarkerRenderable } from "../../../../lib/markers/Marker.js"
@@ -56,7 +55,7 @@ export class RouteItemGenerator<T extends RenderingObject>
     this.#renderer = renderer
     this.#jointFactory = jointFactory
 
-    this.#jointFactory.addOnReadyForRenderingCallback((joint: Joint<T>) => joint.updateRenderingObject(this.#renderingObjectBuilder, this.#renderer))
+    this.#jointFactory.addOnReadyForRenderingCallback((joint: Joint<T>) => this.updateJointRenderingObject(joint))
   }
 
   setOriginal(original: HaconiwaItemGeneratorClonedItem<T>) {
@@ -67,7 +66,7 @@ export class RouteItemGenerator<T extends RenderingObject>
     this.#coliderConnectionMap = coliderConnectionMap
   }
 
-  create(cursor: WindowCursor, button: MouseButton, cameraCoordinate: Coordinate) {
+  create({cursor, button, cameraCoordinate, unselected, selected, registerItem}: CreateParams) {
     if (!this.#planeRaycaster.hasColided || !this.#coliderConnectionMap) return
 
     if (this.isSelected) {
@@ -75,7 +74,7 @@ export class RouteItemGenerator<T extends RenderingObject>
 
       if (!markerSelected) {
         this.removeHandlingMarker()
-        this.unselected(this)
+        unselected()
       }
     }
 
@@ -96,7 +95,8 @@ export class RouteItemGenerator<T extends RenderingObject>
 
     const coordinateForRendering = new Coordinate()
     item.parentCoordinate.addChild(coordinateForRendering)
-    this.#renderer.addItem(coordinateForRendering, this.makeRenderingObject())
+    const renderingObject = this.makeRenderingObject()
+    this.#renderer.addItem(coordinateForRendering, renderingObject)
 
     //
     // Jointable markers
@@ -104,7 +104,7 @@ export class RouteItemGenerator<T extends RenderingObject>
     const jointableMarkers = item.connections.map(connection => {
       const marker = new JointMarker(0.5, connection.edge.coordinate)
       const handler = new PlaneMoveHandler(connection.edge.coordinate, [0, 1, 0], false, this.#renderer.camera)
-      const proxyHandler = new ProxyHandler(this.#markerRaycaster, marker.coliders)
+      const proxyHandler = new ProxyHandler(this.#markerRaycaster.getReadonly(), marker.coliders)
       let heightHandler: DirectionalMoveHandler | null = null
       handler.setStartingCallback(() => !heightHandler?.isStart)
 
@@ -120,7 +120,7 @@ export class RouteItemGenerator<T extends RenderingObject>
         this.registerMarker(heightMarker)
         this.#handlingMarkers.push(heightMarker)
 
-        this.selected(this)
+        selected()
       })
 
       marker.addHandler(handler)
@@ -134,7 +134,7 @@ export class RouteItemGenerator<T extends RenderingObject>
     }).map((created, _, arr) => {
       const {marker, handler, connection} = created
       const markers = arr.map(elm => elm.marker)
-      const jointableHandler = markerJointable(marker, markers, handler, connection, this.#markerRaycaster, coliderConnectionMap)
+      const jointableHandler = markerJointable(marker, markers, handler, connection, this.#markerRaycaster.getReadonly(), coliderConnectionMap)
       item.connections.filter(conn => conn !== connection).forEach(conn => jointableHandler.addIgnoredConnection(conn))
       marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#renderer)
 
@@ -145,9 +145,9 @@ export class RouteItemGenerator<T extends RenderingObject>
 
     const refreshLine = () => {
       const jointsArray = Array.from(joints.values())
-      this.updateRenderingObject(coordinateForRendering, item, item.line.length, jointsArray)
+      this.updateRenderingObject(coordinateForRendering, renderingObject, item, item.line.length, jointsArray)
 
-      jointsArray.forEach(joint => joint.updateRenderingObject(this.#renderingObjectBuilder, this.#renderer))
+      jointsArray.forEach(joint => this.updateJointRenderingObject(joint))
     }
     item.setUpdatedCallback(() => refreshLine())
     item.setConnectedLineUpdatedCallback(() => refreshLine())
@@ -161,7 +161,7 @@ export class RouteItemGenerator<T extends RenderingObject>
         if (joint && !joint.disposed) {
           const recreatedJoint = this.updateJoint(joint, connection)
           joints.set(connection, recreatedJoint)
-          this.updateRenderingObject(coordinateForRendering, item, item.line.length, Array.from(joints.values()))
+          this.updateRenderingObject(coordinateForRendering, renderingObject, item, item.line.length, Array.from(joints.values()))
         }
       })
 
@@ -169,17 +169,17 @@ export class RouteItemGenerator<T extends RenderingObject>
         const joint = joints.get(connection)
 
         if (joint) {
-          joint.dispose(this.#renderer)
+          this.disposeJoint(joint)
           const recreatedJoint = this.updateJoint(joint, connection)
           joints.set(connection, recreatedJoint)
-          this.updateRenderingObject(coordinateForRendering, item, item.line.length, Array.from(joints.values()))
+          this.updateRenderingObject(coordinateForRendering, renderingObject, item, item.line.length, Array.from(joints.values()))
         }
       })
     })
 
-    this.updateRenderingObject(coordinateForRendering, item, item.line.length, Array.from(joints.values()))
+    this.updateRenderingObject(coordinateForRendering, renderingObject, item, item.line.length, Array.from(joints.values()))
 
-    this.registerItem(item)
+    registerItem(item)
 
     jointableMarkers.forEach(item => this.registerMarker(item))
 
@@ -213,7 +213,7 @@ export class RouteItemGenerator<T extends RenderingObject>
 
     if (givenJoint.edgeCount === edges.length) {
       givenJoint.setEdges(edges)
-      givenJoint.updateRenderingObject(this.#renderingObjectBuilder, this.#renderer)
+      this.updateJointRenderingObject(givenJoint)
       return givenJoint
     }
 
@@ -222,11 +222,28 @@ export class RouteItemGenerator<T extends RenderingObject>
     joint.setEdges(edges)
     joint.setWidth(this.original.renderingObject.size[0])
 
-    joint.updateRenderingObject(this.#renderingObjectBuilder, this.#renderer)
+    this.updateJointRenderingObject(joint)
 
-    givenJoint.dispose(this.#renderer)
+    this.disposeJoint(givenJoint)
 
     return joint
+  }
+
+  private disposeJoint(joint: Joint<T>) {
+    joint.dispose(coordinates => {
+      coordinates.forEach(coordinate => this.#renderer.removeItem(coordinate))
+
+      return true
+    })
+  }
+
+  private updateJointRenderingObject(joint: Joint<T>) {
+    const results = joint.updateRenderingObject(this.#renderingObjectBuilder)
+
+    results.forEach(result => {
+      this.#renderer.removeItem(result.coordinate)
+      this.#renderer.addItem(result.coordinate, result.renderingObject)
+    })
   }
 
   private makeRenderingObject() {
@@ -235,17 +252,11 @@ export class RouteItemGenerator<T extends RenderingObject>
     return this.original.renderingObject.clone() as T
   }
 
-  private updateRenderingObject(coordinate: Coordinate, lineItem: LineItem, length: number, joints: Joint<T>[]) {
+  private updateRenderingObject(coordinate: Coordinate, renderingObject: RenderingObject, lineItem: LineItem, length: number, joints: Joint<T>[]) {
     const offset = joints.reduce((acc, joint) => acc + joint.getOffset(), 0)
     const itemScale = (length - offset) / (this.original?.renderingObject.size[0] || 1)
     coordinate.scale([1, 1, itemScale])
-
-    //joints.forEach(joint => joint.updateRenderingObject(this.#renderingObjectBuilder, this.#renderer))
-    const renderingItem = this.#renderer.renderingObjectFromCoordinate(coordinate)
-
-    if (renderingItem) {
-      renderingItem.material.repeat(itemScale, 1)
-    }
+    renderingObject.material.repeat(itemScale, 1)
 
     const direction = Vec3.normalize(Vec3.subtract(lineItem.connections[1].position, lineItem.connections[0].position))
     const position =

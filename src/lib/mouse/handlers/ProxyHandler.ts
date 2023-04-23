@@ -1,8 +1,8 @@
 import type { MouseButton, MouseControllable, MouseControllableCallbackFunction, WindowCursor } from "../../mouse/MouseControllable"
 import { CallbackFunctions } from "../../CallbackFunctions.js"
 import type { Coordinate } from "../../Coordinate.js"
-import type { Raycaster } from "../../Raycaster"
 import { Colider } from "../../Colider.js"
+import { ReadOnlyRaycaster } from "../../ReadOnlyRaycaster"
 
 type StartingCallbackFunction = () => boolean
 
@@ -12,10 +12,10 @@ export class ProxyHandler implements MouseControllable {
   #movingCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   #endingCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   #isStart = false
-  #raycaster: Raycaster<Colider>
+  #raycaster: ReadOnlyRaycaster<Colider>
   #targetColiders: Colider[]
 
-  constructor(raycaster: Raycaster<Colider>, targetColiders: Colider[]) {
+  constructor(raycaster: ReadOnlyRaycaster<Colider>, targetColiders: Colider[]) {
     this.#raycaster = raycaster
     this.#targetColiders = targetColiders
   }
