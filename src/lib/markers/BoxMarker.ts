@@ -48,6 +48,10 @@ export class BoxMarker implements Marker {
     this.#handledColiders.detach(raycaster, interactionHandler)
   }
 
+  makeRenderingObject<T>(builder: RenderingObjectBuilder<T>) {
+    return builder.makeBox(this.#size[0], this.#size[1], this.#size[2], {r: 255, g: 0, b: 0})
+  }
+
   attachRenderingObject<T>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
     renderer.addItem(this.#parentCoordinate, builder.makeBox(this.#size[0], this.#size[1], this.#size[2], color))
   }

@@ -11,12 +11,19 @@ import type { RenderingObjectBuilder } from '../RenderingObjectBuilder'
 import type { RGBColor } from "../helpers/color"
 import type { SingleMarker, MarkerRenderable } from "./Marker"
 
+type RenderingParameters = {
+  color: RGBColor
+}
+
 export class PlaneMarker implements SingleMarker, MarkerRenderable {
   #size: number
   #parentCoordinate: Coordinate
   #markerCoordinate = new Coordinate()
   #handledColiders = new HandledColiders()
   #colider: PlaneColider
+  #renderingParameters: RenderingParameters = {
+    color: {r: 255, g: 0, b: 0}
+  }
 
   constructor(size: number, norm: VectorArray3, axis: VectorArray3, parentCoordinate: Coordinate) {
     this.#size = size
@@ -66,6 +73,14 @@ export class PlaneMarker implements SingleMarker, MarkerRenderable {
 
   detach(raycaster: Raycaster, interactionHandler: MouseControlHandles) {
     this.#handledColiders.detach(raycaster, interactionHandler)
+  }
+
+  setRenderingParameters(params: RenderingParameters) {
+    this.#renderingParameters = {...this.#renderingParameters, ...params}
+  }
+
+  makeRenderingObject<T>(builder: RenderingObjectBuilder<T>) {
+    return builder.makePlane(this.#size, this.#size, this.#renderingParameters.color)
   }
 
   attachRenderingObject<T extends RenderingObject>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {

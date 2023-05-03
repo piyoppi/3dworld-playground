@@ -3,10 +3,12 @@ import { CallbackFunctions } from "../CallbackFunctions.js"
 import { MouseControllableCallbackFunction } from "../mouse/MouseControllable.js"
 import { Vec3 } from "../Matrix.js"
 import { LineItem } from "./LineItem.js"
+import { v4 as uuid } from "uuid"
 
 export class LineItemConnection {
   #edge: LineEdge
   #parent: LineItem
+  #uuid: string
   #connectedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
   private disconnectedCallbacks = new CallbackFunctions<MouseControllableCallbackFunction>()
 
@@ -16,6 +18,7 @@ export class LineItemConnection {
   constructor(edge: LineEdge, parent: LineItem) {
     this.#edge = edge
     this.#parent = parent
+    this.#uuid = uuid()
   }
 
   get edge() {
@@ -32,6 +35,10 @@ export class LineItemConnection {
 
   get parent() {
     return this.#parent
+  }
+
+  get uuid() {
+    return this.#uuid
   }
 
   setConnectedCallbacks(func: MouseControllableCallbackFunction) {

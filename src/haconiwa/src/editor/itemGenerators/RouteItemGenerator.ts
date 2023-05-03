@@ -67,7 +67,7 @@ export class RouteItemGenerator<T extends RenderingObject>
   }
 
   create({cursor, button, cameraCoordinate, unselected, selected, registerItem}: CreateParams) {
-    if (!this.#planeRaycaster.hasColided || !this.#coliderConnectionMap) return
+    if (!this.#planeRaycaster.colided || !this.#coliderConnectionMap) return
 
     if (this.isSelected) {
       const markerSelected = this.#handlingMarkers.some(handlingMarker => this.#markerRaycaster.colidedColiders.has(...handlingMarker.coliders))
@@ -102,7 +102,7 @@ export class RouteItemGenerator<T extends RenderingObject>
     // Jointable markers
     //
     const jointableMarkers = item.connections.map(connection => {
-      const marker = new JointMarker(0.5, connection.edge.coordinate)
+      const marker = new JointMarker(0.5, connection)
       const handler = new PlaneMoveHandler(connection.edge.coordinate, [0, 1, 0], false, this.#renderer.camera)
       const proxyHandler = new ProxyHandler(this.#markerRaycaster.getReadonly(), marker.coliders)
       let heightHandler: DirectionalMoveHandler | null = null
@@ -134,7 +134,7 @@ export class RouteItemGenerator<T extends RenderingObject>
     }).map((created, _, arr) => {
       const {marker, handler, connection} = created
       const markers = arr.map(elm => elm.marker)
-      const jointableHandler = markerJointable(marker, markers, handler, connection, this.#markerRaycaster.getReadonly(), coliderConnectionMap)
+      const jointableHandler = markerJointable(marker, markers, handler, connection, this.#markerRaycaster.getReadonly())
       item.connections.filter(conn => conn !== connection).forEach(conn => jointableHandler.addIgnoredConnection(conn))
       marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#renderer)
 

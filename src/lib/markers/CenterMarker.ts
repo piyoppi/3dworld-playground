@@ -9,18 +9,32 @@ import type { RGBColor } from "../helpers/color"
 import type { Renderer } from "../Renderer"
 import type { SingleMarker, MarkerRenderable } from "./Marker"
 
+type RenderingParameters = {
+  radius: number,
+  color: RGBColor
+}
+
 export class CenterMarker implements SingleMarker, MarkerRenderable {
   #markerCoordinate = new Coordinate()
   #handledColiders: HandledColiders
   #colider: CoordinatedColider
+  #parentCoordinate: Coordinate
+  #renderingParameters: RenderingParameters = {
+    radius: 0.5,
+    color: {r: 255, g: 0, b: 0}
+  }
 
   constructor(colider: CoordinatedColider) {
-    const parentCoordinate = colider.parentCoordinate
+    this.#parentCoordinate = colider.parentCoordinate
 
-    parentCoordinate.addChild(this.#markerCoordinate)
+    this.#parentCoordinate.addChild(this.#markerCoordinate)
 
     this.#handledColiders = new HandledColiders()
     this.#colider = colider
+  }
+
+  get parentCoordinate() {
+    return this.#parentCoordinate
   }
 
   get markerCoordinates() {
@@ -45,6 +59,14 @@ export class CenterMarker implements SingleMarker, MarkerRenderable {
 
   detach(raycaster: Raycaster<CoordinatedColider>, interactionHandler: MouseControlHandles) {
     this.#handledColiders.detach(raycaster, interactionHandler)
+  }
+
+  setRenderingParameters(params: {radius: number}) {
+    this.#renderingParameters = {...this.#renderingParameters, ...params}
+  }
+
+  makeRenderingObject<T>(builder: RenderingObjectBuilder<T>) {
+    return builder.makeSphere(this.#renderingParameters.radius, this.#renderingParameters.color)
   }
 
   attachRenderingObject<T>(color: RGBColor, radius: number, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {

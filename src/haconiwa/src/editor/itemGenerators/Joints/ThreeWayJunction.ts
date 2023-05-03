@@ -37,6 +37,7 @@ export class ThreeWayJunction<T extends RenderingObject> implements Joint<T> {
     }
 
     this.#edges = edges
+    console.log(edges)
 
     if (!this.#coordinate.parent) {
       this.#edges[0].addChildCoordinate(this.#coordinate)

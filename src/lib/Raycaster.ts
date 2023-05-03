@@ -63,8 +63,12 @@ export class Raycaster<T extends Colider = Colider> {
     return this.#colidedDetails
   }
 
-  get hasColided() {
+  get colided() {
     return this.#colidedColiders.length > 0
+  }
+
+  has(colider: Colider) {
+    return this.colidedColiders.some(item => item.uuid === colider.uuid)
   }
 
   getReadonly(): ReadOnlyRaycaster<T> {

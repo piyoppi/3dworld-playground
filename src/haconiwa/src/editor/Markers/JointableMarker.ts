@@ -1,8 +1,6 @@
 import type { LineItemConnection } from "../../../../lib/LineItem/index.js"
-import type { Raycaster } from "../../../../lib/Raycaster"
 import { JointHandler } from "../../../../lib/mouse/handlers/JointHandler.js"
 import { CursorSnapColiderModifier } from "../../../../lib/mouse/handlers/cursorModifiers/CursorSnapColiderModifier.js"
-import type { ColiderItemMap } from "../../../../lib/ColiderItemMap"
 import { JointColider, JointMarker } from "../../../../lib/markers/JointMarker.js"
 import { MouseControllable } from "../../../../lib/mouse/MouseControllable"
 import { PositionChangable } from "../../../../lib/mouse/handlers/PositionChangable"
@@ -15,7 +13,6 @@ export function markerJointable(
   handler: MouseControllable & PositionChangable,
   connection: LineItemConnection,
   markerRaycaster: ReadOnlyRaycaster<CoordinatedColider>,
-  coliderConnectionMap: ColiderItemMap<LineItemConnection>
 ) {
   const ignoringColiders = pairMarkers.map(marker => marker.coliders).flat()
   const snapModifier = new CursorSnapColiderModifier(
@@ -24,7 +21,7 @@ export function markerJointable(
   )
   handler.setCursorModifier(snapModifier)
 
-  const jointHandler = new JointHandler(connection, markerRaycaster, coliderConnectionMap.getResolver())
+  const jointHandler = new JointHandler(connection, markerRaycaster)
   jointHandler.setEndedCallback(() => {
     if (connection.connections.length > 0) {
       handler.clearCursorModifier()
@@ -32,7 +29,6 @@ export function markerJointable(
   })
 
   marker.addHandler(jointHandler)
-  coliderConnectionMap.add(marker.coliders[0], connection)
 
   return jointHandler
 }

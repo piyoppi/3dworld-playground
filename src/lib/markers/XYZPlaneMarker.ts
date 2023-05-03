@@ -12,11 +12,17 @@ export class XYZPlaneMarker implements Marker, MarkerRenderable {
   #yzPlaneMarker: PlaneMarker
   #zxPlaneMarker: PlaneMarker
   #xyPlaneMarker: PlaneMarker
+  #parentCoordinate: Coordinate
 
   constructor(size: number, parentCoordinate: Coordinate) {
     this.#yzPlaneMarker = new PlaneMarker(size, [1, 0, 0], [0, 1, 0], parentCoordinate)
     this.#zxPlaneMarker = new PlaneMarker(size, [0, 1, 0], [0, 0, 1], parentCoordinate)
     this.#xyPlaneMarker = new PlaneMarker(size, [0, 0, 1], [1, 0, 0], parentCoordinate)
+    this.#parentCoordinate = parentCoordinate
+  }
+
+  get parentCoordinate() {
+    return this.#parentCoordinate
   }
 
   get coliders() {

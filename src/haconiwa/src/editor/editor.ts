@@ -18,6 +18,8 @@ import type { LineItemConnection } from '../../../lib/LineItem/index.js'
 import { RenderingObject } from '../../../lib/RenderingObject'
 import { CameraController } from '../../../lib/CameraController.js'
 import { Coordinate } from '../../../lib/Coordinate.js'
+import type { ItemGeneratorProcess } from './ItemGenerators/ItemGeneratorProcess'
+import { ItemGenerateHandler } from './ItemGenerators/ItemGenerateHandler/ItemGenerateHandler.js'
 
 type Plane = {
   position: VectorArray3,
@@ -27,7 +29,10 @@ type Plane = {
 export class HaconiwaEditor<T extends RenderingObject> {
   #cameraController: CameraController
   #mouseControlHandles: MouseControlHandles
+
   #itemGeneratorsMouseControlHandles: MouseControlHandles
+  #currentItemGeneratorHandler: ControlHandle | null = null
+
   #editingPlane: EditingPlane
   #markerRaycaster: Raycaster<CoordinatedColider>
   #renderer: HaconiwaRenderer<T>
@@ -36,10 +41,11 @@ export class HaconiwaEditor<T extends RenderingObject> {
   #coliderConnectionMap = new ColiderItemMap<LineItemConnection>()
 
   #currentItemGenerator: HaconiwaItemGenerator<T> | null = null
-  #currentItemGeneratorHandler: ControlHandle | null = null
   #selectedItemGenerators: HaconiwaItemGenerator<T>[] = []
 
   #renderingObjectBuilder: RenderingObjectBuilder<T>
+
+  #itemGenerateHandler: ItemGenerateHandler<T> | null = null
 
   #world: HaconiwaWorld
 
@@ -81,6 +87,35 @@ export class HaconiwaEditor<T extends RenderingObject> {
   captureMouseEvent() {
     this.#mouseControlHandles.captureMouseEvent()
     this.#itemGeneratorsMouseControlHandles.captureMouseEvent('primary')
+  }
+
+  setItemGeneratorProcessFactory(factory: () => Promise<ItemGeneratorProcess<T>>) {
+    this.#itemGenerateHandler = new ItemGenerateHandler(
+      factory,
+      this.#renderer.renderer,
+      this.#markerRaycaster,
+      this.#editingPlane.raycaster.getReadonly(),
+      this.#mouseControlHandles,
+      this.#renderingObjectBuilder
+    )
+    this.#currentItemGeneratorHandler = {
+      colider: this.#editingPlane.colider,
+      handled: this.#itemGenerateHandler
+    }
+
+    this.#itemGeneratorsMouseControlHandles.add(this.#currentItemGeneratorHandler)
+  }
+
+  clearItemGeneratorProcessFactory() {
+    if (!this.#currentItemGeneratorHandler || !this.#itemGenerateHandler) return
+
+    if (this.#itemGenerateHandler.isRunning) {
+      throw new Error('Cannot clear item generator process factory while running')
+    }
+
+    this.#itemGeneratorsMouseControlHandles.remove(this.#currentItemGeneratorHandler)
+    this.#itemGenerateHandler = null
+    this.#currentItemGeneratorHandler = null
   }
 
   setItemGeneratorFactory(generator: HaconiwaItemGeneratorFactory<T>) {

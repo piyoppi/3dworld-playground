@@ -55,7 +55,7 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject>
 
   create({cursor, button, cameraCoordinate, registerItem}: CreateParams) {
     if (!this.original) throw new Error('Item and RenderingObject is not set.')
-    if (!this.#planeRaycaster.hasColided || !this.#coliderConnectionMap) return
+    if (!this.#planeRaycaster.colided || !this.#coliderConnectionMap) return
 
     const itemGenerator = new LineRenderingItemGenerator(this.#renderer)
     const lineGenerator = new LineSegmentGenerator()

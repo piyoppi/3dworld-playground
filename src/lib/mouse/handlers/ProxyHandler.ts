@@ -48,11 +48,11 @@ export class ProxyHandler implements MouseControllable {
     this.#movingCallbacks.remove(func)
   }
 
-  setEndingcallback(func: MouseControllableCallbackFunction) {
+  setEndedCallback(func: MouseControllableCallbackFunction) {
     this.#endingCallbacks.add(func)
   }
 
-  removeEndingCallback(func: MouseControllableCallbackFunction) {
+  removeEndedCallback(func: MouseControllableCallbackFunction) {
     this.#endingCallbacks.remove(func)
   }
 

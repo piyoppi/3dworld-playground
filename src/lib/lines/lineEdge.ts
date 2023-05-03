@@ -2,12 +2,14 @@ import { Coordinate } from "../Coordinate.js"
 import { Vec3, VectorArray3 } from "../Matrix.js"
 import { CallbackFunctions } from '../CallbackFunctions.js'
 import type { Line } from "./line"
+import { v4 as uuid } from 'uuid'
 
 export class LineEdge {
   #coordinate: Coordinate
   #updatedCallbacks = new CallbackFunctions<() => void>()
   #tValue: number
   #parent: Line
+  #uuid = uuid()
 
   constructor(position: VectorArray3, t: 0 | 1, parent: Line) {
     this.#coordinate = new Coordinate()
@@ -15,6 +17,10 @@ export class LineEdge {
     this.#parent = parent
 
     this.updateCoordinate(position)
+  }
+
+  get uuid() {
+    return this.#uuid
   }
 
   get position() {

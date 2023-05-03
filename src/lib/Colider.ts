@@ -36,7 +36,17 @@ export class ColiderBase {
   }
 }
 
-export class InfiniteColider extends ColiderBase implements Colider {
+export class InfiniteColider extends ColiderBase {
+  #parentCoordinate = new Coordinate()
+
+  constructor() {
+    super()
+  }
+
+  get parentCoordinate() {
+    return this.#parentCoordinate
+  }
+
   checkRay(_ray: Ray): number {
     return 0.01
   }

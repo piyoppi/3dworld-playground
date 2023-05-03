@@ -10,21 +10,28 @@ import type { RenderingObjectBuilder } from '../RenderingObjectBuilder.js'
 import type { RGBColor } from "../helpers/color.js"
 import type { SingleMarker, MarkerRenderable } from "./Marker"
 
+type RenderingParameters = {
+  color: RGBColor
+}
+
 export class DirectionalMarker implements SingleMarker, MarkerRenderable {
   #norm: number
   #radius: number
   #markerCoordinate = new Coordinate()
   #handledColiders: HandledColiders
   #colider: BoxColider
-  #isGlobal = false
   #offsetVec = [0, 0, 0] as VectorArray3
+  #renderingParameters: RenderingParameters = {
+    color: {r: 255, g: 0, b: 0}
+  }
+  #parentCoordinate: Coordinate
 
   constructor(norm: number, radius: number, direction: VectorArray3, parentCoordinate: Coordinate, offset: number = 0, isGlobal = false) {
     this.#norm = norm
     this.#radius = radius
-    this.#isGlobal = isGlobal
     this.#offsetVec = Vec3.mulScale(direction, offset)
     this.#markerCoordinate.setDirectionYAxis(direction, Vec3.add(Vec3.mulScale(direction, norm / 2), this.#offsetVec))
+    this.#parentCoordinate = parentCoordinate
 
     if (isGlobal) {
       const updateFunc = () => this.#markerCoordinate.position = Vec3.add(parentCoordinate.getGlobalPosition(), this.#offsetVec)
@@ -38,6 +45,10 @@ export class DirectionalMarker implements SingleMarker, MarkerRenderable {
 
     this.#handledColiders = new HandledColiders()
     this.#colider = new BoxColider(this.#radius, this.#norm, this.#radius, this.#markerCoordinate)
+  }
+
+  get parentCoordinate() {
+    return this.#parentCoordinate
   }
 
   get markerCoordinates() {
@@ -62,6 +73,14 @@ export class DirectionalMarker implements SingleMarker, MarkerRenderable {
 
   detach(raycaster: Raycaster, interactionHandler: MouseControlHandles) {
     this.#handledColiders.detach(raycaster, interactionHandler)
+  }
+
+  setRenderingParameters(params: RenderingParameters) {
+    this.#renderingParameters = {...this.#renderingParameters, ...params}
+  }
+
+  makeRenderingObject<T>(builder: RenderingObjectBuilder<T>) {
+    return builder.makeVector(this.#norm, this.#radius, this.#renderingParameters.color)
   }
 
   attachRenderingObject<T>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {

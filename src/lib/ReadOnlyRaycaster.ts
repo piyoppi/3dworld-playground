@@ -16,7 +16,7 @@ export class ReadOnlyRaycaster<T extends Colider = Colider> {
   }
 
   get colided() {
-    return this.raycaster.hasColided
+    return this.raycaster.colided
   }
 
   check(normalizedX: number, normalizedY: number) {

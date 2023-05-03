@@ -13,6 +13,7 @@ export type ControlHandle = {
 
 type MouseDownCallbackFunction = (x: number, y: number, mouseButton: MouseButton) => void
 type MouseMoveCallbackFunction = (x: number, y: number, mouseButton: MouseButton) => void
+type MouseUpCallbackFunction = (x: number, y: number, mouseButton: MouseButton) => void
 
 type HandleItem = {
   controlHandle: ControlHandle,
@@ -27,6 +28,7 @@ export class MouseControlHandles {
   #camera: Camera
   #beforeMouseDownCallbacks: Array<MouseDownCallbackFunction> = []
   #beforeMouseMoveCallbacks: Array<MouseMoveCallbackFunction> = []
+  #beforeMouseUpCallbacks: Array<MouseMoveCallbackFunction> = []
   #enabled = true
   #windowSize: VectorArray2
 
@@ -56,6 +58,22 @@ export class MouseControlHandles {
 
   addBeforeMouseMoveCallback(callback: MouseMoveCallbackFunction) {
     this.#beforeMouseMoveCallbacks.push(callback)
+  }
+
+  addBeforeMouseUpCallback(callback: MouseMoveCallbackFunction) {
+    this.#beforeMouseUpCallbacks.push(callback)
+  }
+
+  removeBeforeMouseDownCallback(callback: MouseMoveCallbackFunction) {
+    this.#beforeMouseDownCallbacks = this.#beforeMouseDownCallbacks.filter(c => c !== callback)
+  }
+
+  removeBeforeMouseMoveCallback(callback: MouseMoveCallbackFunction) {
+    this.#beforeMouseMoveCallbacks = this.#beforeMouseMoveCallbacks.filter(c => c !== callback)
+  }
+
+  removeBeforeMouseUpCallback(callback: MouseMoveCallbackFunction) {
+    this.#beforeMouseUpCallbacks = this.#beforeMouseUpCallbacks.filter(c => c !== callback)
   }
 
   add(handled: ControlHandle | Array<ControlHandle>) {
@@ -115,9 +133,16 @@ export class MouseControlHandles {
     this.#handlingItems.forEach(handledItem => handledItem.controlHandle.handled.move({screenX, screenY, normalizedX, normalizedY}, mouseButton, this.#camera.coordinate))
   }
 
-  end() {
+  end(screenX: number, screenY: number, button: number) {
+    const mouseButton = convertButtonNumberToMouseButtonsType(button)
+    const normalized = getNormalizedScreenPosition([screenX, screenY], this.#windowSize)
+    const normalizedX = normalized[0]
+    const normalizedY = normalized[1]
+
+    this.#beforeMouseUpCallbacks.forEach(func => func(screenX, screenY, mouseButton))
+
     this.#handlingItems.forEach(handledItem => {
-      handledItem.controlHandle.handled.end()
+      handledItem.controlHandle.handled.end({screenX, screenY, normalizedX, normalizedY}, mouseButton, this.#camera.coordinate)
     })
 
     this.#handlingItems.length = 0
@@ -134,7 +159,7 @@ export class MouseControlHandles {
       if (triggered) this.start(e.clientX, e.clientY, e.button)
     })
     window.addEventListener('mousemove', e => this.move(e.clientX, e.clientY, e.button))
-    window.addEventListener('mouseup', _ => this.end())
+    window.addEventListener('mouseup', e => this.end(e.clientX, e.clientY, e.button))
     window.addEventListener('wheel', e => this.mouseWheel(e.deltaY))
   }
 

@@ -12,6 +12,8 @@ import { RouteItemGeneratorFactory } from "./src/editor/itemGenerators/RouteItem
 import { RoadJointFactory } from "./src/Roads/RoadJointFactory.js"
 import { MeshItemGeneratorFactory } from "./src/editor/itemGenerators/MeshItemGenerator.js"
 
+import { ItemGeneratorProcess as RouteItemGeneratorProcess } from './src/editor/ItemGenerators/RouteItemGenerator/ItemGeneratorProcess.js'
+
 const world = new HaconiwaWorld()
 const factory = new Factory()
 const mouseCapturer = new MouseCapturer(window.innerWidth, window.innerHeight)
@@ -62,6 +64,14 @@ window.addEventListener('keydown', async (e) => {
 
     case '5':
       console.log(world.items)
+
+    case '6':
+      const factory = async () => new RouteItemGeneratorProcess(
+        new ThreeRenderingObject(new ThreeGroup(await loadGlb('./assets/road.glb'))),
+        new RoadJointFactory()
+      )
+
+    editor.setItemGeneratorProcessFactory(factory)
 
     case 'Delete':
       editor.removeSelectedItems()

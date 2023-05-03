@@ -86,7 +86,7 @@ export class RaycastMoveHandler implements MouseControllable, PositionChangable 
   }
 
   move() {
-    if (!this.#isStart || !this.#raycaster.hasColided) return
+    if (!this.#isStart || !this.#raycaster.colided) return
 
     const colidedDetail = this.#raycaster.colidedDetails.find(item => item.colider.uuid === this.#handlingParams.handledColiderUuid)
     if (!colidedDetail) return

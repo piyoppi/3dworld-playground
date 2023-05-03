@@ -108,5 +108,5 @@ window.addEventListener('wheel', e => {
 })
 window.addEventListener('mouseup', e => {
   lookAtCameraHandler.end()
-  mouseInteractionHandler.end()
+  mouseInteractionHandler.end(e.clientX, e.clientY, e.button)
 })

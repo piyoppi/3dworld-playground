@@ -51,7 +51,7 @@ export class MeshItemGenerator<T extends RenderingObject>
   }
 
   create({selected, registerItem}: CreateParams) {
-    if (!this.#planeRaycaster.hasColided || this.generated) {
+    if (!this.#planeRaycaster.colided || this.generated) {
       return false
     }
 

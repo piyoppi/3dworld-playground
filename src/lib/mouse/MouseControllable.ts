@@ -16,7 +16,7 @@ export interface MouseControllable {
   removeStartedCallback: (func: MouseControllableCallbackFunction) => void
   start: (cursor: WindowCursor, button: MouseButton, cameraCoordinate: Coordinate) => boolean | void
   move: (cursor: WindowCursor, button: MouseButton, cameraCoordinate: Coordinate) => void
-  end: () => void
+  end: (cursor: WindowCursor, button: MouseButton, cameraCoordinate: Coordinate) => void
   wheel?: (delta: number) => void
   readonly isStart: boolean
 }

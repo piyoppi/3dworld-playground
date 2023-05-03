@@ -21,7 +21,7 @@ export function makeConnectionMarker (
       markerRaycaster.getReadonly(),
       (colidedDetails) => colidedDetails.find(colidedDetail => ignoringColiders.every(ignoredColider => ignoredColider !== colidedDetail.colider))
     )
-    const jointHandler = new JointHandler(connection, markerRaycaster.getReadonly(), coliderConnectionMap.getResolver())
+    const jointHandler = new JointHandler(connection, markerRaycaster.getReadonly())
 
     jointHandler.setEndedCallback(() => {
       if (connection.connections.length > 0) {

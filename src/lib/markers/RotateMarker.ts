@@ -11,6 +11,10 @@ import type { Renderer } from "../Renderer.js"
 import { VectorArray3, Vec3 } from "../Matrix.js"
 import { RenderingObject } from "../RenderingObject.js"
 
+type RenderingParameters = {
+  color: RGBColor
+}
+
 export class RotateMarker implements SingleMarker, MarkerRenderable {
   #parentCoordinate: Coordinate
   #markerCoordinate = new Coordinate()
@@ -18,6 +22,9 @@ export class RotateMarker implements SingleMarker, MarkerRenderable {
   #colider: PlaneColider
   #innerRadius: number
   #outerRadius: number
+  #renderingParameters: RenderingParameters = {
+    color: {r: 255, g: 0, b: 0}
+  }
 
   constructor(outerRadius: number, innerRadius: number, planePosition: VectorArray3, planeNorm: VectorArray3, parentCoordinate: Coordinate) {
     this.#outerRadius = outerRadius
@@ -63,6 +70,17 @@ export class RotateMarker implements SingleMarker, MarkerRenderable {
 
   addHandler(handler: MouseControllable) {
     this.#handledColiders.addHandler({colider: this.#colider, handled: handler})
+  }
+
+  setRenderingParameters(params: RenderingParameters) {
+    this.#renderingParameters = {...this.#renderingParameters, ...params}
+  }
+
+  makeRenderingObject<T extends RenderingObject>(builder: RenderingObjectBuilder<T>) {
+    const circleMesh = builder.makeAnnulus(this.#innerRadius, this.#outerRadius, this.#renderingParameters.color)
+    circleMesh.material.setSide('both')
+
+    return circleMesh
   }
 
   attachRenderingObject<T extends RenderingObject>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
