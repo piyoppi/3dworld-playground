@@ -49,6 +49,7 @@ export class ItemGeneratorProcess<T extends RenderingObject> implements IItemGen
     const renderingObject = this.original.clone() as T
     const item = new HaconiwaWorldItem(lineItem, [], [])
     const coordinateForRendering = register(item, renderingObject)
+    const handlingProcess = new HandlingProcess()
 
     const jointableMarkers = lineItem.connections.map(connection => {
       const jointMarker = new JointMarker(0.5, connection)
@@ -70,7 +71,7 @@ export class ItemGeneratorProcess<T extends RenderingObject> implements IItemGen
 
         registerMarker(heightMarker)
 
-        select(heightMarker.coliders, () => removeMarker(heightMarker))
+        select(heightMarker.coliders, handlingProcess, () => removeMarker(heightMarker))
       })
 
       return {
@@ -87,14 +88,11 @@ export class ItemGeneratorProcess<T extends RenderingObject> implements IItemGen
 
       return marker
     })
-    jointableMarkers.forEach(marker => registerMarker(marker))
     jointableMarkers[1].handlers.forEach(handler => handler.start(cursor, button, camera.coordinate))
 
     const renderingObjectBuilder = getRenderingObjectBuilder()
     const updateJointRenderingObject = (joint: Joint<T>) => {
-      const results = joint.updateRenderingObject(renderingObjectBuilder)
-
-      results.forEach(result => {
+      joint.updateRenderingObject(renderingObjectBuilder).forEach(result => {
         removeRenderingObject(result.coordinate)
         addRenderingObject(result.coordinate, result.renderingObject)
       })
@@ -102,8 +100,9 @@ export class ItemGeneratorProcess<T extends RenderingObject> implements IItemGen
 
     this.jointFactory.addOnReadyForRenderingCallback((joint: Joint<T>) => updateJointRenderingObject(joint))
 
-    const updateRenderingObject = (joints: Joint<T>[]) => {
-      const offset = joints.reduce((acc, joint) => acc + joint.getOffset(), 0)
+    const updateRenderingObject = () => {
+      const jointsArray = Array.from(joints.values())
+      const offset = jointsArray.reduce((acc, joint) => acc + joint.getOffset(), 0)
       const itemScale = (lineItem.line.length - offset) / (this.original.size[0] || 1)
       coordinateForRendering.scale([1, 1, itemScale])
       renderingObject.material.repeat(itemScale, 1)
@@ -113,11 +112,11 @@ export class ItemGeneratorProcess<T extends RenderingObject> implements IItemGen
         Vec3.add(
           lineItem.connections[0].edge.position,
           Vec3.add(
-            Vec3.mulScale(direction, joints[0].getOffset()),
+            Vec3.mulScale(direction, jointsArray[0].getOffset()),
             Vec3.mulScale(
               Vec3.subtract(
-                Vec3.subtract(lineItem.connections[1].position, Vec3.mulScale(direction, joints[1].getOffset())),
-                Vec3.add(lineItem.connections[0].position, Vec3.mulScale(direction, joints[0].getOffset()))
+                Vec3.subtract(lineItem.connections[1].position, Vec3.mulScale(direction, jointsArray[1].getOffset())),
+                Vec3.add(lineItem.connections[0].position, Vec3.mulScale(direction, jointsArray[0].getOffset()))
               ),
               0.5
             )
@@ -126,7 +125,7 @@ export class ItemGeneratorProcess<T extends RenderingObject> implements IItemGen
       coordinateForRendering.setDirectionZAxis(direction, position)
     }
 
-    updateRenderingObject(Array.from(joints.values()))
+    updateRenderingObject()
 
     const updateJoint = (givenJoint: Joint<T>, connection: LineItemConnection) => {
       if (!connection.hasConnections() || !this.original) return new NoneJoint<T>()
@@ -152,10 +151,8 @@ export class ItemGeneratorProcess<T extends RenderingObject> implements IItemGen
     }
 
     const refreshLine = () => {
-      const jointsArray = Array.from(joints.values())
-      updateRenderingObject(jointsArray)
-
-      jointsArray.forEach(joint => updateJointRenderingObject(joint))
+      updateRenderingObject()
+      Array.from(joints.values()).forEach(joint => updateJointRenderingObject(joint))
     }
 
     lineItem.setUpdatedCallback(() => refreshLine())
@@ -174,7 +171,7 @@ export class ItemGeneratorProcess<T extends RenderingObject> implements IItemGen
         if (joint && !joint.disposed) {
           const recreatedJoint = updateJoint(joint, connection)
           joints.set(connection, recreatedJoint)
-          updateRenderingObject(Array.from(joints.values()))
+          updateRenderingObject()
         }
       })
 
@@ -185,11 +182,11 @@ export class ItemGeneratorProcess<T extends RenderingObject> implements IItemGen
           disposeJoint(joint)
           const recreatedJoint = updateJoint(joint, connection)
           joints.set(connection, recreatedJoint)
-          updateRenderingObject(Array.from(joints.values()))
+          updateRenderingObject()
         }
       })
     })
 
-    return new HandlingProcess()
+    return handlingProcess
   }
 }

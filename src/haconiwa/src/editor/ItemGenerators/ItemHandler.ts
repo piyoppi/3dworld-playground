@@ -1,27 +1,27 @@
 import { CoordinatedColider } from "../../../../lib/Colider"
-import { Coordinate } from "../../../../lib/Coordinate"
-import { Marker } from "../../../../lib/markers/Marker"
 import { MouseControlHandles } from "../../../../lib/mouse/MouseControlHandles"
 import { Raycaster } from "../../../../lib/Raycaster"
 import { Renderer } from "../../../../lib/Renderer"
-import { HaconiwaWorldItem } from "../../World/HaconiwaWorldItem"
 import { HandlingProcess } from "./HandlingProcess"
+import { ItemGenerateState } from "./ItemGenerateHandler/ItemGenerateState"
 
 export class ItemHandler {
   constructor(
-    private markers: Marker[],
-    private renderingCoordinates: Coordinate[],
-    private items: HaconiwaWorldItem[],
+    private state: ItemGenerateState,
     private handlingProcess: HandlingProcess,
   ) {
   }
 
+  get items() {
+    return this.state.getItems()
+  }
+
   dispose<T>(renderer: Renderer<T>, raycaster: Raycaster<CoordinatedColider>, mouseHandler: MouseControlHandles) {
-    this.markers.forEach(marker => {
+    this.state.getMarkers().forEach(marker => {
       marker.detach(raycaster, mouseHandler)
     })
 
-    this.renderingCoordinates.forEach(coordinate => {
+    this.state.getRenderingObjectCoordinates().forEach(coordinate => {
       renderer.removeItem(coordinate)
     })
 

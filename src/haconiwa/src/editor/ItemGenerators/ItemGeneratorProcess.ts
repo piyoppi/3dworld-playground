@@ -18,7 +18,7 @@ export type ItemGeneratorParams<T extends RenderingObject> = {
   register: (item: HaconiwaWorldItem, renderingObject: T) => Coordinate,
   registerMarker: (marker: Marker) => void,
   removeMarker: (marker: Marker) => void,
-  select: (coliders: Colider[], unselect: () => void) => void,
+  select: (coliders: Colider[], handlingProcess: HandlingProcess, unselect: () => void) => void,
   getCamera: () => Camera,
   getRenderingObjectBuilder: () => RenderingObjectBuilder<T>,
   addRenderingObject: (coordinate: Coordinate, renderingObject: T) => void,

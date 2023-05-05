@@ -72,7 +72,7 @@ export class MouseControlHandles {
     this.#beforeMouseMoveCallbacks = this.#beforeMouseMoveCallbacks.filter(c => c !== callback)
   }
 
-  removeBeforeMouseUpCallback(callback: MouseMoveCallbackFunction) {
+  removeBeforeMouseUpCallback(callback: MouseUpCallbackFunction) {
     this.#beforeMouseUpCallbacks = this.#beforeMouseUpCallbacks.filter(c => c !== callback)
   }
 

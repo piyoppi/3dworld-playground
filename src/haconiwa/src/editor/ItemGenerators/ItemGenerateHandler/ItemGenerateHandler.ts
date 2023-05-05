@@ -9,10 +9,11 @@ import type { RenderingObjectBuilder } from "../../../../../lib/RenderingObjectB
 import type { ItemGeneratorProcess, ItemGeneratorProcessPhase } from "../ItemGeneratorProcess"
 import type { ReadOnlyRaycaster } from "../../../../../lib/ReadOnlyRaycaster"
 import type { Colider, CoordinatedColider } from "../../../../../lib/Colider"
-import { ItemGenerateState } from "./ItemGenerateTransaction.js"
+import { ItemGenerateState } from "./ItemGenerateState.js"
 import { CallbackFunctions } from "../../../../../lib/CallbackFunctions.js"
 import { Coordinate } from "../../../../../lib/Coordinate.js"
 import { ItemHandler } from "./../ItemHandler.js"
+import { HandlingProcess } from "../HandlingProcess"
 
 type CompletedCallback = (handler: ItemHandler) => void
 
@@ -29,9 +30,13 @@ export class ItemGenerateHandler<T extends RenderingObject> implements MouseCont
     private planeRaycaster:  ReadOnlyRaycaster,
     private markersMouseControlHandles: MouseControlHandles,
     private renderingObjectBuilder: RenderingObjectBuilder<T>,
+    private callbacks: {
+      onSelected: (itemHandler: ItemHandler) => (() => void),
+      onCompleted: (itemHandler: ItemHandler) => void
+    }
   ) {
-
   }
+
   setStartedCallback(func: MouseControllableCallbackFunction) {
 
   }
@@ -73,15 +78,16 @@ export class ItemGenerateHandler<T extends RenderingObject> implements MouseCont
     if (this.generatorProcess) {
       this.process(this.generatorProcess, 'end', cursor, button)
     }
-
-    this.generatorProcess = null
   }
 
   process(generatorProcess: ItemGeneratorProcess<T>, phase: ItemGeneratorProcessPhase, cursor: WindowCursor, button: MouseButton) {
+    const markerRenderingCoordinates = new Map<Marker, Coordinate>()
+
     const registerMarker = (marker: Marker) => {
       if (marker.makeRenderingObject) {
         const renderingObject = marker.makeRenderingObject(this.renderingObjectBuilder)
         const coordinate = new Coordinate()
+        markerRenderingCoordinates.set(marker, coordinate)
         marker.parentCoordinate.addChild(coordinate)
         this.itemGenerateState.addRenderingObjectCoordinate(coordinate)
         this.renderer.addItem(coordinate, renderingObject)
@@ -93,10 +99,10 @@ export class ItemGenerateHandler<T extends RenderingObject> implements MouseCont
     const removeMarker = (marker: Marker) => {
       marker.detach(this.markerRaycaster, this.markersMouseControlHandles)
 
-      this.itemGenerateState
-        .getRenderingObjectCoordinates()
-        .filter(coordinate => marker.parentCoordinate.has(coordinate))
-        .forEach(coordinate => this.renderer.removeItem(coordinate))
+      const coordinate = markerRenderingCoordinates.get(marker)
+      if (coordinate) {
+        this.renderer.removeItem(coordinate)
+      }
 
       this.itemGenerateState.removeMarker(marker)
     }
@@ -112,13 +118,14 @@ export class ItemGenerateHandler<T extends RenderingObject> implements MouseCont
       return coordinateForRendering
     }
 
-    const select = (coliders: Colider[], unselected: () => void) => {  
+    const select = (coliders: Colider[], handlingProcess: HandlingProcess, unselected: () => void) => {  
       const ready = () => {
         this.markersMouseControlHandles.removeBeforeMouseUpCallback(ready)
 
         const checkSelected = () => {
           if (!coliders.some(c => this.markerRaycaster.has(c))) {
             unselected()
+            unselectedCallback()
             this.markersMouseControlHandles.removeBeforeMouseDownCallback(checkSelected)
           }
         }
@@ -127,6 +134,7 @@ export class ItemGenerateHandler<T extends RenderingObject> implements MouseCont
       }
 
       this.markersMouseControlHandles.addBeforeMouseUpCallback(ready)
+      const unselectedCallback = this.callbacks.onSelected(new ItemHandler(this.itemGenerateState, handlingProcess))
     }
 
     const addRenderingObject = (coordinate: Coordinate, renderingObject: T) => {
@@ -157,9 +165,7 @@ export class ItemGenerateHandler<T extends RenderingObject> implements MouseCont
 
     if (handlingProcess) {
       if (this.itemGenerateState.hasState()) {
-        const state = this.itemGenerateState.get()
-        this.itemGenerateState = new ItemGenerateState()
-        const handler = new ItemHandler(state.markers, state.renderingObjectCoordinates, state.items, handlingProcess)
+        const handler = new ItemHandler(this.itemGenerateState, handlingProcess)
         this.completedCallback.call(handler)
       }
     }

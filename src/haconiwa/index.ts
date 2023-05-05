@@ -13,13 +13,14 @@ import { RoadJointFactory } from "./src/Roads/RoadJointFactory.js"
 import { MeshItemGeneratorFactory } from "./src/editor/itemGenerators/MeshItemGenerator.js"
 
 import { ItemGeneratorProcess as RouteItemGeneratorProcess } from './src/editor/ItemGenerators/RouteItemGenerator/ItemGeneratorProcess.js'
+import { Keyboard } from "./src/editor/Inputs/Keyboard.js"
 
 const world = new HaconiwaWorld()
 const factory = new Factory()
 const mouseCapturer = new MouseCapturer(window.innerWidth, window.innerHeight)
 const renderer = factory.makeRenderer({fov: 100, aspect: window.innerWidth / window.innerHeight, near: 0.001, far: 100})
 const haconiwaRenderer = new HaconiwaRenderer(renderer, window.innerWidth, window.innerHeight)
-const editor = new HaconiwaEditor(world, haconiwaRenderer, mouseCapturer, new ThreeRenderingObjectBuilder())
+const editor = new HaconiwaEditor(world, haconiwaRenderer, mouseCapturer, new ThreeRenderingObjectBuilder(), new Keyboard())
 
 haconiwaRenderer.mount()
 editor.captureMouseEvent()

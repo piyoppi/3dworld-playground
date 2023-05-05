@@ -4,6 +4,7 @@ import { Vec3 } from "../../../../../lib/Matrix.js"
 import { RenderingObject } from "../../../../../lib/RenderingObject.js"
 import type { RenderingObjectBuilder } from "../../../../../lib/RenderingObjectBuilder"
 import type { Joint, JointDisposeCallback, JointUpdateRenderingObjectResult } from "./Joint"
+import { v4 as uuid } from 'uuid'
 
 export class Corner<T extends RenderingObject> implements Joint<T> {
   #edges: LineEdge[] = []
@@ -13,6 +14,7 @@ export class Corner<T extends RenderingObject> implements Joint<T> {
   #fragmentRenderingObject: T | null = null
   #original: T | null = null
   #disposed = false
+  #uuid = uuid()
 
   constructor() {
     this.#coordinate.rotateX(-Math.PI / 2)
@@ -76,6 +78,7 @@ export class Corner<T extends RenderingObject> implements Joint<T> {
       }
 
       const itemScale = this.getOffset() / this.#original.size[2]
+      console.log('corner', this.#uuid, itemScale)
       this.#fragmentCoordinate.scale([1, 1, itemScale])
       this.#fragmentCoordinate.z = -(this.#original.size[2] * itemScale) / 2
 

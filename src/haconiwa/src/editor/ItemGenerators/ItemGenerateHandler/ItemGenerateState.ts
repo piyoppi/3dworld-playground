@@ -7,6 +7,10 @@ export class ItemGenerateState {
   private markers: Marker[] = []
   private items: HaconiwaWorldItem[] = []
 
+  constructor() {
+    console.log('ItemGenerateState')
+  }
+
   hasState() {
     return this.renderingObjectCoordinates.length > 0 || this.markers.length > 0 || this.items.length > 0
   }
@@ -41,6 +45,10 @@ export class ItemGenerateState {
 
   getRenderingObjectCoordinates() {
     return [...this.renderingObjectCoordinates]
+  }
+
+  getItems() {
+    return [...this.items]
   }
 
   get() {

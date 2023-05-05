@@ -1,6 +1,6 @@
-import { CallbackFunction, CallbackFunctionReturned, CallbackFunctions } from "../../../../../lib/CallbackFunctions.js"
-import { RenderingObject } from "../../../../../lib/RenderingObject.js"
 import type { Joint } from "./Joint"
+import { CallbackFunction, CallbackFunctions } from "../../../../../lib/CallbackFunctions.js"
+import { RenderingObject } from "../../../../../lib/RenderingObject.js"
 import { NoneJoint } from "./NoneJoint.js"
 
 export abstract class JointFactory<T extends RenderingObject> {

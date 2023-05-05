@@ -20,6 +20,7 @@ import { CameraController } from '../../../lib/CameraController.js'
 import { Coordinate } from '../../../lib/Coordinate.js'
 import type { ItemGeneratorProcess } from './ItemGenerators/ItemGeneratorProcess'
 import { ItemGenerateHandler } from './ItemGenerators/ItemGenerateHandler/ItemGenerateHandler.js'
+import { Input } from './Inputs/Input'
 
 type Plane = {
   position: VectorArray3,
@@ -49,7 +50,15 @@ export class HaconiwaEditor<T extends RenderingObject> {
 
   #world: HaconiwaWorld
 
-  constructor(world: HaconiwaWorld, renderer: HaconiwaRenderer<T>, mouseCapturer: MouseCapturer, renderingObjectBuilder: RenderingObjectBuilder<T>) {
+  #inputDevice: Input
+
+  constructor(
+    world: HaconiwaWorld,
+    renderer: HaconiwaRenderer<T>,
+    mouseCapturer: MouseCapturer,
+    renderingObjectBuilder: RenderingObjectBuilder<T>,
+    inputDevice: Input
+  ) {
     this.#renderer = renderer
     this.#renderer.setBeforeRenderCallback(() => this.#renderingLoop())
     this.#renderingObjectBuilder = renderingObjectBuilder
@@ -78,6 +87,9 @@ export class HaconiwaEditor<T extends RenderingObject> {
     this.#mouseCapturer.capture()
 
     this.#world = world
+
+    this.#inputDevice = inputDevice
+    this.#inputDevice.mount()
   }
 
   get hasCurrentItemGenerator() {
@@ -96,7 +108,20 @@ export class HaconiwaEditor<T extends RenderingObject> {
       this.#markerRaycaster,
       this.#editingPlane.raycaster.getReadonly(),
       this.#mouseControlHandles,
-      this.#renderingObjectBuilder
+      this.#renderingObjectBuilder,
+      {
+        onSelected: itemHandler => {
+          const removeHandler = this.#inputDevice.addKeyDownCallback(command => {
+            if (command.key === 'delete') {
+              itemHandler.items.forEach(item => this.#world.removeItem(item))
+              itemHandler.dispose(this.#renderer.renderer, this.#markerRaycaster, this.#mouseControlHandles)
+            }
+          })
+
+          return () => removeHandler() 
+        },
+        onCompleted: itemHandler => itemHandler.items.forEach(item => this.#world.addItem(item))
+      }
     )
     this.#currentItemGeneratorHandler = {
       colider: this.#editingPlane.colider,
