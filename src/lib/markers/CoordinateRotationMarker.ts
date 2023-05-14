@@ -64,7 +64,7 @@ export class CoordinateRotationMarker implements Marker {
     this.#xyPlaneMarker.detach(raycaster, interactionHandler)
   }
 
-  attachRenderingObject<T extends RenderingObject>(builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
+  attachRenderingObjects<T extends RenderingObject>(builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
     const disposers = [
       this.#yzPlaneMarker.attachRenderingObjects(builder, renderer),
       this.#xzPlaneMarker.attachRenderingObjects(builder, renderer),

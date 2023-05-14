@@ -7,6 +7,7 @@ import { BoxMarker } from "../../../../../lib/markers/BoxMarker.js"
 import { ProxyHandler } from "../../../../../lib/mouse/handlers/ProxyHandler.js"
 import { makeCoordinateMover } from "../../../../../lib/markers/generators/CoordinateMover.js"
 import { HandlingProcess } from "./HandlingProcess.js"
+import { NoneHandler } from "../../../../../lib/mouse/handlers/NoneHandler.js"
 
 export class ItemGeneratorProcess<T extends RenderingObject> implements IItemGeneratorProcess<T> {
   constructor(
@@ -20,31 +21,40 @@ export class ItemGeneratorProcess<T extends RenderingObject> implements IItemGen
     getCamera,
     getMarkerRaycaster,
   }: ItemGeneratorParams<T>): IHandlingProcess {
-    const camera = getCamera()
     const handlingProcess = new HandlingProcess()
 
     const renderingObject = this.original.clone() as T
-    renderingObject.material.setOpacity(0.4)
     const item = new Item()
     register(new HaconiwaWorldItem(item, [], []), renderingObject)
 
     const itemMarker = new BoxMarker(renderingObject.size, item.parentCoordinate)
+
     const raycaster = getMarkerRaycaster()
     const proxyHandler = new ProxyHandler(raycaster, itemMarker.coliders)
-    itemMarker.addHandler(proxyHandler)
-    registerMarker(itemMarker)
-
-    proxyHandler.setStartedCallback(() => {
-      itemMarker.coliders.forEach(colider => colider.enabled = false)
-
-      const markers = makeCoordinateMover(raycaster, item.parentCoordinate, camera)
+    const handler = () => {
+      proxyHandler.removeStartedCallback(handler)
+      const markers = makeCoordinateMover(raycaster, item.parentCoordinate, getCamera())
       const markerRemovers = markers.map(marker => registerMarker(marker))
+      renderingObject.material.setOpacity(0.6)
 
-      select(itemMarker.coliders, handlingProcess, () => {
+      const boundaryMarker = new BoxMarker([5, 5, 5], item.parentCoordinate)
+      boundaryMarker.addHandler(new NoneHandler())
+      const boundaryMarkerRemover = registerMarker(boundaryMarker, {render: false})
+
+      select(boundaryMarker.coliders, handlingProcess, () => {
+        boundaryMarkerRemover()
         markerRemovers.forEach(remove => remove())
-        itemMarker.coliders.forEach(colider => colider.enabled = true)
+        renderingObject.material.setOpacity(1)
+        proxyHandler.setStartedCallback(handler)
       })
-    })
+
+      select(itemMarker.coliders, handlingProcess, () => {})
+    }
+
+    proxyHandler.setStartedCallback(handler)
+
+    itemMarker.addHandler(proxyHandler)
+    registerMarker(itemMarker, {render: false})
 
     return handlingProcess
   }

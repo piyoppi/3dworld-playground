@@ -57,11 +57,13 @@ export class RotateHandler implements MouseControllable {
 
   start(_params: WindowCursor, _button: MouseButton, cameraCoordinate: Coordinate) {
     if (this.#startingCallbacks.call().some(val => val === false)) return
-    if (this.#raycaster.colidedDetails[0].colider.uuid !== this.#targetColider.uuid) return
+
+    const colidedDetail = this.#raycaster.colidedDetails.find(val => val.colider.uuid === this.#targetColider.uuid)
+    if (!colidedDetail) return
 
     this.#cursorDirectionConverter.calcTransformMatrix(this.#manipulateCoordinate, cameraCoordinate)
     this.#isStart = true
-    this.#startPosition = Vec3.normalize(Vec3.subtract(this.#raycaster.colidedDetails[0].position, this.#manipulateCoordinate.position))
+    this.#startPosition = Vec3.normalize(Vec3.subtract(colidedDetail.position, this.#manipulateCoordinate.position))
 
     this.#planeColider = new PlaneColider(this.#manipulateCoordinate, this.#direction)
     this.#planeRaycaster.addTarget(this.#planeColider)

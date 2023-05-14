@@ -14,7 +14,8 @@ export class CallbackFunctions<T extends CallbackFunction<Array<any>, V>, U exte
   }
 
   call(...vars: U): Array<V> {
-    return this.#functions.map(func => func(...vars))
+    // コール中に#functionsが変更される可能性があるので、コピーを作成してからコールする
+    return [...this.#functions].map(func => func(...vars))
   }
 
   remove(func: T) {

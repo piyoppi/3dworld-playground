@@ -9,23 +9,27 @@ import { Raycaster } from "../Raycaster.js"
 import { HandledColiders } from "./HandledColiders.js"
 import { BoxColider } from "../Colider.js"
 import { VectorArray3 } from "../Matrix.js"
+import { RenderingObject } from "../RenderingObject"
 
 type RenderingParameters = {
   color: RGBColor
+  opacity: number
 }
 
 export class BoxMarker implements Marker {
-  #parentCoordinate = new Coordinate()
+  #parentCoordinate
   #handledColiders: HandledColiders
   #colider: BoxColider 
   #size: VectorArray3
   #renderingParameters: RenderingParameters = {
-    color: {r: 255, g: 0, b: 0}
+    color: {r: 255, g: 0, b: 0},
+    opacity: 1.0
   }
 
   constructor(size: VectorArray3, parentCoordinate: Coordinate) {
     this.#handledColiders = new HandledColiders()
     this.#colider = new BoxColider(size[0], size[1], size[2], parentCoordinate)
+    this.#parentCoordinate = parentCoordinate
     this.#size = size
   }
 
@@ -59,11 +63,16 @@ export class BoxMarker implements Marker {
     this.#renderingParameters = {...this.#renderingParameters, ...parameters}
   }
 
-  attachRenderingObjects<T>(builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
+  attachRenderingObjects<T extends RenderingObject>(builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
     const coordinate = new Coordinate()
-    this.#parentCoordinate.addChild(coordinate)
+    const box = builder.makeBox(this.#size[0], this.#size[1], this.#size[2], this.#renderingParameters.color)
 
-    renderer.addItem(this.#parentCoordinate, builder.makeBox(this.#size[0], this.#size[1], this.#size[2], this.#renderingParameters.color))
+    if (this.#renderingParameters.opacity) {
+      box.material.setOpacity(this.#renderingParameters.opacity)
+    }
+
+    this.#parentCoordinate.addChild(coordinate)
+    renderer.addItem(coordinate, box)
 
     return () => {
       renderer.removeItem(coordinate)

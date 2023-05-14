@@ -13,11 +13,15 @@ import type { HandlingProcess } from "./HandlingProcess"
 type RemoveMarkerHandler = () => void
 export type ItemGeneratorProcessPhase = "start" | "move" | "end"
 
+export type RegisterMarkerOptions = {
+  render?: boolean
+}
+
 export type ItemGeneratorParams<T extends RenderingObject> = {
   phase: ItemGeneratorProcessPhase,
   getPosition: () => VectorArray3,
   register: (item: HaconiwaWorldItem, renderingObject: T) => Coordinate,
-  registerMarker: (marker: Marker) => RemoveMarkerHandler,
+  registerMarker: (marker: Marker, options?: RegisterMarkerOptions) => RemoveMarkerHandler,
   select: (coliders: Colider[], handlingProcess: HandlingProcess, unselect: () => void) => void,
   getCamera: () => Camera,
   getRenderingObjectBuilder: () => RenderingObjectBuilder<T>,

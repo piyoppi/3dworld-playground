@@ -15,6 +15,10 @@ export class HandledColiders {
   attach(raycaster: Raycaster, mouseHandlers: MouseControlHandles) {
     this.detach(raycaster, mouseHandlers)
 
+    if (this.#controlHandles.length === 0) {
+      throw new Error('No handlers to attach')
+    }
+
     this.#controlHandles.forEach(handle => {
       raycaster.addTarget(handle.colider)
       mouseHandlers.add(handle)

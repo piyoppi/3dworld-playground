@@ -6,7 +6,7 @@ import type { Renderer } from "../../../../../lib/Renderer"
 import type { Raycaster } from "../../../../../lib/Raycaster"
 import type { MouseControlHandles } from "../../../../../lib/mouse/MouseControlHandles"
 import type { RenderingObjectBuilder } from "../../../../../lib/RenderingObjectBuilder"
-import type { ItemGeneratorProcess, ItemGeneratorProcessPhase } from "../ItemGeneratorProcess"
+import type { ItemGeneratorProcess, ItemGeneratorProcessPhase, RegisterMarkerOptions } from "../ItemGeneratorProcess"
 import type { ReadOnlyRaycaster } from "../../../../../lib/ReadOnlyRaycaster"
 import type { Colider, CoordinatedColider } from "../../../../../lib/Colider"
 import { ItemGenerateState } from "./ItemGenerateState.js"
@@ -81,8 +81,8 @@ export class ItemGenerateHandler<T extends RenderingObject> implements MouseCont
   }
 
   process(generatorProcess: ItemGeneratorProcess<T>, phase: ItemGeneratorProcessPhase, cursor: WindowCursor, button: MouseButton) {
-    const registerMarker = (marker: Marker) => {
-      const dispose = marker.attachRenderingObjects ?
+    const registerMarker = (marker: Marker, options: RegisterMarkerOptions = {render: true}) => {
+      const dispose = marker.attachRenderingObjects && options.render ?
         marker.attachRenderingObjects(this.renderingObjectBuilder, this.renderer) : () => {}
 
       this.itemGenerateState.addMarker(marker)
