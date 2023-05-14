@@ -10,14 +10,14 @@ import type { ReadOnlyRaycaster } from "../../../../lib/ReadOnlyRaycaster"
 import type { Colider, CoordinatedColider } from "../../../../lib/Colider"
 import type { HandlingProcess } from "./HandlingProcess"
 
+type RemoveMarkerHandler = () => void
 export type ItemGeneratorProcessPhase = "start" | "move" | "end"
 
 export type ItemGeneratorParams<T extends RenderingObject> = {
   phase: ItemGeneratorProcessPhase,
   getPosition: () => VectorArray3,
   register: (item: HaconiwaWorldItem, renderingObject: T) => Coordinate,
-  registerMarker: (marker: Marker) => void,
-  removeMarker: (marker: Marker) => void,
+  registerMarker: (marker: Marker) => RemoveMarkerHandler,
   select: (coliders: Colider[], handlingProcess: HandlingProcess, unselect: () => void) => void,
   getCamera: () => Camera,
   getRenderingObjectBuilder: () => RenderingObjectBuilder<T>,

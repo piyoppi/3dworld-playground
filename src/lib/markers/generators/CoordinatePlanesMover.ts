@@ -1,21 +1,18 @@
 import { PlaneMoveHandler } from "../../mouse/handlers/PlaneMoveHandler.js"
 import { Coordinate } from "../../Coordinate"
-import { RenderingObjectBuilder } from "../../RenderingObjectBuilder.js"
-import type { Renderer } from "../../Renderer"
-import { RenderingObject } from "../../RenderingObject.js"
 import { XYZPlaneMarker } from "../XYZPlaneMarker.js"
+import type { Camera } from "../../Camera"
 
-export function makeCoordinatePlanesMover<T extends RenderingObject>(parentCoordinate: Coordinate, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>, inLocal: boolean, startingHookFunction: (() => boolean) | null = null) {
+export function makeCoordinatePlanesMover(parentCoordinate: Coordinate, camera: Camera, inLocal: boolean, startingHookFunction: (() => boolean) | null = null) {
   const marker = new XYZPlaneMarker(1.5, parentCoordinate)
   const handlers = [
-    new PlaneMoveHandler(parentCoordinate, [1, 0, 0], inLocal, renderer.camera),
-    new PlaneMoveHandler(parentCoordinate, [0, 1, 0], inLocal, renderer.camera),
-    new PlaneMoveHandler(parentCoordinate, [0, 0, 1], inLocal, renderer.camera),
+    new PlaneMoveHandler(parentCoordinate, [1, 0, 0], inLocal, camera),
+    new PlaneMoveHandler(parentCoordinate, [0, 1, 0], inLocal, camera),
+    new PlaneMoveHandler(parentCoordinate, [0, 0, 1], inLocal, camera),
   ]
   const startingHookFn = startingHookFunction || (() => !handlers.some(handler => handler.isStart))
 
   marker.addHandlers(handlers[0], handlers[1], handlers[2])
-  marker.attachRenderingObject(builder, renderer)
   handlers.forEach(handler => handler.setStartedCallback(startingHookFn))
 
   return {marker, handlers}

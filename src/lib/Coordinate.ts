@@ -5,6 +5,7 @@ import { CallbackFunctions } from './CallbackFunctions.js'
 import { Eular } from './Eular.js'
 
 export class InvalidParentCoordinateError extends Error {}
+export class DisposeError extends Error {}
 
 export class Coordinate {
   protected _parent: Coordinate | null
@@ -227,6 +228,10 @@ export class Coordinate {
   resetMirror() {
     this.#mirrorMatrix = Mat4.getIdentityMatrix()
     this.callUpdatedCallback()
+  }
+
+  private removeFromChild(coordinate: Coordinate) {
+    this.removeChild(coordinate)
   }
 
   get position(): VectorArray3 {

@@ -81,30 +81,19 @@ export class ItemGenerateHandler<T extends RenderingObject> implements MouseCont
   }
 
   process(generatorProcess: ItemGeneratorProcess<T>, phase: ItemGeneratorProcessPhase, cursor: WindowCursor, button: MouseButton) {
-    const markerRenderingCoordinates = new Map<Marker, Coordinate>()
-
     const registerMarker = (marker: Marker) => {
-      if (marker.makeRenderingObject) {
-        const renderingObject = marker.makeRenderingObject(this.renderingObjectBuilder)
-        const coordinate = new Coordinate()
-        markerRenderingCoordinates.set(marker, coordinate)
-        marker.parentCoordinate.addChild(coordinate)
-        this.itemGenerateState.addRenderingObjectCoordinate(coordinate)
-        this.renderer.addItem(coordinate, renderingObject)
-      }
+      const dispose = marker.attachRenderingObjects ?
+        marker.attachRenderingObjects(this.renderingObjectBuilder, this.renderer) : () => {}
+
       this.itemGenerateState.addMarker(marker)
       marker.attach(this.markerRaycaster, this.markersMouseControlHandles)
-    }
 
-    const removeMarker = (marker: Marker) => {
-      marker.detach(this.markerRaycaster, this.markersMouseControlHandles)
+      return () => {
+        marker.detach(this.markerRaycaster, this.markersMouseControlHandles)
+        dispose()
 
-      const coordinate = markerRenderingCoordinates.get(marker)
-      if (coordinate) {
-        this.renderer.removeItem(coordinate)
+        this.itemGenerateState.removeMarker(marker)
       }
-
-      this.itemGenerateState.removeMarker(marker)
     }
 
     const register = (item: HaconiwaWorldItem, renderingObject: T): Coordinate => {
@@ -152,7 +141,6 @@ export class ItemGenerateHandler<T extends RenderingObject> implements MouseCont
       getPosition: () => this.planeRaycaster.colidedDetails[0].position,
       register,
       registerMarker,
-      removeMarker,
       select,
       getCamera: () => this.renderer.camera,
       getRenderingObjectBuilder: () => this.renderingObjectBuilder,

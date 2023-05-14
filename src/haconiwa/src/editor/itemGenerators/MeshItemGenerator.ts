@@ -51,38 +51,38 @@ export class MeshItemGenerator<T extends RenderingObject>
   }
 
   create({selected, registerItem}: CreateParams) {
-    if (!this.#planeRaycaster.colided || this.generated) {
-      return false
-    }
+   // if (!this.#planeRaycaster.colided || this.generated) {
+   //   return false
+   // }
 
-    const item = new Item()
-    registerItem(item)
+   // const item = new Item()
+   // registerItem(item)
 
-    const coordinateForRendering = new Coordinate()
-    item.parentCoordinate.addChild(coordinateForRendering)
-    item.parentCoordinate.position = this.#planeRaycaster.colidedDetails[0].position
+   // const coordinateForRendering = new Coordinate()
+   // item.parentCoordinate.addChild(coordinateForRendering)
+   // item.parentCoordinate.position = this.#planeRaycaster.colidedDetails[0].position
 
-    const renderingObject = this.makeRenderingObject()
-    this.#renderer.addItem(coordinateForRendering, renderingObject)
-    renderingObject.material.setOpacity(0.4)
+   // const renderingObject = this.makeRenderingObject()
+   // this.#renderer.addItem(coordinateForRendering, renderingObject)
+   // renderingObject.material.setOpacity(0.4)
 
-    this.#itemMarker = new BoxMarker(renderingObject.size, item.parentCoordinate)
-    const itemMarker = this.#itemMarker
-    const proxyHandler = new ProxyHandler(this.#markerRaycaster.getReadonly(), itemMarker.coliders)
-    itemMarker.addHandler(proxyHandler)
-    this.registerMarker(itemMarker)
+   // this.#itemMarker = new BoxMarker(renderingObject.size, item.parentCoordinate)
+   // const itemMarker = this.#itemMarker
+   // const proxyHandler = new ProxyHandler(this.#markerRaycaster.getReadonly(), itemMarker.coliders)
+   // itemMarker.addHandler(proxyHandler)
+   // this.registerMarker(itemMarker)
 
-    proxyHandler.setStartedCallback(() => {
-      if (this.mounted) return
+   // proxyHandler.setStartedCallback(() => {
+   //   if (this.mounted) return
 
-      itemMarker.coliders.forEach(colider => colider.enabled = false)
+   //   itemMarker.coliders.forEach(colider => colider.enabled = false)
 
-      const markers = makeCoordinateMover(this.#planeRaycaster, this.#markerRaycaster, item.parentCoordinate, this.#renderingObjectBuilder, this.#renderer)
-      markers.forEach(marker => this.registerMarker(marker))
-      this.#handlingMarkers = markers
+   //   const markers = makeCoordinateMover(this.#planeRaycaster, this.#markerRaycaster, item.parentCoordinate, this.#renderingObjectBuilder, this.#renderer)
+   //   markers.forEach(marker => this.registerMarker(marker))
+   //   this.#handlingMarkers = markers
 
-      selected()
-    })
+   //   selected()
+   // })
 
     return true
   }

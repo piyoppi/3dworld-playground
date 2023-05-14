@@ -1,5 +1,5 @@
 import type { Colider } from "./Colider"
-import type { ColidedDetails, Raycaster } from "./Raycaster"
+import type { Raycaster } from "./Raycaster"
 
 export class ReadOnlyRaycaster<T extends Colider = Colider> {
   constructor(

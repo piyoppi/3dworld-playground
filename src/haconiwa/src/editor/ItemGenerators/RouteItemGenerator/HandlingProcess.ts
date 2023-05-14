@@ -1,7 +1,14 @@
-import { HandlingProcess as IHandlingProcess } from '../HandlingProcess'
+import type { LineItem } from '../../../../../lib/LineItem/LineItem'
+import type { HandlingProcess as IHandlingProcess } from '../HandlingProcess'
 
 export class HandlingProcess implements IHandlingProcess {
-  dispose () {
+  constructor(private lineItem: LineItem) {
 
+  }
+
+  dispose () {
+    this.lineItem.connections.forEach(connection => {
+      connection.disconnectAll()
+    })
   }
 }

@@ -13,6 +13,7 @@ import { RoadJointFactory } from "./src/Roads/RoadJointFactory.js"
 import { MeshItemGeneratorFactory } from "./src/editor/itemGenerators/MeshItemGenerator.js"
 
 import { ItemGeneratorProcess as RouteItemGeneratorProcess } from './src/editor/ItemGenerators/RouteItemGenerator/ItemGeneratorProcess.js'
+import { ItemGeneratorProcess as MeshItemGeneratorProcess } from './src/editor/ItemGenerators/MeshItemGenerator/ItemGeneratorProcess.js'
 import { Keyboard } from "./src/editor/Inputs/Keyboard.js"
 
 const world = new HaconiwaWorld()
@@ -73,6 +74,15 @@ window.addEventListener('keydown', async (e) => {
       )
 
     editor.setItemGeneratorProcessFactory(factory)
+    break
+
+    case '7':
+      const meshFactory = async () => new MeshItemGeneratorProcess(
+        new ThreeRenderingObject(new ThreeGroup(await loadGlb('./assets/house.glb')))
+      )
+
+    editor.setItemGeneratorProcessFactory(meshFactory)
+    break
 
     case 'Delete':
       editor.removeSelectedItems()

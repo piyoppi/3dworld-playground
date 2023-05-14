@@ -4,17 +4,17 @@ import { HandledColiders } from "./HandledColiders.js"
 import { Vec3, VectorArray3 } from "../Matrix.js"
 import type { MouseControllable } from "../mouse/MouseControllable.js"
 import type { MouseControlHandles } from "../mouse/MouseControlHandles"
-import type { Raycaster } from "../Raycaster.js"
+import type { Raycaster } from "../Raycaster"
 import type { Renderer } from "../Renderer.js"
 import type { RenderingObjectBuilder } from '../RenderingObjectBuilder.js'
 import type { RGBColor } from "../helpers/color.js"
-import type { SingleMarker, MarkerRenderable } from "./Marker"
+import type { SingleMarker } from "./Marker"
 
-type RenderingParameters = {
+export type RenderingParameters = {
   color: RGBColor
 }
 
-export class DirectionalMarker implements SingleMarker, MarkerRenderable {
+export class DirectionalMarker implements SingleMarker {
   #norm: number
   #radius: number
   #markerCoordinate = new Coordinate()
@@ -51,10 +51,6 @@ export class DirectionalMarker implements SingleMarker, MarkerRenderable {
     return this.#parentCoordinate
   }
 
-  get markerCoordinates() {
-    return [this.#markerCoordinate]
-  }
-
   get handlers() {
     return this.#handledColiders.handlers
   }
@@ -79,11 +75,16 @@ export class DirectionalMarker implements SingleMarker, MarkerRenderable {
     this.#renderingParameters = {...this.#renderingParameters, ...params}
   }
 
-  makeRenderingObject<T>(builder: RenderingObjectBuilder<T>) {
-    return builder.makeVector(this.#norm, this.#radius, this.#renderingParameters.color)
-  }
+  attachRenderingObjects<T>(builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
+    const coordinate = new Coordinate()
+    this.#markerCoordinate.addChild(coordinate)
 
-  attachRenderingObject<T>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
-    renderer.addItem(this.#markerCoordinate, builder.makeVector(this.#norm, this.#radius, color))
+    const renderingObject = builder.makeVector(this.#norm, this.#radius, this.#renderingParameters.color)
+    renderer.addItem(coordinate, renderingObject)
+
+    return () => {
+      this.#markerCoordinate.removeChild(coordinate)
+      renderer.removeItem(coordinate)
+    }
   }
 }

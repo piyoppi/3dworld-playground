@@ -16,4 +16,8 @@ export class Coordinates {
 
     return true
   }
+
+  get length() {
+    return this.#coordinates.length
+  }
 }

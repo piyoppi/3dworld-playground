@@ -10,7 +10,6 @@ import { BoxColider, CoordinatedColider } from '../lib/Colider.js'
 import { setRenderer } from '../lib/Debugger.js'
 import { DirectionalMarker } from '../lib/markers/DirectionalMarker.js'
 import { ThreeGroup, ThreeRenderingObject } from '../lib/threeAdapter/ThreeRenderingObject.js'
-import { convertButtonNumberToMouseButtonsType } from '../lib/mouse/ConvertMouseButtonIdToMouseButtonType.js'
 
 const lookAtCameraHandler = new LookAtCamera()
 const mouseHandler = new MouseCapturer(window.innerWidth, window.innerHeight)
@@ -43,12 +42,15 @@ async function run() {
     })
 
     const markerX = new DirectionalMarker(0.1, 0.01, [1, 0, 0], bones[2].item.parentCoordinate)
+    markerX.setRenderingParameters({color: {r: 255, g: 0, b: 0}})
     const markerY = new DirectionalMarker(0.1, 0.01, [0, 1, 0], bones[2].item.parentCoordinate)
+    markerY.setRenderingParameters({color: {r: 0, g: 255, b: 0}})
     const markerZ = new DirectionalMarker(0.1, 0.01, [0, 0, 1], bones[2].item.parentCoordinate)
+    markerZ.setRenderingParameters({color: {r: 0, g: 0, b: 255}})
 
-    markerX.attachRenderingObject({r: 255, g: 0, b: 0}, primitiveRenderingObjectBuilder, renderer)
-    markerY.attachRenderingObject({r: 0, g: 255, b: 0}, primitiveRenderingObjectBuilder, renderer)
-    markerZ.attachRenderingObject({r: 0, g: 0, b: 255}, primitiveRenderingObjectBuilder, renderer)
+    markerX.attachRenderingObjects(primitiveRenderingObjectBuilder, renderer)
+    markerY.attachRenderingObjects(primitiveRenderingObjectBuilder, renderer)
+    markerZ.attachRenderingObjects(primitiveRenderingObjectBuilder, renderer)
   }, 50)
 
   //
@@ -65,12 +67,15 @@ async function run() {
 
       if (items.length > 0 && items[0].parentCoordinate) {
         const markerX = new DirectionalMarker(0.1, 0.01, [1, 0, 0], items[0].parentCoordinate)
+        markerX.setRenderingParameters({color: {r: 255, g: 0, b: 0}})
         const markerY = new DirectionalMarker(0.1, 0.01, [0, 1, 0], items[0].parentCoordinate)
+        markerY.setRenderingParameters({color: {r: 0, g: 255, b: 0}})
         const markerZ = new DirectionalMarker(0.1, 0.01, [0, 0, 1], items[0].parentCoordinate)
+        markerZ.setRenderingParameters({color: {r: 0, g: 0, b: 255}})
 
-        markerX.attachRenderingObject({r: 255, g: 0, b: 0}, primitiveRenderingObjectBuilder, renderer)
-        markerY.attachRenderingObject({r: 0, g: 255, b: 0}, primitiveRenderingObjectBuilder, renderer)
-        markerZ.attachRenderingObject({r: 0, g: 0, b: 255}, primitiveRenderingObjectBuilder, renderer)
+        markerX.attachRenderingObjects(primitiveRenderingObjectBuilder, renderer)
+        markerY.attachRenderingObjects(primitiveRenderingObjectBuilder, renderer)
+        markerZ.attachRenderingObjects(primitiveRenderingObjectBuilder, renderer)
       }
     }
 

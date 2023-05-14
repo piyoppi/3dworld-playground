@@ -1,7 +1,7 @@
 import { PlaneColider } from "../Colider.js"
 import { Coordinate } from "../Coordinate.js"
 import { HandledColiders } from "./HandledColiders.js"
-import type { SingleMarker, MarkerRenderable } from "./Marker"
+import type { SingleMarker } from "./Marker"
 import type { MouseControllable } from "../mouse/MouseControllable.js"
 import type { MouseControlHandles } from "../mouse/MouseControlHandles"
 import type { Raycaster } from "../Raycaster.js"
@@ -15,13 +15,16 @@ type RenderingParameters = {
   color: RGBColor
 }
 
-export class RotateMarker implements SingleMarker, MarkerRenderable {
+export class RotateMarker implements SingleMarker {
   #parentCoordinate: Coordinate
-  #markerCoordinate = new Coordinate()
   #handledColiders = new HandledColiders()
   #colider: PlaneColider
   #innerRadius: number
   #outerRadius: number
+  #plane: {
+    position: VectorArray3,
+    norm: VectorArray3
+  }
   #renderingParameters: RenderingParameters = {
     color: {r: 255, g: 0, b: 0}
   }
@@ -29,11 +32,13 @@ export class RotateMarker implements SingleMarker, MarkerRenderable {
   constructor(outerRadius: number, innerRadius: number, planePosition: VectorArray3, planeNorm: VectorArray3, parentCoordinate: Coordinate) {
     this.#outerRadius = outerRadius
     this.#innerRadius = innerRadius
-    this.#markerCoordinate.setDirectionZAxis(planeNorm, planePosition)
+    this.#plane = {
+      position: planePosition,
+      norm: planeNorm
+    }
 
     this.#parentCoordinate = parentCoordinate
     this.#colider = new PlaneColider(this.#parentCoordinate, planeNorm)
-    this.#parentCoordinate.addChild(this.#markerCoordinate)
 
     this.#colider.setEdgeEvaluator((dist, ray) => {
       const val = Vec3.norm(
@@ -46,10 +51,6 @@ export class RotateMarker implements SingleMarker, MarkerRenderable {
 
   get parentCoordinate() {
     return this.#parentCoordinate
-  }
-
-  get markerCoordinates() {
-    return [this.#markerCoordinate]
   }
 
   get handlers() {
@@ -76,16 +77,18 @@ export class RotateMarker implements SingleMarker, MarkerRenderable {
     this.#renderingParameters = {...this.#renderingParameters, ...params}
   }
 
-  makeRenderingObject<T extends RenderingObject>(builder: RenderingObjectBuilder<T>) {
+  attachRenderingObjects<T extends RenderingObject>(builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
+    const coordinate = new Coordinate()
+    coordinate.setDirectionZAxis(this.#plane.norm, this.#plane.position)
+    this.#parentCoordinate.addChild(coordinate)
+
     const circleMesh = builder.makeAnnulus(this.#innerRadius, this.#outerRadius, this.#renderingParameters.color)
     circleMesh.material.setSide('both')
+    renderer.addItem(coordinate, circleMesh)
 
-    return circleMesh
-  }
-
-  attachRenderingObject<T extends RenderingObject>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
-    const circleMesh = builder.makeAnnulus(this.#innerRadius, this.#outerRadius, color)
-    circleMesh.material.setSide('both')
-    renderer.addItem(this.#markerCoordinate, circleMesh)
+    return () => {
+      this.#parentCoordinate.removeChild(coordinate)
+      renderer.removeItem(coordinate)
+    }
   }
 }

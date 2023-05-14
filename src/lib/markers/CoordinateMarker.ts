@@ -4,11 +4,17 @@ import type { MouseControllable } from "../mouse/MouseControllable"
 import type { MouseControlHandles } from "../mouse/MouseControlHandles"
 import type { RenderingObjectBuilder } from '../RenderingObjectBuilder'
 import type { Renderer } from "../Renderer"
-import type { Marker, MarkerRenderable } from "./Marker"
+import type { Marker } from "./Marker"
 
-import { DirectionalMarker } from  './DirectionalMarker.js'
+import { DirectionalMarker, RenderingParameters as DirectionalMarkerRenderingParameters } from  './DirectionalMarker.js'
 
-export class CoordinateMarker implements Marker, MarkerRenderable {
+type RenderingParameters = {
+  x: DirectionalMarkerRenderingParameters,
+  y: DirectionalMarkerRenderingParameters,
+  z: DirectionalMarkerRenderingParameters,
+}
+
+export class CoordinateMarker implements Marker {
   #parentCoordinate: Coordinate = new Coordinate()
 
   #xAxisMarker: DirectionalMarker
@@ -19,18 +25,14 @@ export class CoordinateMarker implements Marker, MarkerRenderable {
     this.#xAxisMarker = new DirectionalMarker(norm, radius, [1, 0, 0], parentCoordinate)
     this.#yAxisMarker = new DirectionalMarker(norm, radius, [0, 1, 0], parentCoordinate)
     this.#zAxisMarker = new DirectionalMarker(norm, radius, [0, 0, 1], parentCoordinate)
+
+    this.#xAxisMarker.setRenderingParameters({color: {r: 255, g: 0, b: 0}})
+    this.#yAxisMarker.setRenderingParameters({color: {r: 0, g: 255, b: 0}})
+    this.#zAxisMarker.setRenderingParameters({color: {r: 0, g: 0, b: 255}})
   }
 
   get parentCoordinate() {
     return this.#parentCoordinate
-  }
-
-  get markerCoordinates() {
-    return [
-      ...this.#xAxisMarker.markerCoordinates,
-      ...this.#yAxisMarker.markerCoordinates,
-      ...this.#zAxisMarker.markerCoordinates,
-    ]
   }
 
   get coliders() {
@@ -67,9 +69,21 @@ export class CoordinateMarker implements Marker, MarkerRenderable {
     this.#zAxisMarker.detach(raycaster, interactionHandler)
   }
 
-  attachRenderingObject<T>(builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
-    this.#xAxisMarker.attachRenderingObject({r: 255, g: 0, b: 0}, builder, renderer)
-    this.#yAxisMarker.attachRenderingObject({r: 0, g: 255, b: 0}, builder, renderer)
-    this.#zAxisMarker.attachRenderingObject({r: 0, g: 0, b: 255}, builder, renderer)
+  setRenderingParameters(parameters: RenderingParameters) {
+    this.#xAxisMarker.setRenderingParameters(parameters.x)
+    this.#yAxisMarker.setRenderingParameters(parameters.y)
+    this.#zAxisMarker.setRenderingParameters(parameters.z)
+  }
+
+  attachRenderingObjects<T>(builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
+    const disposers = [
+      this.#xAxisMarker.attachRenderingObjects(builder, renderer),
+      this.#yAxisMarker.attachRenderingObjects(builder, renderer),
+      this.#zAxisMarker.attachRenderingObjects(builder, renderer)
+    ]
+
+    return () => {
+      disposers.forEach(disposer => disposer())
+    }
   }
 }

@@ -73,7 +73,8 @@ export class HaconiwaLineItemGenerator<T extends RenderingObject>
       .forEach((generated, index, arr) => {
         const { marker, connection } = generated
 
-        marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, 0.5, this.#renderingObjectBuilder, this.#renderer)
+       // [TODO] 一時的にコメントアウト
+       // marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, 0.5, this.#renderingObjectBuilder, this.#renderer)
 
         connection.edge.coordinate.setUpdateCallback(() => {
           //item.line.setEdge(index, marker.parentCoordinate.position)

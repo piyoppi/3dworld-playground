@@ -9,16 +9,16 @@ import type { Raycaster } from "../Raycaster"
 import type { Renderer } from "../Renderer"
 import type { RenderingObjectBuilder } from '../RenderingObjectBuilder'
 import type { RGBColor } from "../helpers/color"
-import type { SingleMarker, MarkerRenderable } from "./Marker"
+import type { SingleMarker } from "./Marker"
 
 type RenderingParameters = {
   color: RGBColor
 }
 
-export class PlaneMarker implements SingleMarker, MarkerRenderable {
+export class PlaneMarker implements SingleMarker {
   #size: number
+  #norm: VectorArray3 
   #parentCoordinate: Coordinate
-  #markerCoordinate = new Coordinate()
   #handledColiders = new HandledColiders()
   #colider: PlaneColider
   #renderingParameters: RenderingParameters = {
@@ -27,11 +27,11 @@ export class PlaneMarker implements SingleMarker, MarkerRenderable {
 
   constructor(size: number, norm: VectorArray3, axis: VectorArray3, parentCoordinate: Coordinate) {
     this.#size = size
+    this.#norm = norm
 
     this.#parentCoordinate = parentCoordinate
     this.#colider = new PlaneColider(this.#parentCoordinate, norm)
 
-    this.#markerCoordinate.setDirectionZAxis(norm, [0, 0, 0])
 
     this.#colider.setEdgeEvaluator((dist, ray) => {
       const vec = Vec3.subtract(this.#parentCoordinate.position, Vec3.add(ray.position, Vec3.mulScale(ray.direction, dist)))
@@ -43,16 +43,10 @@ export class PlaneMarker implements SingleMarker, MarkerRenderable {
 
       return x <= size / 2 && y <= size / 2
     })
-
-    this.#parentCoordinate.addChild(this.#markerCoordinate)
   }
 
   get parentCoordinate() {
     return this.#parentCoordinate
-  }
-
-  get markerCoordinates() {
-    return [this.#markerCoordinate]
   }
 
   get handlers() {
@@ -79,13 +73,18 @@ export class PlaneMarker implements SingleMarker, MarkerRenderable {
     this.#renderingParameters = {...this.#renderingParameters, ...params}
   }
 
-  makeRenderingObject<T>(builder: RenderingObjectBuilder<T>) {
-    return builder.makePlane(this.#size, this.#size, this.#renderingParameters.color)
-  }
+  attachRenderingObjects<T extends RenderingObject>(builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
+    const coordinate = new Coordinate()
+    coordinate.setDirectionZAxis(this.#norm, [0, 0, 0])
+    this.#parentCoordinate.addChild(coordinate)
 
-  attachRenderingObject<T extends RenderingObject>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
-    const renderingItem = builder.makePlane(this.#size, this.#size, color)
+    const renderingItem = builder.makePlane(this.#size, this.#size, this.#renderingParameters.color)
     renderingItem.material.setSide('both')
-    renderer.addItem(this.#markerCoordinate, renderingItem)
+    renderer.addItem(coordinate, renderingItem)
+
+    return () => {
+      renderer.removeItem(coordinate)
+      this.#parentCoordinate.removeChild(coordinate)
+    }
   }
 }

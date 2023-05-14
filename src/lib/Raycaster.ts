@@ -4,11 +4,6 @@ import { Mat4, Vec3 } from './Matrix.js';
 import { Ray } from './Ray.js'
 import { ReadOnlyRaycaster } from './ReadOnlyRaycaster.js';
 
-type ColidedItem<T> = {
-  colider: Colider,
-  item: T
-}
-
 export class ColidedDetails<T extends Colider> {
   #colider: T
   #distance: number

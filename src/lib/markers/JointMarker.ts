@@ -1,14 +1,14 @@
 import { CenterMarker } from './CenterMarker.js'
 import { BallColider, CoordinatedColider } from "../Colider.js"
-import type { MarkerRenderable, SingleMarker } from './Marker'
+import type { SingleMarker } from './Marker'
 import type { Coordinate } from '../Coordinate'
-import type { RGBColor } from "../helpers/color"
 import type { Renderer } from "../Renderer"
 import type { RenderingObjectBuilder } from '../RenderingObjectBuilder'
 import type { MouseControlHandles } from "../mouse/MouseControlHandles"
 import type { LineItemConnection } from '../LineItem/LineItemConnection'
 import type { MouseControllable } from '../mouse/MouseControllable'
 import type { Raycaster } from "../Raycaster"
+import type { RenderingObject } from '../RenderingObject'
 
 export class JointColider extends BallColider {
   #jointMarker: JointMarker
@@ -24,8 +24,7 @@ export class JointColider extends BallColider {
   }
 }
 
-export class JointMarker implements SingleMarker, MarkerRenderable {
-  #radius: number
+export class JointMarker implements SingleMarker {
   #marker: CenterMarker
   #parentCoordinate: Coordinate
   #connection: LineItemConnection
@@ -36,8 +35,6 @@ export class JointMarker implements SingleMarker, MarkerRenderable {
     this.#parentCoordinate = parentCoordinate
     this.#marker = new CenterMarker(colider)
     this.#connection = connection
-
-    this.#radius = radius
   }
 
   get parentCoordinate() {
@@ -50,10 +47,6 @@ export class JointMarker implements SingleMarker, MarkerRenderable {
 
   get handlers() {
     return this.#marker.handlers
-  }
-
-  get markerCoordinates() {
-    return this.#marker.markerCoordinates
   }
 
   get connection() {
@@ -72,11 +65,11 @@ export class JointMarker implements SingleMarker, MarkerRenderable {
     this.#marker.detach(raycaster, interactionHandler)
   }
 
-  makeRenderingObject<T>(builder: RenderingObjectBuilder<T>) {
-    return this.#marker.makeRenderingObject(builder)
-  }
+  attachRenderingObjects<T extends RenderingObject>(builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
+    const dispose = this.#marker.attachRenderingObjects(builder, renderer)
 
-  attachRenderingObject<T>(color: RGBColor, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
-    this.#marker.attachRenderingObject(color, this.#radius, builder, renderer)
+    return () => {
+      dispose()
+    }
   }
 }

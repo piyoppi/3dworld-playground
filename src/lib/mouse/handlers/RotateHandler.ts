@@ -1,7 +1,9 @@
 import type { MouseButton, MouseControllable, MouseControllableCallbackFunction, WindowCursor } from "../../mouse/MouseControllable"
-import { CallbackFunctions } from "../../CallbackFunctions.js"
 import type { Coordinate } from "../../Coordinate.js"
-import type { Raycaster } from "../../Raycaster"
+import type { ReadOnlyRaycaster } from "../../ReadOnlyRaycaster"
+import type { Camera } from "../../Camera"
+import { Raycaster } from "../../Raycaster.js"
+import { CallbackFunctions } from "../../CallbackFunctions.js"
 import { CursorDirectionScreenToWorldConverter } from "./CursorDirectionScreenToWorldConverter.js"
 import { Mat4, Mat3, Vec3, VectorArray3 } from "../../Matrix.js"
 import { Colider, PlaneColider } from "../../Colider.js"
@@ -14,7 +16,7 @@ export class RotateHandler implements MouseControllable {
   #manipulateCoordinate: Coordinate
   #cursorDirectionConverter = new CursorDirectionScreenToWorldConverter()
   #isStart = false
-  #raycaster: Raycaster<Colider>
+  #raycaster: ReadOnlyRaycaster<Colider>
   #direction: VectorArray3
   #startPosition: VectorArray3 = [0, 0, 0]
   #handlingParams = {
@@ -22,13 +24,15 @@ export class RotateHandler implements MouseControllable {
     beforeAngle: 0
   }
   #planeColider: PlaneColider | null = null
+  #planeRaycaster: Raycaster
   #targetColider: Colider
 
-  constructor(manipulateCoordinate: Coordinate, raycaster: Raycaster<Colider>, direction: VectorArray3, targetColider: Colider) {
+  constructor(manipulateCoordinate: Coordinate, raycaster: ReadOnlyRaycaster<Colider>, camera: Camera, direction: VectorArray3, targetColider: Colider) {
     this.#manipulateCoordinate = manipulateCoordinate
     this.#raycaster = raycaster
     this.#direction = direction
     this.#targetColider = targetColider
+    this.#planeRaycaster = new Raycaster(camera)
   }
 
   get isStart() {
@@ -60,7 +64,7 @@ export class RotateHandler implements MouseControllable {
     this.#startPosition = Vec3.normalize(Vec3.subtract(this.#raycaster.colidedDetails[0].position, this.#manipulateCoordinate.position))
 
     this.#planeColider = new PlaneColider(this.#manipulateCoordinate, this.#direction)
-    this.#raycaster.addTarget(this.#planeColider)
+    this.#planeRaycaster.addTarget(this.#planeColider)
 
     this.#handlingParams.initialAngle = Vec3.dotprod(
       this.#manipulateCoordinate.eular.toVectorArray3XYZ(),
@@ -71,12 +75,14 @@ export class RotateHandler implements MouseControllable {
     this.#startedCallbacks.call()
   }
 
-  move(_params: WindowCursor) {
+  move({normalizedX, normalizedY}: WindowCursor) {
     const planeColider = this.#planeColider
     if (!planeColider) return
-    if (this.#raycaster.colidedDetails.length === 0) return
 
-    const colidedDetail = this.#raycaster.colidedDetails.find(item => item.colider.uuid === planeColider.uuid)
+    this.#planeRaycaster.check(normalizedX, normalizedY)
+    if (this.#planeRaycaster.colidedDetails.length === 0) return
+
+    const colidedDetail = this.#planeRaycaster.colidedDetails.find(item => item.colider.uuid === planeColider.uuid)
 
     if (!colidedDetail) return
 
@@ -114,7 +120,7 @@ export class RotateHandler implements MouseControllable {
   end() {
     this.#isStart = false
     if (this.#planeColider) {
-      this.#raycaster.removeTarget(this.#planeColider)
+      this.#planeRaycaster.removeTarget(this.#planeColider)
       this.#planeColider = null
     }
   }

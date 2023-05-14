@@ -1,11 +1,11 @@
 import type { ItemGeneratorProcess as IItemGeneratorProcess, ItemGeneratorParams } from "../ItemGeneratorProcess"
 import type { Joint } from "../../itemGenerators/Joints/Joint"
 import type { JointFactory } from "../../itemGenerators/Joints/JointFactory"
+import type { RenderingObject } from "../../../../../lib/RenderingObject"
 import { LineSegmentGenerator } from "../../../../../lib/itemGenerators/lineItemGenerator/lineGenerator/LineSegmentGenerator.js"
 import { LineItem } from "../../../../../lib/LineItem/LineItem.js"
 import { LineItemConnection } from "../../../../../lib/LineItem/LineItemConnection.js"
 import { NoneJoint } from "../../itemGenerators/Joints/NoneJoint.js"
-import { RenderingObject } from "../../../../../lib/RenderingObject"
 import { HaconiwaWorldItem } from '../../../World/HaconiwaWorldItem.js'
 import { JointMarker } from "../../../../../lib/markers/JointMarker.js"
 import { PlaneMoveHandler } from "../../../../../lib/mouse/handlers/PlaneMoveHandler.js"
@@ -26,7 +26,6 @@ export class ItemGeneratorProcess<T extends RenderingObject> implements IItemGen
     getPosition,
     register,
     registerMarker,
-    removeMarker,
     select,
     getCamera,
     getRenderingObjectBuilder,
@@ -49,7 +48,7 @@ export class ItemGeneratorProcess<T extends RenderingObject> implements IItemGen
     const renderingObject = this.original.clone() as T
     const item = new HaconiwaWorldItem(lineItem, [], [])
     const coordinateForRendering = register(item, renderingObject)
-    const handlingProcess = new HandlingProcess()
+    const handlingProcess = new HandlingProcess(lineItem)
 
     const jointableMarkers = lineItem.connections.map(connection => {
       const jointMarker = new JointMarker(0.5, connection)
@@ -69,9 +68,9 @@ export class ItemGeneratorProcess<T extends RenderingObject> implements IItemGen
         heightMarker.addHandler(heightHandler)
         heightMarker.setRenderingParameters({color: {r: 0, g: 255, b: 0}})
 
-        registerMarker(heightMarker)
+        const removeHeightMarker = registerMarker(heightMarker)
 
-        select(heightMarker.coliders, handlingProcess, () => removeMarker(heightMarker))
+        select(heightMarker.coliders, handlingProcess, () => removeHeightMarker())
       })
 
       return {

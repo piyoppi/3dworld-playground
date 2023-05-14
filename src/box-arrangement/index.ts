@@ -31,7 +31,7 @@ const raycasters = new Raycasters()
 raycasters.add(axesRaycaster)
 const mouseInteractionHandler = new MouseControlHandles(renderer.camera, raycasters, window.innerWidth, window.innerHeight)
 
-let markers: DirectionalMarker[] = []
+let markerHandlers: {marker: DirectionalMarker, remove: () => void}[] = []
 const lightCoordinate = new Coordinate()
 lightCoordinate.y = 1
 lightCoordinate.lookAt([0, 0, 0])
@@ -60,12 +60,12 @@ function captureMouseClicked() {
   if (axesRaycaster.colidedColiders.length === 0 && raycaster.colidedColiders.length > 0) {
     const box = raycaster.colidedColiders[0]
 
-    markers.forEach(marker => {
-      marker.markerCoordinates.forEach(coord => renderer.removeItem(coord))
+    markerHandlers.forEach(({marker, remove}) => {
+      remove()
       marker.detach(raycaster, mouseInteractionHandler)
     })
 
-    markers = [
+    markerHandlers = [
       {color: {r: 255, g: 0,   b: 0  }, axis: [1, 0, 0] as VectorArray3},
       {color: {r: 0,   g: 255, b: 0  }, axis: [0, 1, 0] as VectorArray3},
       {color: {r: 0,   g: 0,   b: 255}, axis: [0, 0, 1] as VectorArray3}
@@ -74,11 +74,13 @@ function captureMouseClicked() {
 
       return {marker, axis, color}
     }).map(({marker, axis, color}) => {
-      marker.attachRenderingObject(color, primitiveRenderingObjectBuilder, renderer)
+      marker.setRenderingParameters({color})
+      const remove = marker.attachRenderingObjects(primitiveRenderingObjectBuilder, renderer)
 
       marker.addHandler(new DirectionalMoveHandler(box.parentCoordinate, axis, 0.01))
       marker.attach(axesRaycaster, mouseInteractionHandler)
-      return marker
+
+      return {marker, remove}
     })
   }
 }

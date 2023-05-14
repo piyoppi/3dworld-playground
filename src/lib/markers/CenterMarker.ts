@@ -7,15 +7,15 @@ import type { MouseControlHandles } from "../mouse/MouseControlHandles"
 import type { RenderingObjectBuilder } from '../RenderingObjectBuilder'
 import type { RGBColor } from "../helpers/color"
 import type { Renderer } from "../Renderer"
-import type { SingleMarker, MarkerRenderable } from "./Marker"
+import type { SingleMarker } from "./Marker"
+import type { RenderingObject } from "../RenderingObject"
 
 type RenderingParameters = {
   radius: number,
   color: RGBColor
 }
 
-export class CenterMarker implements SingleMarker, MarkerRenderable {
-  #markerCoordinate = new Coordinate()
+export class CenterMarker implements SingleMarker {
   #handledColiders: HandledColiders
   #colider: CoordinatedColider
   #parentCoordinate: Coordinate
@@ -27,18 +27,12 @@ export class CenterMarker implements SingleMarker, MarkerRenderable {
   constructor(colider: CoordinatedColider) {
     this.#parentCoordinate = colider.parentCoordinate
 
-    this.#parentCoordinate.addChild(this.#markerCoordinate)
-
     this.#handledColiders = new HandledColiders()
     this.#colider = colider
   }
 
   get parentCoordinate() {
     return this.#parentCoordinate
-  }
-
-  get markerCoordinates() {
-    return [this.#markerCoordinate]
   }
 
   get handlers() {
@@ -65,11 +59,17 @@ export class CenterMarker implements SingleMarker, MarkerRenderable {
     this.#renderingParameters = {...this.#renderingParameters, ...params}
   }
 
-  makeRenderingObject<T>(builder: RenderingObjectBuilder<T>) {
-    return builder.makeSphere(this.#renderingParameters.radius, this.#renderingParameters.color)
-  }
+  attachRenderingObjects<T extends RenderingObject>(builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
+    const coordinate = new Coordinate()
 
-  attachRenderingObject<T>(color: RGBColor, radius: number, builder: RenderingObjectBuilder<T>, renderer: Renderer<T>) {
-    renderer.addItem(this.#markerCoordinate, builder.makeSphere(radius, color))
+    this.#parentCoordinate.addChild(coordinate)
+
+    const renderingObject = builder.makeSphere(this.#renderingParameters.radius, this.#renderingParameters.color)
+    renderer.addItem(coordinate, renderingObject)
+
+    return () => {
+      renderer.removeItem(coordinate)
+      this.#parentCoordinate.removeChild(coordinate)
+    }
   }
 }

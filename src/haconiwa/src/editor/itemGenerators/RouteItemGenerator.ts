@@ -115,10 +115,13 @@ export class RouteItemGenerator<T extends RenderingObject>
         heightHandler.setStartingCallback(() => !handler.isStart)
 
         heightMarker.addHandler(heightHandler)
-        heightMarker.attachRenderingObject({r: 0, g: 255, b: 0}, this.#renderingObjectBuilder, this.#renderer)
+        // [TODO] 一時的にコメントアウト
+        //heightMarker.attachRenderingObject({r: 0, g: 255, b: 0}, this.#renderingObjectBuilder, this.#renderer)
 
         this.registerMarker(heightMarker)
-        this.#handlingMarkers.push(heightMarker)
+
+        // [TODO] 一時的にコメントアウト
+        //this.#handlingMarkers.push(heightMarker)
 
         selected()
       })
@@ -136,7 +139,9 @@ export class RouteItemGenerator<T extends RenderingObject>
       const markers = arr.map(elm => elm.marker)
       const jointableHandler = markerJointable(marker, markers, handler, connection, this.#markerRaycaster.getReadonly())
       item.connections.filter(conn => conn !== connection).forEach(conn => jointableHandler.addIgnoredConnection(conn))
-      marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#renderer)
+
+      // [TODO] 一時的にコメントアウト
+      //marker.attachRenderingObject<T>({r: 255, g: 0, b: 0}, this.#renderingObjectBuilder, this.#renderer)
 
       return marker
     })
@@ -198,7 +203,8 @@ export class RouteItemGenerator<T extends RenderingObject>
     this.removeHandlingMarker()
     this.#jointableMarkers.forEach(marker => {
       this.removeMarker(marker)
-      marker.markerCoordinates.forEach(coord => this.#renderer.removeItem(coord))
+      // [TODO] 一時的にコメントアウト
+      //marker.markerCoordinates.forEach(coord => this.#renderer.removeItem(coord))
     })
     this.#jointableMarkers = []
   }
@@ -279,7 +285,8 @@ export class RouteItemGenerator<T extends RenderingObject>
   private removeHandlingMarker() {
     this.#handlingMarkers.forEach(marker => {
       this.removeMarker(marker)
-      marker.markerCoordinates.forEach(coord => this.#renderer.removeItem(coord))
+      // [TODO] 一時的にコメントアウト
+      //marker.markerCoordinates.forEach(coord => this.#renderer.removeItem(coord))
     })
     this.#handlingMarkers = []
   }
