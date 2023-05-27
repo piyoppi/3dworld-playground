@@ -13,7 +13,7 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
   #camera: ThreeCamera
   #mapCoordinateIdToThreeItems: Map<string, Array<Mesh | Group>>
 
-  #mapCoordinateIdToRenderingObject : Map<string, ThreeRenderingObject> = new Map()
+  #mapCoordinateIdToRenderingObject: Map<string, ThreeRenderingObject> = new Map()
 
   constructor(scene: Scene, camera: ThreeCamera) {
     this.#renderer = new WebGLRenderer({ antialias: true })
@@ -33,13 +33,13 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
 
   initialize(width: number, height: number) {
     this.#renderer.setSize(width, height)
-    this.#renderer.setPixelRatio( window.devicePixelRatio )
+    this.#renderer.setPixelRatio(window.devicePixelRatio)
   }
 
   addItem(coordinate: Coordinate, renderingObject: ThreeRenderingObject) {
     const mesh = (renderingObject.item instanceof ThreeGroup) ? renderingObject.item.group :
       (renderingObject.item instanceof ThreePrimitiveRenderingObject) ? new Mesh(renderingObject.item.geometry, renderingObject.item.material) :
-      null
+        null
 
     if (!mesh) {
       throw new Error('RenderingObject is invalid.')
@@ -100,14 +100,31 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
     })
   }
 
+  printScene() {
+    type PrintMap = Array<string | Object3D | PrintMap[]>
+
+    const printMap: (item: Object3D) => PrintMap = (item) => {
+      const coordinateId = Array.from(this.#mapCoordinateIdToThreeItems.entries()).find(([_, v]) => v.find(v => v === item))?.at(0) as string || ''
+
+      return [
+        coordinateId,
+        item,
+        item.children.map(child => printMap(child))
+      ]
+    }
+
+    console.info(printMap(this.#scene))
+  }
+
   private makeEmptyGroupsRecursive(target: Coordinate) {
     const to = this.getAllocatedRootCoordinate(target)
 
     const coordinates: Coordinate[] = []
-    const proc = (coord: Coordinate) => {
-      if (coord === to) return
+    const proc = (coord: Coordinate | null) => {
+      if (coord === to || !coord) return
 
       coordinates.push(coord)
+      proc(coord.parent)
     }
     proc(target)
 
@@ -116,6 +133,7 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
     let prev = to
     return coordinates.map(coord => {
       const group = new Group()
+
       if (prev) {
         const parentRenderingObjects = this.threeItemFromCoordinate(prev)
 
@@ -134,7 +152,7 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
 
   private observeCoordinateHooks(coordinate: Coordinate, obj: Object3D) {
     coordinate.setSetChildCallback((parent, child) => this.coordinateSetChildCallbackHandler(parent, child))
-    coordinate.setRemoveChildCallback((parent, child) => this.coordinateRemoveChildCallbackHandler(parent, child))
+    coordinate.setRemoveChildCallback((_parent, child) => this.coordinateRemoveChildCallbackHandler(child))
     coordinate.setUpdateCallback(() => syncCoordinate(coordinate, obj))
   }
 
@@ -163,12 +181,10 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
     })
   }
 
-  private coordinateRemoveChildCallbackHandler(parent: Coordinate, child: Coordinate) {
+  private coordinateRemoveChildCallbackHandler(child: Coordinate) {
     const childMeshes = this.threeItemFromCoordinate(child)
 
     childMeshes.forEach(mesh => mesh.parent?.remove(mesh))
-
-    //syncCoordinate(child, childMesh)
   }
 
   private threeItemFromCoordinate(coordinate: Coordinate) {
@@ -191,7 +207,7 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
   }
 
   addLight(coordinate: Coordinate) {
-    const light = new AmbientLight( 0x404040, 4 )
+    const light = new AmbientLight(0x404040, 4)
     this.addScene(this.#scene, light, coordinate)
     syncCoordinate(coordinate, light)
   }
@@ -208,7 +224,7 @@ export class ThreeRenderer implements Renderer<ThreeRenderingObject> {
   }
 
   mount() {
-    document.body.appendChild( this.#renderer.domElement )
+    document.body.appendChild(this.#renderer.domElement)
   }
 
   resize(width: number, height: number) {
