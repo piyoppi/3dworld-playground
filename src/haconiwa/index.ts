@@ -89,3 +89,11 @@ window.addEventListener('keydown', async (e) => {
       break
   }
 })
+
+export const printscene = () => {
+  renderer.printScene()
+}
+
+export const printItems = () => {
+  console.log(world.items)
+} 

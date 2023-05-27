@@ -27,17 +27,23 @@ export class ItemGeneratorProcess<T extends RenderingObject> implements IItemGen
     const item = new Item()
     register(new HaconiwaWorldItem(item, [], []), renderingObject)
 
-    const itemMarker = new BoxMarker(renderingObject.size, item.parentCoordinate)
+    const coordinate = item.parentCoordinate.clone()
+
+    coordinate.setUpdateCallback(() => {
+      item.parentCoordinate.sync(coordinate)
+    })
+
+    const itemMarker = new BoxMarker(renderingObject.size, coordinate)
 
     const raycaster = getMarkerRaycaster()
     const proxyHandler = new ProxyHandler(raycaster, itemMarker.coliders)
     const handler = () => {
       proxyHandler.removeStartedCallback(handler)
-      const markers = makeCoordinateMover(raycaster, item.parentCoordinate, getCamera())
+      const markers = makeCoordinateMover(raycaster, coordinate, getCamera())
       const markerRemovers = markers.map(marker => registerMarker(marker))
       renderingObject.material.setOpacity(0.6)
 
-      const boundaryMarker = new BoxMarker([5, 5, 5], item.parentCoordinate)
+      const boundaryMarker = new BoxMarker([5, 5, 5], coordinate)
       boundaryMarker.addHandler(new NoneHandler())
       const boundaryMarkerRemover = registerMarker(boundaryMarker, {render: false})
 

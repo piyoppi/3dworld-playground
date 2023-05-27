@@ -24,6 +24,12 @@
         }
       }
     </script>
-    <script src="../../dist/haconiwa/index.js" type="module"></script>
+    <script type="module">
+      import '../../dist/haconiwa/index.js'
+
+      import { printscene, printItems } from '../../dist/haconiwa/index.js'
+      window.printscene = printscene
+      window.printitems = printItems
+    </script>
   </body>
 </html>

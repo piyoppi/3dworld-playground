@@ -10,9 +10,11 @@ export class DisposeError extends Error {}
 export class Coordinate {
   protected _parent: Coordinate | null
   #children: Coordinates = new Coordinates()
+
   #matrix:  MatrixArray4
   #scaleMatrix: MatrixArray4
   #mirrorMatrix: MatrixArray4
+
   #beforeUpdateCallbacks = new CallbackFunctions<() => void>()
   #updatedCallbacks = new CallbackFunctions<() => void>()
   #constraintCallbacks = new CallbackFunctions<() => void>()
@@ -72,7 +74,7 @@ export class Coordinate {
   }
 
   setMatrix(array: MatrixArray4) {
-    this.#matrix = array
+    Mat4.sync(array, this.#matrix)
     this.callUpdatedCallback()
   }
 
@@ -230,8 +232,19 @@ export class Coordinate {
     this.callUpdatedCallback()
   }
 
-  private removeFromChild(coordinate: Coordinate) {
-    this.removeChild(coordinate)
+  clone() {
+    const coordinate = new Coordinate()
+    coordinate.setMatrix(this.#matrix)
+    coordinate.#scaleMatrix = [...this.#scaleMatrix]
+    coordinate.#mirrorMatrix = [...this.#mirrorMatrix]
+    return coordinate
+  }
+
+  sync(from: Coordinate) {
+    this.setMatrix(from.#matrix)
+    this.#scaleMatrix = Mat4.sync(from.#scaleMatrix, this.#scaleMatrix)
+    this.#mirrorMatrix = Mat4.sync(from.#mirrorMatrix, this.#mirrorMatrix)
+    this.callUpdatedCallback()
   }
 
   get position(): VectorArray3 {
@@ -258,7 +271,6 @@ export class Coordinate {
     this.callUpdatedCallback()
   }
 
-  //get items() { return this.#items }
   get x() { return this.#matrix[12] }
   get y() { return this.#matrix[13] }
   get z() { return this.#matrix[14] }

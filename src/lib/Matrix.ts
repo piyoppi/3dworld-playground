@@ -74,6 +74,14 @@ export class Mat4 {
     return currentMat
   }
 
+  static sync(from: MatrixArray4, to: MatrixArray4): MatrixArray4 {
+    for(let i = 0; i < 16; i++) {
+      to[i] = from[i]
+    }
+
+    return to
+  }
+
   static rotateX(rad: number): MatrixArray4 {
     const cos = Math.cos(rad)
     const sin = Math.sin(rad)

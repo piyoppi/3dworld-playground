@@ -15,7 +15,7 @@ type RenderingParameters = {
 }
 
 export class CoordinateMarker implements Marker {
-  #parentCoordinate: Coordinate = new Coordinate()
+  #parentCoordinate: Coordinate
 
   #xAxisMarker: DirectionalMarker
   #yAxisMarker: DirectionalMarker
@@ -29,6 +29,8 @@ export class CoordinateMarker implements Marker {
     this.#xAxisMarker.setRenderingParameters({color: {r: 255, g: 0, b: 0}})
     this.#yAxisMarker.setRenderingParameters({color: {r: 0, g: 255, b: 0}})
     this.#zAxisMarker.setRenderingParameters({color: {r: 0, g: 0, b: 255}})
+
+    this.#parentCoordinate = parentCoordinate
   }
 
   get parentCoordinate() {

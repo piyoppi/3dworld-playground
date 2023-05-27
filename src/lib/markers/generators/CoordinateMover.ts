@@ -5,10 +5,10 @@ import { makeCoordinateDirectionalMover } from "./CoordinateDirectionalMover.js"
 import { makeCoordinatePlanesMover } from "./CoordinatePlanesMover.js"
 import { makeCoordinateRotator } from "./CoordinateRotator.js"
 
-export function makeCoordinateMover(markerRaycaster: ReadOnlyRaycaster, parentCoordinate: Coordinate, camera: Camera) {
-  const directionalMover = makeCoordinateDirectionalMover(parentCoordinate)
-  const planeMover = makeCoordinatePlanesMover(parentCoordinate, camera, true)
-  const rotator = makeCoordinateRotator(markerRaycaster, parentCoordinate, camera)
+export function makeCoordinateMover(markerRaycaster: ReadOnlyRaycaster, manipulatedCoordinate: Coordinate, camera: Camera) {
+  const directionalMover = makeCoordinateDirectionalMover(manipulatedCoordinate)
+  const planeMover = makeCoordinatePlanesMover(manipulatedCoordinate, camera, true)
+  const rotator = makeCoordinateRotator(markerRaycaster, manipulatedCoordinate, camera)
 
   const startingHookFn = () => !planeMover.handlers.some(handler => handler.isStart) &&
     !rotator.handlers.some(handler => handler.isStart) &&
